@@ -19,9 +19,8 @@ package Dpkg::Compression;
 use strict;
 use warnings;
 
-our $VERSION = '1.02';
+our $VERSION = '2.00';
 our @EXPORT = qw(
-    $compression_re_file_ext
     compression_is_supported
     compression_get_list
     compression_get_property
@@ -54,9 +53,10 @@ interact with the set of supported compression methods.
 =cut
 
 my $COMP = {
+    # Requires gzip >= 1.7 for the --rsyncable option.
     gzip => {
 	file_ext => 'gz',
-	comp_prog => [ 'gzip', '--no-name' ],
+	comp_prog => [ 'gzip', '--no-name', '--rsyncable' ],
 	decomp_prog => [ 'gunzip' ],
 	default_level => 9,
     },
@@ -80,32 +80,11 @@ my $COMP = {
     },
 };
 
-#
-# XXX: The gzip package in Debian at some point acquired a Debian-specific
-# --rsyncable option via a vendor patch. Which is not present in most of the
-# major distributions, dpkg downstream systems, nor gzip upstream, who have
-# stated they will most probably not accept it because people should be using
-# pigz instead.
-#
-# This option should have never been accepted in dpkg, ever. But removing it
-# now would probably cause demands for tarring and feathering. In addition
-# we cannot use the Dpkg::Vendor logic because that would cause circular
-# module dependencies. The whole affair is pretty disgusting really.
-#
-# Check the perl Config to discern Debian and hopefully derivatives too.
-#
-if ($Config{cf_by} eq 'Debian Project') {
-    push @{$COMP->{gzip}->{comp_prog}}, '--rsyncable';
-}
-
-# XXX: Backwards compatibility, stop exporting on VERSION 2.00.
-## no critic (Variables::ProhibitPackageVars)
-our $default_compression = 'xz';
-our $default_compression_level = undef;
+my $default_compression = 'xz';
+my $default_compression_level = undef;
 
 my $regex = join '|', map { $_->{file_ext} } values %$COMP;
-our $compression_re_file_ext = qr/(?:$regex)/;
-## use critic
+my $compression_re_file_ext = qr/(?:$regex)/;
 
 =head1 FUNCTIONS
 
@@ -249,6 +228,11 @@ sub compression_is_valid_level {
 =back
 
 =head1 CHANGES
+
+=head2 Version 2.00 (dpkg 1.20.0)
+
+Hide variables: $default_compression, $default_compression_level
+and $compression_re_file_ext.
 
 =head2 Version 1.02 (dpkg 1.17.2)
 

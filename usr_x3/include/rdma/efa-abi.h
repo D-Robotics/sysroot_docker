@@ -103,12 +103,19 @@ struct efa_ibv_create_ah_resp {
 	__u8 reserved_30[2];
 };
 
+enum {
+	EFA_QUERY_DEVICE_CAPS_RDMA_READ = 1 << 0,
+	EFA_QUERY_DEVICE_CAPS_RNR_RETRY = 1 << 1,
+};
+
 struct efa_ibv_ex_query_device_resp {
 	__u32 comp_mask;
 	__u32 max_sq_wr;
 	__u32 max_rq_wr;
 	__u16 max_sq_sge;
 	__u16 max_rq_sge;
+	__u32 max_rdma_size;
+	__u32 device_caps;
 };
 
 #endif /* EFA_ABI_USER_H */

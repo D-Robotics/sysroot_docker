@@ -30,7 +30,7 @@ top_builddir=/usr/share/apr-1.0/build
 
 # Some layouts require knowing what version we are at.
 APR_MAJOR_VERSION=1
-APR_DOTTED_VERSION=1.6.5
+APR_DOTTED_VERSION=1.7.0
 
 CC=aarch64-linux-gnu-gcc
 RM=rm
@@ -41,19 +41,19 @@ LIBTOOL=$(SHELL) $(apr_builddir)/libtool
 # compilation and linking flags that are supposed to be set only by the user.
 # configure adds to them for tests, but we restore them at the end.
 #
-CFLAGS?=-g -O2 -fdebug-prefix-map=/build/apr-GBLg0M/apr-1.6.5=. -fstack-protector-strong -Wformat -Werror=format-security
+CFLAGS?=-g -O2 -ffile-prefix-map=BUILDDIR/=. -flto=auto -ffat-lto-objects -flto=auto -ffat-lto-objects -fstack-protector-strong -Wformat -Werror=format-security
 CPPFLAGS?=-Wdate-time -D_FORTIFY_SOURCE=2
-LDFLAGS?=-Wl,-Bsymbolic-functions -Wl,-z,relro
+LDFLAGS?=-Wl,-Bsymbolic-functions -flto=auto -ffat-lto-objects -flto=auto -Wl,-z,relro
 LIBS?=
 DEFS=-DHAVE_CONFIG_H
 
 # anything added to the standard flags by configure is moved to EXTRA_*
 # at the end of the process.
 #
-EXTRA_CFLAGS= -pthread
+EXTRA_CFLAGS=
 EXTRA_CPPFLAGS= -DLINUX -D_REENTRANT -D_GNU_SOURCE
 EXTRA_LDFLAGS=
-EXTRA_LIBS=-luuid -lrt -lcrypt  -lpthread -ldl
+EXTRA_LIBS=-luuid -lcrypt  -lpthread
 EXTRA_INCLUDES=
 
 # CPPFLAGS which are used only while building APR itself

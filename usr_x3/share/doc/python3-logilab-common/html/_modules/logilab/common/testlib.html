@@ -1,0 +1,866 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>logilab.common.testlib &#8212; logilab common  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for logilab.common.testlib</h1><div class="highlight"><pre>
+<span></span><span class="c1"># copyright 2003-2012 LOGILAB S.A. (Paris, FRANCE), all rights reserved.</span>
+<span class="c1"># contact http://www.logilab.fr/ -- mailto:contact@logilab.fr</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of logilab-common.</span>
+<span class="c1">#</span>
+<span class="c1"># logilab-common is free software: you can redistribute it and/or modify it under</span>
+<span class="c1"># the terms of the GNU Lesser General Public License as published by the Free</span>
+<span class="c1"># Software Foundation, either version 2.1 of the License, or (at your option) any</span>
+<span class="c1"># later version.</span>
+<span class="c1">#</span>
+<span class="c1"># logilab-common is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1"># ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS</span>
+<span class="c1"># FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License along</span>
+<span class="c1"># with logilab-common.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="sd">&quot;&quot;&quot;Run tests.</span>
+
+<span class="sd">This will find all modules whose name match a given prefix in the test</span>
+<span class="sd">directory, and run them. Various command line options provide</span>
+<span class="sd">additional facilities.</span>
+
+<span class="sd">Command line options:</span>
+
+<span class="sd"> -v  verbose -- run tests in verbose mode with output to stdout</span>
+<span class="sd"> -q  quiet   -- don&#39;t print anything except if a test fails</span>
+<span class="sd"> -t  testdir -- directory where the tests will be found</span>
+<span class="sd"> -x  exclude -- add a test to exclude</span>
+<span class="sd"> -p  profile -- profiled execution</span>
+<span class="sd"> -d  dbc     -- enable design-by-contract</span>
+<span class="sd"> -m  match   -- only run test matching the tag pattern which follow</span>
+
+<span class="sd">If no non-option arguments are present, prefixes used are &#39;test&#39;,</span>
+<span class="sd">&#39;regrtest&#39;, &#39;smoketest&#39; and &#39;unittest&#39;.</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="n">__docformat__</span> <span class="o">=</span> <span class="s2">&quot;restructuredtext en&quot;</span>
+<span class="c1"># modified copy of some functions from test/regrtest.py from PyXml</span>
+<span class="c1"># disable camel case warning</span>
+<span class="c1"># pylint: disable=C0103</span>
+
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="kn">import</span> <span class="n">contextmanager</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">os.path</span> <span class="k">as</span> <span class="nn">osp</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">shutil</span> <span class="kn">import</span> <span class="n">rmtree</span>
+<span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">isgeneratorfunction</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">mypy_extensions</span> <span class="kn">import</span> <span class="n">NoReturn</span>
+
+<span class="kn">import</span> <span class="nn">builtins</span>
+<span class="kn">import</span> <span class="nn">doctest</span>
+
+<span class="kn">from</span> <span class="nn">logilab.common.deprecation</span> <span class="kn">import</span> <span class="n">class_deprecated</span><span class="p">,</span> <span class="n">callable_deprecated</span>
+
+<span class="kn">import</span> <span class="nn">unittest</span> <span class="k">as</span> <span class="nn">unittest_legacy</span>
+
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
+
+<span class="kn">from</span> <span class="nn">logilab.common.decorators</span> <span class="kn">import</span> <span class="n">cached</span><span class="p">,</span> <span class="n">classproperty</span>
+
+<span class="k">if</span> <span class="ow">not</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">unittest_legacy</span><span class="p">,</span> <span class="s2">&quot;__package__&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">unittest2</span> <span class="k">as</span> <span class="nn">unittest</span>
+        <span class="kn">from</span> <span class="nn">unittest2</span> <span class="kn">import</span> <span class="n">SkipTest</span>
+    <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;You have to install python-unittest2 to use </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="vm">__name__</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="c1"># mypy: Name &#39;unittest&#39; already defined (possibly by an import)</span>
+    <span class="c1"># compat</span>
+    <span class="kn">import</span> <span class="nn">unittest</span> <span class="k">as</span> <span class="nn">unittest</span>  <span class="c1"># type: ignore</span>
+    <span class="kn">from</span> <span class="nn">unittest</span> <span class="kn">import</span> <span class="n">SkipTest</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;unittest_main&quot;</span><span class="p">,</span> <span class="s2">&quot;find_tests&quot;</span><span class="p">,</span> <span class="s2">&quot;nocoverage&quot;</span><span class="p">,</span> <span class="s2">&quot;pause_trace&quot;</span><span class="p">]</span>
+
+<span class="n">DEFAULT_PREFIXES</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;test&quot;</span><span class="p">,</span> <span class="s2">&quot;regrtest&quot;</span><span class="p">,</span> <span class="s2">&quot;smoketest&quot;</span><span class="p">,</span> <span class="s2">&quot;unittest&quot;</span><span class="p">,</span> <span class="s2">&quot;func&quot;</span><span class="p">,</span> <span class="s2">&quot;validation&quot;</span><span class="p">)</span>
+
+<span class="n">is_generator</span> <span class="o">=</span> <span class="n">callable_deprecated</span><span class="p">(</span><span class="s2">&quot;[lgc 0.63] use inspect.isgeneratorfunction&quot;</span><span class="p">)(</span>
+    <span class="n">isgeneratorfunction</span>
+<span class="p">)</span>
+
+<span class="c1"># used by unittest to count the number of relevant levels in the traceback</span>
+<span class="n">__unittest</span> <span class="o">=</span> <span class="mi">1</span>
+
+
+<span class="nd">@callable_deprecated</span><span class="p">(</span><span class="s2">&quot;with_tempdir is deprecated, use tempfile.TemporaryDirectory.&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">with_tempdir</span><span class="p">(</span><span class="n">callable</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;A decorator ensuring no temporary file left when the function return</span>
+<span class="sd">    Work only for temporary file created with the tempfile module&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">isgeneratorfunction</span><span class="p">(</span><span class="n">callable</span><span class="p">):</span>
+
+        <span class="k">def</span> <span class="nf">proxy</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">Iterator</span><span class="p">,</span> <span class="n">Iterator</span><span class="p">[</span><span class="nb">str</span><span class="p">]]]:</span>
+            <span class="n">old_tmpdir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">gettempdir</span><span class="p">()</span>
+            <span class="n">new_tmpdir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;temp-lgc-&quot;</span><span class="p">)</span>
+            <span class="n">tempfile</span><span class="o">.</span><span class="n">tempdir</span> <span class="o">=</span> <span class="n">new_tmpdir</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">callable</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                    <span class="k">yield</span> <span class="n">x</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">rmtree</span><span class="p">(</span><span class="n">new_tmpdir</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">finally</span><span class="p">:</span>
+                    <span class="n">tempfile</span><span class="o">.</span><span class="n">tempdir</span> <span class="o">=</span> <span class="n">old_tmpdir</span>
+
+        <span class="k">return</span> <span class="n">proxy</span>
+
+    <span class="k">else</span><span class="p">:</span>
+
+        <span class="nd">@wraps</span><span class="p">(</span><span class="n">callable</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">proxy</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+
+            <span class="n">old_tmpdir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">gettempdir</span><span class="p">()</span>
+            <span class="n">new_tmpdir</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;temp-lgc-&quot;</span><span class="p">)</span>
+            <span class="n">tempfile</span><span class="o">.</span><span class="n">tempdir</span> <span class="o">=</span> <span class="n">new_tmpdir</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">callable</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kargs</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">rmtree</span><span class="p">(</span><span class="n">new_tmpdir</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">finally</span><span class="p">:</span>
+                    <span class="n">tempfile</span><span class="o">.</span><span class="n">tempdir</span> <span class="o">=</span> <span class="n">old_tmpdir</span>
+
+        <span class="k">return</span> <span class="n">proxy</span>
+
+
+<span class="k">def</span> <span class="nf">in_tempdir</span><span class="p">(</span><span class="n">callable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A decorator moving the enclosed function inside the tempfile.tempfdir&quot;&quot;&quot;</span>
+
+    <span class="nd">@wraps</span><span class="p">(</span><span class="n">callable</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">proxy</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kargs</span><span class="p">):</span>
+
+        <span class="n">old_cwd</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">tempfile</span><span class="o">.</span><span class="n">tempdir</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">callable</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kargs</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">chdir</span><span class="p">(</span><span class="n">old_cwd</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">proxy</span>
+
+
+<span class="k">def</span> <span class="nf">within_tempdir</span><span class="p">(</span><span class="n">callable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A decorator run the enclosed function inside a tmpdir removed after execution&quot;&quot;&quot;</span>
+    <span class="n">proxy</span> <span class="o">=</span> <span class="n">with_tempdir</span><span class="p">(</span><span class="n">in_tempdir</span><span class="p">(</span><span class="n">callable</span><span class="p">))</span>
+    <span class="n">proxy</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="n">callable</span><span class="o">.</span><span class="vm">__name__</span>
+    <span class="k">return</span> <span class="n">proxy</span>
+
+
+<div class="viewcode-block" id="find_tests"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.testlib.find_tests">[docs]</a><span class="k">def</span> <span class="nf">find_tests</span><span class="p">(</span><span class="n">testdir</span><span class="p">,</span> <span class="n">prefixes</span><span class="o">=</span><span class="n">DEFAULT_PREFIXES</span><span class="p">,</span> <span class="n">suffix</span><span class="o">=</span><span class="s2">&quot;.py&quot;</span><span class="p">,</span> <span class="n">excludes</span><span class="o">=</span><span class="p">(),</span> <span class="n">remove_suffix</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Return a list of all applicable test modules.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">tests</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">testdir</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">suffix</span> <span class="ow">or</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">suffix</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">prefix</span> <span class="ow">in</span> <span class="n">prefixes</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">prefix</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">remove_suffix</span> <span class="ow">and</span> <span class="n">name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">suffix</span><span class="p">):</span>
+                        <span class="n">name</span> <span class="o">=</span> <span class="n">name</span><span class="p">[:</span> <span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">suffix</span><span class="p">)]</span>
+                    <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">excludes</span><span class="p">:</span>
+                        <span class="n">tests</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">tests</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">tests</span></div>
+
+
+<span class="c1"># PostMortem Debug facilities #####</span>
+<span class="k">def</span> <span class="nf">start_interactive_mode</span><span class="p">(</span><span class="n">result</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;starts an interactive shell so that the user can inspect errors&quot;&quot;&quot;</span>
+    <span class="n">debuggers</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">debuggers</span>
+    <span class="n">descrs</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">error_descrs</span> <span class="o">+</span> <span class="n">result</span><span class="o">.</span><span class="n">fail_descrs</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">debuggers</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># don&#39;t ask for test name if there&#39;s only one failure</span>
+        <span class="n">debuggers</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">testindex</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Choose a test to debug:&quot;</span><span class="p">)</span>
+            <span class="c1"># order debuggers in the same way than errors were printed</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;</span><span class="se">\t</span><span class="si">%s</span><span class="s2"> : </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">descr</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">descr</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">descrs</span><span class="p">)]))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Type &#39;exit&#39; (or ^D) to quit&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">todebug</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;Enter a test name: &quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">todebug</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;exit&quot;</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">()</span>
+                    <span class="k">break</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">testindex</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">todebug</span><span class="p">)</span>
+                        <span class="n">debugger</span> <span class="o">=</span> <span class="n">debuggers</span><span class="p">[</span><span class="n">descrs</span><span class="p">[</span><span class="n">testindex</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span>
+                    <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">IndexError</span><span class="p">):</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR: invalid test number </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">todebug</span><span class="p">,))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">debugger</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+            <span class="k">except</span> <span class="p">(</span><span class="ne">EOFError</span><span class="p">,</span> <span class="ne">KeyboardInterrupt</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">()</span>
+                <span class="k">break</span>
+
+
+<span class="c1"># coverage pausing tools #####################################################</span>
+
+
+<span class="nd">@contextmanager</span>
+<span class="k">def</span> <span class="nf">replace_trace</span><span class="p">(</span><span class="n">trace</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;A context manager that temporary replaces the trace function&quot;&quot;&quot;</span>
+    <span class="n">oldtrace</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">gettrace</span><span class="p">()</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">settrace</span><span class="p">(</span><span class="n">trace</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">yield</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="c1"># specific hack to work around a bug in pycoverage, see</span>
+        <span class="c1"># https://bitbucket.org/ned/coveragepy/issue/123</span>
+        <span class="k">if</span> <span class="n">oldtrace</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">callable</span><span class="p">(</span><span class="n">oldtrace</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">oldtrace</span><span class="p">,</span> <span class="s2">&quot;pytrace&quot;</span><span class="p">):</span>
+            <span class="n">oldtrace</span> <span class="o">=</span> <span class="n">oldtrace</span><span class="o">.</span><span class="n">pytrace</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">settrace</span><span class="p">(</span><span class="n">oldtrace</span><span class="p">)</span>
+
+
+<span class="n">pause_trace</span> <span class="o">=</span> <span class="n">replace_trace</span>
+
+
+<div class="viewcode-block" id="nocoverage"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.testlib.nocoverage">[docs]</a><span class="k">def</span> <span class="nf">nocoverage</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Function decorator that pauses tracing functions&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="s2">&quot;uncovered&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">func</span>
+    <span class="c1"># mypy: &quot;Callable[..., Any]&quot; has no attribute &quot;uncovered&quot;</span>
+    <span class="c1"># dynamic attribute for magic</span>
+    <span class="n">func</span><span class="o">.</span><span class="n">uncovered</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># type: ignore</span>
+
+    <span class="k">def</span> <span class="nf">not_covered</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">pause_trace</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="c1"># mypy: &quot;Callable[[VarArg(Any), KwArg(Any)], NoReturn]&quot; has no attribute &quot;uncovered&quot;</span>
+    <span class="c1"># dynamic attribute for magic</span>
+    <span class="n">not_covered</span><span class="o">.</span><span class="n">uncovered</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># type: ignore</span>
+    <span class="k">return</span> <span class="n">not_covered</span></div>
+
+
+<span class="c1"># test utils ##################################################################</span>
+
+
+<span class="c1"># Add deprecation warnings about new api used by module level fixtures in unittest2</span>
+<span class="c1"># http://www.voidspace.org.uk/python/articles/unittest2.shtml#setupmodule-and-teardownmodule</span>
+<span class="k">class</span> <span class="nc">_DebugResult</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>  <span class="c1"># simplify import statement among unittest flavors..</span>
+    <span class="s2">&quot;Used by the TestSuite to hold previous class when running in debug.&quot;</span>
+    <span class="n">_previousTestClass</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">_moduleSetUpFailed</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">shouldStop</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<span class="c1"># backward compatibility: TestSuite might be imported from lgc.testlib</span>
+<span class="n">TestSuite</span> <span class="o">=</span> <span class="n">unittest</span><span class="o">.</span><span class="n">TestSuite</span>
+
+
+<span class="k">class</span> <span class="nc">keywords</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Keyword args (**kwargs) support for generative tests.&quot;&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">starargs</span><span class="p">(</span><span class="nb">tuple</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Variable arguments (*args) for generative tests.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+
+
+<span class="n">unittest_main</span> <span class="o">=</span> <span class="n">unittest</span><span class="o">.</span><span class="n">main</span>
+
+
+<span class="k">class</span> <span class="nc">InnerTestSkipped</span><span class="p">(</span><span class="n">SkipTest</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;raised when a test is skipped&quot;&quot;&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">parse_generative_args</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="o">...</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span> <span class="n">Dict</span><span class="p">]:</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">varargs</span> <span class="o">=</span> <span class="p">()</span>
+    <span class="n">kwargs</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">flags</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># 2 &lt;=&gt; starargs, 4 &lt;=&gt; kwargs</span>
+    <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">starargs</span><span class="p">):</span>
+            <span class="n">varargs</span> <span class="o">=</span> <span class="n">param</span>
+            <span class="k">if</span> <span class="n">flags</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;found starargs after keywords !&quot;</span><span class="p">)</span>
+            <span class="n">flags</span> <span class="o">|=</span> <span class="mi">2</span>
+            <span class="n">args</span> <span class="o">+=</span> <span class="nb">list</span><span class="p">(</span><span class="n">varargs</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">keywords</span><span class="p">):</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="n">param</span>
+            <span class="k">if</span> <span class="n">flags</span> <span class="o">&amp;</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;got multiple keywords parameters&quot;</span><span class="p">)</span>
+            <span class="n">flags</span> <span class="o">|=</span> <span class="mi">4</span>
+        <span class="k">elif</span> <span class="n">flags</span> <span class="o">&amp;</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">flags</span> <span class="o">&amp;</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;found parameters after kwargs or args&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span>
+
+
+<span class="k">class</span> <span class="nc">InnerTest</span><span class="p">(</span><span class="nb">tuple</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="o">*</span><span class="n">data</span><span class="p">):</span>
+        <span class="n">instance</span> <span class="o">=</span> <span class="nb">tuple</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+        <span class="n">instance</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="k">return</span> <span class="n">instance</span>
+
+
+<span class="k">class</span> <span class="nc">Tags</span><span class="p">(</span><span class="nb">set</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A set of tag able validate an expression&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">tags</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">inherit</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;inherit&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">kwargs</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> are an invalid keyword argument for this function&quot;</span> <span class="o">%</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tags</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tags</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">tags</span> <span class="o">=</span> <span class="n">tags</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Tags</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">tags</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">match</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="c1"># mypy: Argument 3 to &quot;eval&quot; has incompatible type &quot;Tags&quot;;</span>
+        <span class="c1"># mypy: expected &quot;Optional[Mapping[str, Any]]&quot;</span>
+        <span class="c1"># I&#39;m really not sure here?</span>
+        <span class="k">return</span> <span class="nb">eval</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="p">{},</span> <span class="bp">self</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+    <span class="c1"># mypy: Argument 1 of &quot;__or__&quot; is incompatible with supertype &quot;AbstractSet&quot;;</span>
+    <span class="c1"># mypy: supertype defines the argument type as &quot;AbstractSet[_T]&quot;</span>
+    <span class="c1"># not sure how to fix this one</span>
+    <span class="k">def</span> <span class="fm">__or__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Tags&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Tags&quot;</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+        <span class="k">return</span> <span class="n">Tags</span><span class="p">(</span><span class="o">*</span><span class="nb">super</span><span class="p">(</span><span class="n">Tags</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__or__</span><span class="p">(</span><span class="n">other</span><span class="p">))</span>
+
+
+<span class="c1"># duplicate definition from unittest2 of the _deprecate decorator</span>
+<span class="k">def</span> <span class="nf">_deprecate</span><span class="p">(</span><span class="n">original_func</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">deprecated_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">((</span><span class="s2">&quot;Please use </span><span class="si">%s</span><span class="s2"> instead.&quot;</span> <span class="o">%</span> <span class="n">original_func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">),</span> <span class="ne">DeprecationWarning</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">original_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">deprecated_func</span>
+
+
+<span class="k">class</span> <span class="nc">TestCase</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A unittest.TestCase extension with some additional methods.&quot;&quot;&quot;</span>
+
+    <span class="n">maxDiff</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">tags</span> <span class="o">=</span> <span class="n">Tags</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">methodName</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;runTest&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TestCase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">methodName</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__exc_info</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__testMethodName</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_testMethodName</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_test_descr</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_options_</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="nd">@classproperty</span>
+    <span class="nd">@cached</span>
+    <span class="k">def</span> <span class="nf">datadir</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>  <span class="c1"># pylint: disable=E0213</span>
+        <span class="sd">&quot;&quot;&quot;helper attribute holding the standard test&#39;s data directory</span>
+
+<span class="sd">        NOTE: this is a logilab&#39;s standard</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mod</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__module__</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">osp</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">osp</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)),</span> <span class="s2">&quot;data&quot;</span><span class="p">)</span>
+
+    <span class="c1"># cache it (use a class method to cache on class since TestCase is</span>
+    <span class="c1"># instantiated for each test run)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">datapath</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">fname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;joins the object&#39;s datadir and `fname`&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">datadir</span><span class="p">,</span> <span class="o">*</span><span class="n">fname</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">set_description</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">descr</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;sets the current test&#39;s description.</span>
+<span class="sd">        This can be useful for generative tests because it allows to specify</span>
+<span class="sd">        a description per yield</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_test_descr</span> <span class="o">=</span> <span class="n">descr</span>
+
+    <span class="c1"># override default&#39;s unittest.py feature</span>
+    <span class="k">def</span> <span class="nf">shortDescription</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;override default unittest shortDescription to handle correctly</span>
+<span class="sd">        generative tests</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_test_descr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_test_descr</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">TestCase</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">shortDescription</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">quiet_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">KeyboardInterrupt</span><span class="p">,</span> <span class="ne">SystemExit</span><span class="p">):</span>
+            <span class="k">raise</span>
+        <span class="k">except</span> <span class="n">unittest</span><span class="o">.</span><span class="n">SkipTest</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s2">&quot;addSkip&quot;</span><span class="p">):</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">addSkip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                    <span class="s2">&quot;TestResult has no addSkip method, skips not reported&quot;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">,</span> <span class="mi">2</span>
+                <span class="p">)</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">addSuccess</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">addError</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exc_info</span><span class="p">())</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">_get_test_method</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;return the test method&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_testMethodName</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">optval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the option value or default if the option is not define&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_options_</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">runcondition</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;rewrite TestCase.__call__ to support generative tests</span>
+<span class="sd">        This is mostly a copy/paste from unittest.py (i.e same</span>
+<span class="sd">        variable names, same logic, except for the generative tests part)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">defaultTestResult</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_options_</span> <span class="o">=</span> <span class="n">options</span>
+        <span class="c1"># if result.cvg:</span>
+        <span class="c1">#     result.cvg.start()</span>
+        <span class="n">testMethod</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_test_method</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s2">&quot;__unittest_skip__&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span>
+            <span class="n">testMethod</span><span class="p">,</span> <span class="s2">&quot;__unittest_skip__&quot;</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="p">):</span>
+            <span class="c1"># If the class or method was skipped.</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">skip_why</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">,</span> <span class="s2">&quot;__unittest_skip_why__&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">getattr</span><span class="p">(</span>
+                    <span class="n">testMethod</span><span class="p">,</span> <span class="s2">&quot;__unittest_skip_why__&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="s2">&quot;addSkip&quot;</span><span class="p">):</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">addSkip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">skip_why</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                        <span class="s2">&quot;TestResult has no addSkip method, skips not reported&quot;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">,</span> <span class="mi">2</span>
+                    <span class="p">)</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">addSuccess</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">stopTest</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">runcondition</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">runcondition</span><span class="p">(</span><span class="n">testMethod</span><span class="p">):</span>
+            <span class="k">return</span>  <span class="c1"># test is skipped</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">startTest</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">quiet_run</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">setUp</span><span class="p">):</span>
+                <span class="k">return</span>
+            <span class="n">generative</span> <span class="o">=</span> <span class="n">isgeneratorfunction</span><span class="p">(</span><span class="n">testMethod</span><span class="p">)</span>
+            <span class="c1"># generative tests</span>
+            <span class="k">if</span> <span class="n">generative</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_proceed_generative</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">testMethod</span><span class="p">,</span> <span class="n">runcondition</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proceed</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">testMethod</span><span class="p">)</span>
+                <span class="n">success</span> <span class="o">=</span> <span class="n">status</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">quiet_run</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">tearDown</span><span class="p">):</span>
+                <span class="k">return</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">generative</span> <span class="ow">and</span> <span class="n">success</span><span class="p">:</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">addSuccess</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="c1"># if result.cvg:</span>
+            <span class="c1">#     result.cvg.stop()</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">stopTest</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_proceed_generative</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">testfunc</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">runcondition</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="c1"># cancel startTest()&#39;s increment</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">testsRun</span> <span class="o">-=</span> <span class="mi">1</span>
+        <span class="n">success</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">params</span> <span class="ow">in</span> <span class="n">testfunc</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">runcondition</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">runcondition</span><span class="p">(</span><span class="n">testfunc</span><span class="p">,</span> <span class="n">skipgenerator</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">InnerTest</span><span class="p">)</span> <span class="ow">and</span> <span class="n">runcondition</span><span class="p">(</span><span class="n">params</span><span class="p">)):</span>
+                        <span class="k">continue</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+                    <span class="n">params</span> <span class="o">=</span> <span class="p">(</span><span class="n">params</span><span class="p">,)</span>
+                <span class="n">func</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="n">parse_generative_args</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+                <span class="c1"># increment test counter manually</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">testsRun</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proceed</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">status</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">result</span><span class="o">.</span><span class="n">addSuccess</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+                    <span class="n">success</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">success</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="c1"># XXX Don&#39;t stop anymore if an error occured</span>
+                    <span class="c1"># if status == 2:</span>
+                    <span class="c1">#    result.shouldStop = True</span>
+                <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">shouldStop</span><span class="p">:</span>  <span class="c1"># either on error or on exitfirst + error</span>
+                    <span class="k">break</span>
+        <span class="k">except</span> <span class="bp">self</span><span class="o">.</span><span class="n">failureException</span><span class="p">:</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">addFailure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exc_info</span><span class="p">())</span>
+            <span class="n">success</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">except</span> <span class="n">SkipTest</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">addSkip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="c1"># if an error occurs between two yield</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">addError</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exc_info</span><span class="p">())</span>
+            <span class="n">success</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">success</span>
+
+    <span class="k">def</span> <span class="nf">_proceed</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">result</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">testfunc</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span>
+        <span class="n">args</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">bool</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[()]]</span> <span class="o">=</span> <span class="p">(),</span>
+        <span class="n">kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;proceed the actual test</span>
+<span class="sd">        returns 0 on success, 1 on failure, 2 on error</span>
+
+<span class="sd">        Note: addSuccess can&#39;t be called here because we have to wait</span>
+<span class="sd">        for tearDown to be successfully executed to declare the test as</span>
+<span class="sd">        successful</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span> <span class="ow">or</span> <span class="p">{}</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">testfunc</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="bp">self</span><span class="o">.</span><span class="n">failureException</span><span class="p">:</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">addFailure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exc_info</span><span class="p">())</span>
+            <span class="k">return</span> <span class="mi">1</span>
+        <span class="k">except</span> <span class="ne">KeyboardInterrupt</span><span class="p">:</span>
+            <span class="k">raise</span>
+        <span class="k">except</span> <span class="n">InnerTestSkipped</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">addSkip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">1</span>
+        <span class="k">except</span> <span class="n">SkipTest</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">addSkip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">addError</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exc_info</span><span class="p">())</span>
+            <span class="k">return</span> <span class="mi">2</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">innerSkip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NoReturn</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;mark a generative test as skipped for the &lt;msg&gt; reason&quot;&quot;&quot;</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">msg</span> <span class="ow">or</span> <span class="s2">&quot;test was skipped&quot;</span>
+        <span class="k">raise</span> <span class="n">InnerTestSkipped</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="n">assertItemsEqual</span> <span class="o">=</span> <span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="o">.</span><span class="n">assertCountEqual</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">assertCountEqual</span> <span class="o">=</span> <span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="o">.</span><span class="n">assertItemsEqual</span>
+
+
+<span class="n">TestCase</span><span class="o">.</span><span class="n">assertItemsEqual</span> <span class="o">=</span> <span class="n">callable_deprecated</span><span class="p">(</span>
+    <span class="s2">&quot;assertItemsEqual is deprecated, use assertCountEqual&quot;</span>
+<span class="p">)(</span><span class="n">TestCase</span><span class="o">.</span><span class="n">assertItemsEqual</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">SkippedSuite</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestSuite</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;just there to trigger test execution&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">skipped_test</span><span class="p">(</span><span class="s2">&quot;doctest module has no DocTestSuite class&quot;</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">DocTestFinder</span><span class="p">(</span><span class="n">doctest</span><span class="o">.</span><span class="n">DocTestFinder</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">skipped</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;skipped&quot;</span><span class="p">,</span> <span class="p">())</span>
+        <span class="n">doctest</span><span class="o">.</span><span class="n">DocTestFinder</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">globs</span><span class="p">,</span> <span class="n">source_lines</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;override default _get_test method to be able to skip tests</span>
+<span class="sd">        according to skipped attribute&#39;s value</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;__name__&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">skipped</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">doctest</span><span class="o">.</span><span class="n">DocTestFinder</span><span class="o">.</span><span class="n">_get_test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">module</span><span class="p">,</span> <span class="n">globs</span><span class="p">,</span> <span class="n">source_lines</span><span class="p">)</span>
+
+
+<span class="c1"># mypy error: Invalid metaclass &#39;class_deprecated&#39;</span>
+<span class="c1"># but it works?</span>
+<span class="k">class</span> <span class="nc">DocTest</span><span class="p">(</span><span class="n">TestCase</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">class_deprecated</span><span class="p">):</span>  <span class="c1"># type: ignore</span>
+    <span class="sd">&quot;&quot;&quot;trigger module doctest</span>
+<span class="sd">    I don&#39;t know how to make unittest.main consider the DocTestSuite instance</span>
+<span class="sd">    without this hack</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">__deprecation_warning__</span> <span class="o">=</span> <span class="s2">&quot;use stdlib doctest module with unittest API directly&quot;</span>
+    <span class="n">skipped</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">runcondition</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>  <span class="c1"># pylint: disable=W0613</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">finder</span> <span class="o">=</span> <span class="n">DocTestFinder</span><span class="p">(</span><span class="n">skipped</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">skipped</span><span class="p">)</span>
+            <span class="n">suite</span> <span class="o">=</span> <span class="n">doctest</span><span class="o">.</span><span class="n">DocTestSuite</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">module</span><span class="p">,</span> <span class="n">test_finder</span><span class="o">=</span><span class="n">finder</span><span class="p">)</span>
+            <span class="c1"># XXX iirk</span>
+            <span class="n">doctest</span><span class="o">.</span><span class="n">DocTestCase</span><span class="o">.</span><span class="n">_TestCase__exc_info</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">suite</span> <span class="o">=</span> <span class="n">SkippedSuite</span><span class="p">()</span>
+        <span class="c1"># doctest may gork the builtins dictionnary</span>
+        <span class="c1"># This happen to the &quot;_&quot; entry used by gettext</span>
+        <span class="n">old_builtins</span> <span class="o">=</span> <span class="n">builtins</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">suite</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">builtins</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+            <span class="n">builtins</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">old_builtins</span><span class="p">)</span>
+
+    <span class="n">run</span> <span class="o">=</span> <span class="fm">__call__</span>
+
+    <span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;just there to trigger test execution&quot;&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">MockConnection</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;fake DB-API 2.0 connexion AND cursor (i.e. cursor() return self)&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">received</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">results</span> <span class="o">=</span> <span class="n">results</span>
+
+    <span class="k">def</span> <span class="nf">cursor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Mock cursor method&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">query</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Mock execute method&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">received</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">query</span><span class="p">,</span> <span class="n">args</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">fetchone</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Mock fetchone method&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">fetchall</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Mock fetchall method&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">results</span>
+
+    <span class="k">def</span> <span class="nf">commit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Mock commiy method&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;commit&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">received</span><span class="p">)))</span>
+
+    <span class="k">def</span> <span class="nf">rollback</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Mock rollback method&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">states</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s2">&quot;rollback&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">received</span><span class="p">)))</span>
+
+    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Mock close method&quot;&quot;&quot;</span>
+
+
+<span class="c1"># mypy error: Name &#39;Mock&#39; is not defined</span>
+<span class="c1"># dynamic class created by this class</span>
+<span class="k">def</span> <span class="nf">mock_object</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Mock&quot;</span><span class="p">:</span>  <span class="c1"># type: ignore # noqa</span>
+    <span class="sd">&quot;&quot;&quot;creates an object using params to set attributes</span>
+<span class="sd">    &gt;&gt;&gt; option = mock_object(verbose=False, index=range(5))</span>
+<span class="sd">    &gt;&gt;&gt; option.verbose</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; option.index</span>
+<span class="sd">    [0, 1, 2, 3, 4]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="s2">&quot;Mock&quot;</span><span class="p">,</span> <span class="p">(),</span> <span class="n">params</span><span class="p">)()</span>
+
+
+<span class="k">def</span> <span class="nf">create_files</span><span class="p">(</span><span class="n">paths</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">chroot</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Creates directories and files found in &lt;path&gt;.</span>
+
+<span class="sd">    :param paths: list of relative paths to files or directories</span>
+<span class="sd">    :param chroot: the root directory in which paths will be created</span>
+
+<span class="sd">    &gt;&gt;&gt; from os.path import isdir, isfile</span>
+<span class="sd">    &gt;&gt;&gt; isdir(&#39;/tmp/a&#39;)</span>
+<span class="sd">    False</span>
+<span class="sd">    &gt;&gt;&gt; create_files([&#39;a/b/foo.py&#39;, &#39;a/b/c/&#39;, &#39;a/b/c/d/e.py&#39;], &#39;/tmp&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; isdir(&#39;/tmp/a&#39;)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; isdir(&#39;/tmp/a/b/c&#39;)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; isfile(&#39;/tmp/a/b/c/d/e.py&#39;)</span>
+<span class="sd">    True</span>
+<span class="sd">    &gt;&gt;&gt; isfile(&#39;/tmp/a/b/foo.py&#39;)</span>
+<span class="sd">    True</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">dirs</span><span class="p">,</span> <span class="n">files</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(),</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">paths</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">chroot</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="n">osp</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="c1"># path is a directory path</span>
+        <span class="k">if</span> <span class="n">filename</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">dirs</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="c1"># path is a filename path</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dirs</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">osp</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">))</span>
+            <span class="n">files</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">dirpath</span> <span class="ow">in</span> <span class="n">dirs</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">osp</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">dirpath</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">dirpath</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">filepath</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+        <span class="nb">open</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+<span class="k">class</span> <span class="nc">AttrObject</span><span class="p">:</span>  <span class="c1"># XXX cf mock_object</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">tag</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;descriptor adding tag to a function&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">desc</span><span class="p">(</span><span class="n">func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="s2">&quot;tags&quot;</span><span class="p">)</span>
+        <span class="c1"># mypy: &quot;Callable[..., Any]&quot; has no attribute &quot;tags&quot;</span>
+        <span class="c1"># dynamic magic attribute</span>
+        <span class="n">func</span><span class="o">.</span><span class="n">tags</span> <span class="o">=</span> <span class="n">Tags</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="k">return</span> <span class="n">func</span>
+
+    <span class="k">return</span> <span class="n">desc</span>
+
+
+<span class="k">def</span> <span class="nf">require_version</span><span class="p">(</span><span class="n">version</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Compare version of python interpreter to the given one. Skip the test</span>
+<span class="sd">    if older.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">check_require_version</span><span class="p">(</span><span class="n">f</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+        <span class="n">version_elements</span> <span class="o">=</span> <span class="n">version</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">compare</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">version_elements</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> is not a correct version : should be X.Y[.Z].&quot;</span> <span class="o">%</span> <span class="n">version</span><span class="p">)</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="p">[:</span><span class="mi">3</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">current</span> <span class="o">&lt;</span> <span class="n">compare</span><span class="p">:</span>
+
+            <span class="k">def</span> <span class="nf">new_f</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">skipTest</span><span class="p">(</span>
+                    <span class="s2">&quot;Need at least </span><span class="si">%s</span><span class="s2"> version of python. Current version is </span><span class="si">%s</span><span class="s2">.&quot;</span>
+                    <span class="o">%</span> <span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="k">for</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">current</span><span class="p">]))</span>
+                <span class="p">)</span>
+
+            <span class="n">new_f</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="vm">__name__</span>
+            <span class="k">return</span> <span class="n">new_f</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">f</span>
+
+    <span class="k">return</span> <span class="n">check_require_version</span>
+
+
+<span class="k">def</span> <span class="nf">require_module</span><span class="p">(</span><span class="n">module</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Check if the given module is loaded. Skip the test if not.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">check_require_module</span><span class="p">(</span><span class="n">f</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="nb">__import__</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">f</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+
+            <span class="k">def</span> <span class="nf">new_f</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">skipTest</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> can not be imported.&quot;</span> <span class="o">%</span> <span class="n">module</span><span class="p">)</span>
+
+            <span class="n">new_f</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="vm">__name__</span>
+            <span class="k">return</span> <span class="n">new_f</span>
+
+    <span class="k">return</span> <span class="n">check_require_module</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">logilab common</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../logilab.common.html">logilab.common package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../logilab.common.ureports.html">logilab.common.ureports package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  <li><a href="../common.html">logilab.common</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Logilab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

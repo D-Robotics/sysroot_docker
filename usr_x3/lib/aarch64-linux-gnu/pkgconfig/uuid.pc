@@ -5,7 +5,7 @@ includedir=/usr/include
 
 Name: uuid
 Description: Universally unique id library
-Version: 2.34.0
+Version: 2.37.2
 Requires:
 Cflags: -I${includedir}/uuid
 Libs: -L${libdir} -luuid

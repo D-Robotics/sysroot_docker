@@ -1,0 +1,1436 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: astroid
+Source: https://github.com/PyCQA/astroid
+
+Files: *
+Copyright: 2003-2015 Logilab <pylint-dev@lists.logilab.org>
+License: LGPL-2.1+
+
+Files: debian/*
+Copyright: 2014-2022 Sandro Tosi <morph@debian.org>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_uuid.py
+Copyright: Copyright (c) 2017 Claudiu Popa <pcmanticore@gmail.com>
+License: LGPL-2.1+
+
+Files: astroid/tests/unittest_brain.py
+Copyright: Copyright 2013 Google Inc. All Rights Reserved.
+License: LGPL-2.1+
+
+Files: astroid/tests/unittest_brain_numpy.py
+Copyright: Copyright (c) 2017 Guillaume Peillex <guillaume.peillex@gmail.com>
+License: LGPL-2.1+
+
+Files: astroid/tests/testdata/python{2,3}/data/SSL1/Connection1.py
+Copyright: Copyright (c) 1999-2004 Ng Pheng Siong. All rights reserved.
+
+License: LGPL-2.1+
+ astroid is free software: you can redistribute it and/or modify it
+ under the terms of the GNU Lesser General Public License as published by the
+ Free Software Foundation, either version 2.1 of the License, or (at your
+ option) any later version.
+ .
+ astroid is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
+ for more details.
+ .
+ You should have received a copy of the GNU Lesser General Public License along
+ with astroid. If not, see <http://www.gnu.org/licenses/>.
+ .
+ On Debian systems, the complete text of the GNU Lesser General Public
+ License version 2.1 can be found in "/usr/share/common-licenses/LGPL-2.1".
+
+# What follows has been auto-generated with (running from an unpacked source tarball):
+# for file in `find astroid/ tests/ -type f | sort` setup.py ; do c=`grep Copyright -w $file | sed 's/#//'`; if [ -n "$c" ] ; then echo -e "Files: $file\nCopyright:\n$c\nLicense: LGPL-2.1+\n"; fi ; done
+
+Files: astroid/arguments.py
+Copyright:
+ Copyright (c) 2015-2016, 2018-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2018 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2018 Anthony Sottile <asottile@umich.edu>
+ Copyright (c) 2020 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Tushar Sadhwani <86737547+tushar-deepsource@users.noreply.github.com>
+ Copyright (c) 2021 David Liu <david@cs.toronto.edu>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/bases.py
+Copyright:
+ Copyright (c) 2009-2011, 2013-2014 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2012 FELD Boris <lothiraldan@gmail.com>
+ Copyright (c) 2014-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2014 Google, Inc.
+ Copyright (c) 2014 Eevee (Alex Munroe) <amunroe@yelp.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2015 Florian Bruhin <me@the-compiler.org>
+ Copyright (c) 2016-2017 Derek Gustafson <degustaf@gmail.com>
+ Copyright (c) 2017 Calen Pennington <calen.pennington@gmail.com>
+ Copyright (c) 2018-2019 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2018-2019 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2018 Ville Skyttä <ville.skytta@iki.fi>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2018 Daniel Colascione <dancol@dancol.org>
+ Copyright (c) 2019 Hugo van Kemenade <hugovk@users.noreply.github.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Tushar Sadhwani <86737547+tushar-deepsource@users.noreply.github.com>
+ Copyright (c) 2021 pre-commit-ci[bot] <bot@noreply.github.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 David Liu <david@cs.toronto.edu>
+ Copyright (c) 2021 doranid <ddandd@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Andrew Haigh <hello@nelf.in>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_builtin_inference.py
+Copyright:
+ Copyright (c) 2014-2021 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2014-2015 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2015 Rene Zhang <rz99@cornell.edu>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2018 Ville Skyttä <ville.skytta@iki.fi>
+ Copyright (c) 2019-2020 Bryce Guinta <bryce.guinta@protonmail.com>
+ Copyright (c) 2019 Stanislav Levin <slev@altlinux.org>
+ Copyright (c) 2019 David Liu <david@cs.toronto.edu>
+ Copyright (c) 2019 Frédéric Chapoton <fchapoton2@gmail.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 David Gilman <davidgilman1@gmail.com>
+ Copyright (c) 2020 Ram Rachum <ram@rachum.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_collections.py
+Copyright:
+ Copyright (c) 2016, 2018, 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2016-2017 Łukasz Rogalski <rogalski.91@gmail.com>
+ Copyright (c) 2017 Derek Gustafson <degustaf@gmail.com>
+ Copyright (c) 2018 Ioana Tagirta <ioana.tagirta@gmail.com>
+ Copyright (c) 2019 Hugo van Kemenade <hugovk@users.noreply.github.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 John Belmonte <john@neggie.net>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_dateutil.py
+Copyright:
+ Copyright (c) 2015-2016, 2018, 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2015 raylu <lurayl@gmail.com>
+ Copyright (c) 2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_fstrings.py
+Copyright:
+ Copyright (c) 2017-2018, 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 Karthikeyan Singaravelan <tir.karthi@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_functools.py
+Copyright:
+ Copyright (c) 2016, 2018-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2018 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Alphadelta14 <alpha@alphaservcomputing.solutions>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_gi.py
+Copyright:
+ Copyright (c) 2013-2014 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2014 Google, Inc.
+ Copyright (c) 2014 Cole Robinson <crobinso@redhat.com>
+ Copyright (c) 2015-2016, 2018, 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2015 David Shea <dshea@redhat.com>
+ Copyright (c) 2016 Jakub Wilk <jwilk@jwilk.net>
+ Copyright (c) 2016 Giuseppe Scrivano <gscrivan@redhat.com>
+ Copyright (c) 2018 Christoph Reiter <reiter.christoph@gmail.com>
+ Copyright (c) 2019 Philipp Hörist <philipp@hoerist.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_hashlib.py
+Copyright:
+ Copyright (c) 2016, 2018, 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2018 David Poirier <david-poirier-csn@users.noreply.github.com>
+ Copyright (c) 2018 wgehalo <wgehalo@gmail.com>
+ Copyright (c) 2018 Ioana Tagirta <ioana.tagirta@gmail.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 David Gilman <davidgilman1@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_http.py
+Copyright:
+ Copyright (c) 2019-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_io.py
+Copyright:
+ Copyright (c) 2016, 2018, 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_mechanize.py
+Copyright:
+ Copyright (c) 2012-2013 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2014 Google, Inc.
+ Copyright (c) 2015-2016, 2018, 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 Peter Kolbus <peter.kolbus@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_multiprocessing.py
+Copyright:
+ Copyright (c) 2016, 2018, 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2019 Hugo van Kemenade <hugovk@users.noreply.github.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 David Gilman <davidgilman1@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_namedtuple_enum.py
+Copyright:
+ Copyright (c) 2012-2015 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2013-2014 Google, Inc.
+ Copyright (c) 2014-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2014 Eevee (Alex Munroe) <amunroe@yelp.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2015 Dmitry Pribysh <dmand@yandex.ru>
+ Copyright (c) 2015 David Shea <dshea@redhat.com>
+ Copyright (c) 2015 Philip Lorenz <philip@bithub.de>
+ Copyright (c) 2016 Jakub Wilk <jwilk@jwilk.net>
+ Copyright (c) 2016 Mateusz Bysiek <mb@mbdev.pl>
+ Copyright (c) 2017 Hugo <hugovk@users.noreply.github.com>
+ Copyright (c) 2017 Łukasz Rogalski <rogalski.91@gmail.com>
+ Copyright (c) 2018 Ville Skyttä <ville.skytta@iki.fi>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2020 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 Ram Rachum <ram@rachum.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Dimitri Prybysh <dmand@yandex.ru>
+ Copyright (c) 2021 David Liu <david@cs.toronto.edu>
+ Copyright (c) 2021 pre-commit-ci[bot] <bot@noreply.github.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Andrew Haigh <hello@nelf.in>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_nose.py
+Copyright:
+ Copyright (c) 2015-2016, 2018, 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_numpy_core_fromnumeric.py
+Copyright:
+ Copyright (c) 2019-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_numpy_core_function_base.py
+Copyright:
+ Copyright (c) 2019-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_numpy_core_multiarray.py
+Copyright:
+ Copyright (c) 2019-2020 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_numpy_core_numeric.py
+Copyright:
+ Copyright (c) 2019-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_numpy_core_numerictypes.py
+Copyright:
+ Copyright (c) 2019-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_numpy_core_umath.py
+Copyright:
+ Copyright (c) 2019-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_numpy_ma.py
+Copyright:
+ Copyright (c) 2021 hippo91 <guillaume.peillex@gmail.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_numpy_ndarray.py
+Copyright:
+ Copyright (c) 2015-2016, 2018-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2017-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_numpy_random_mtrand.py
+Copyright:
+ Copyright (c) 2019-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_numpy_utils.py
+Copyright:
+ Copyright (c) 2019-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2019-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_pkg_resources.py
+Copyright:
+ Copyright (c) 2016, 2018 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_pytest.py
+Copyright:
+ Copyright (c) 2014-2016, 2018, 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2014 Jeff Quast <contact@jeffquast.com>
+ Copyright (c) 2014 Google, Inc.
+ Copyright (c) 2016 Florian Bruhin <me@the-compiler.org>
+ Copyright (c) 2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_qt.py
+Copyright:
+ Copyright (c) 2015-2016, 2018, 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2017 Roy Wright <roy@wright.org>
+ Copyright (c) 2018 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2019 Antoine Boellinger <aboellinger@hotmail.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_scipy_signal.py
+Copyright:
+ Copyright (c) 2019 Valentin Valls <valentin.valls@esrf.fr>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_six.py
+Copyright:
+ Copyright (c) 2014-2016, 2018, 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 Ram Rachum <ram@rachum.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Artsiom Kaval <lezeroq@gmail.com>
+ Copyright (c) 2021 Francis Charette Migneault <francis.charette.migneault@gmail.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_ssl.py
+Copyright:
+ Copyright (c) 2016, 2018, 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2019 Benjamin Elven <25181435+S3ntinelX@users.noreply.github.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_subprocess.py
+Copyright:
+ Copyright (c) 2016-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2017 Hugo <hugovk@users.noreply.github.com>
+ Copyright (c) 2018 Peter Talley <peterctalley@gmail.com>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2019 Hugo van Kemenade <hugovk@users.noreply.github.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 Peter Pentchev <roam@ringlet.net>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Damien Baty <damien@damienbaty.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_threading.py
+Copyright:
+ Copyright (c) 2016, 2018-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2017 Łukasz Rogalski <rogalski.91@gmail.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_typing.py
+Copyright:
+ Copyright (c) 2017-2018 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2017 Łukasz Rogalski <rogalski.91@gmail.com>
+ Copyright (c) 2017 David Euresti <github@euresti.com>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Redoubts <Redoubts@users.noreply.github.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Tim Martin <tim@asymptotic.co.uk>
+ Copyright (c) 2021 hippo91 <guillaume.peillex@gmail.com>
+License: LGPL-2.1+
+
+Files: astroid/brain/brain_uuid.py
+Copyright:
+ Copyright (c) 2017-2018, 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/builder.py
+Copyright:
+ Copyright (c) 2006-2011, 2013-2014 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2013 Phil Schaf <flying-sheep@web.de>
+ Copyright (c) 2014-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2014-2015 Google, Inc.
+ Copyright (c) 2014 Alexander Presnyakov <flagist0@gmail.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2016 Derek Gustafson <degustaf@gmail.com>
+ Copyright (c) 2017 Łukasz Rogalski <rogalski.91@gmail.com>
+ Copyright (c) 2018 Anthony Sottile <asottile@umich.edu>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Tushar Sadhwani <86737547+tushar-deepsource@users.noreply.github.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Gregory P. Smith <greg@krypto.org>
+ Copyright (c) 2021 Kian Meng, Ang <kianmeng.ang@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Andrew Haigh <hello@nelf.in>
+License: LGPL-2.1+
+
+Files: astroid/context.py
+Copyright:
+ Copyright (c) 2015-2016, 2018-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2018 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2019-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 Bryce Guinta <bryce.guinta@protonmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Kian Meng, Ang <kianmeng.ang@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 David Liu <david@cs.toronto.edu>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Andrew Haigh <hello@nelf.in>
+License: LGPL-2.1+
+
+Files: astroid/decorators.py
+Copyright:
+ Copyright (c) 2015-2016, 2018, 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2015 Florian Bruhin <me@the-compiler.org>
+ Copyright (c) 2016 Derek Gustafson <degustaf@gmail.com>
+ Copyright (c) 2018, 2021 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2018 Tomas Gavenciak <gavento@ucw.cz>
+ Copyright (c) 2018 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2018 HoverHell <hoverhell@gmail.com>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 Ram Rachum <ram@rachum.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/exceptions.py
+Copyright:
+ Copyright (c) 2007, 2009-2010, 2013 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2014 Google, Inc.
+ Copyright (c) 2015-2018, 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2016 Derek Gustafson <degustaf@gmail.com>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Andrew Haigh <hello@nelf.in>
+License: LGPL-2.1+
+
+Files: astroid/helpers.py
+Copyright:
+ Copyright (c) 2015-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 Simon Hewitt <si@sjhewitt.co.uk>
+ Copyright (c) 2020 Bryce Guinta <bryce.guinta@protonmail.com>
+ Copyright (c) 2020 Ram Rachum <ram@rachum.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Tushar Sadhwani <86737547+tushar-deepsource@users.noreply.github.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 David Liu <david@cs.toronto.edu>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Andrew Haigh <hello@nelf.in>
+License: LGPL-2.1+
+
+Files: astroid/inference.py
+Copyright:
+ Copyright (c) 2006-2011, 2013-2014 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2012 FELD Boris <lothiraldan@gmail.com>
+ Copyright (c) 2013-2014 Google, Inc.
+ Copyright (c) 2014-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2014 Eevee (Alex Munroe) <amunroe@yelp.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2015 Dmitry Pribysh <dmand@yandex.ru>
+ Copyright (c) 2016 Jakub Wilk <jwilk@jwilk.net>
+ Copyright (c) 2017 Michał Masłowski <m.maslowski@clearcode.cc>
+ Copyright (c) 2017 Calen Pennington <cale@edx.org>
+ Copyright (c) 2017 Łukasz Rogalski <rogalski.91@gmail.com>
+ Copyright (c) 2018-2019 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2018 Daniel Martin <daniel.martin@crowdstrike.com>
+ Copyright (c) 2018 Ville Skyttä <ville.skytta@iki.fi>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2018 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2018 HoverHell <hoverhell@gmail.com>
+ Copyright (c) 2020 Leandro T. C. Melo <ltcmelo@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Kian Meng, Ang <kianmeng.ang@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Andrew Haigh <hello@nelf.in>
+ Copyright (c) 2021 David Liu <david@cs.toronto.edu>
+License: LGPL-2.1+
+
+Files: astroid/__init__.py
+Copyright:
+ Copyright (c) 2006-2013, 2015 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2014 Google, Inc.
+ Copyright (c) 2014 Eevee (Alex Munroe) <amunroe@yelp.com>
+ Copyright (c) 2015-2016, 2018, 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2016 Derek Gustafson <degustaf@gmail.com>
+ Copyright (c) 2016 Moises Lopez <moylop260@vauxoo.com>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2019 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/interpreter/dunder_lookup.py
+Copyright:
+ Copyright (c) 2016-2018 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/interpreter/_import/spec.py
+Copyright:
+ Copyright (c) 2016-2018, 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2016 Derek Gustafson <degustaf@gmail.com>
+ Copyright (c) 2017 Chris Philip <chrisp533@gmail.com>
+ Copyright (c) 2017 Hugo <hugovk@users.noreply.github.com>
+ Copyright (c) 2017 ioanatia <ioanatia@users.noreply.github.com>
+ Copyright (c) 2017 Calen Pennington <cale@edx.org>
+ Copyright (c) 2018 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2019 Hugo van Kemenade <hugovk@users.noreply.github.com>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 Peter Kolbus <peter.kolbus@gmail.com>
+ Copyright (c) 2020 Raphael Gaschignard <raphael@rtpg.co>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 DudeNr33 <3929834+DudeNr33@users.noreply.github.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/interpreter/_import/util.py
+Copyright:
+ Copyright (c) 2016, 2018 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Neil Girdhar <mistersheik@gmail.com>
+License: LGPL-2.1+
+
+Files: astroid/interpreter/objectmodel.py
+Copyright:
+ Copyright (c) 2016-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2016 Derek Gustafson <degustaf@gmail.com>
+ Copyright (c) 2017-2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2017 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2017 Calen Pennington <cale@edx.org>
+ Copyright (c) 2018 Ville Skyttä <ville.skytta@iki.fi>
+ Copyright (c) 2018 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/manager.py
+Copyright:
+ Copyright (c) 2006-2011, 2013-2014 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2014-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2014 BioGeek <jeroen.vangoey@gmail.com>
+ Copyright (c) 2014 Google, Inc.
+ Copyright (c) 2014 Eevee (Alex Munroe) <amunroe@yelp.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2016 Derek Gustafson <degustaf@gmail.com>
+ Copyright (c) 2017 Iva Miholic <ivamiho@gmail.com>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2018 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2019 Raphael Gaschignard <raphael@makeleaps.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 Raphael Gaschignard <raphael@rtpg.co>
+ Copyright (c) 2020 Anubhav <35621759+anubh-v@users.noreply.github.com>
+ Copyright (c) 2020 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 grayjk <grayjk@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Andrew Haigh <hello@nelf.in>
+ Copyright (c) 2021 DudeNr33 <3929834+DudeNr33@users.noreply.github.com>
+ Copyright (c) 2021 pre-commit-ci[bot] <bot@noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/mixins.py
+Copyright:
+ Copyright (c) 2010-2011, 2013-2014 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2014-2016, 2018 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2014 Google, Inc.
+ Copyright (c) 2014 Eevee (Alex Munroe) <amunroe@yelp.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2015 Florian Bruhin <me@the-compiler.org>
+ Copyright (c) 2016 Jakub Wilk <jwilk@jwilk.net>
+ Copyright (c) 2018 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 pre-commit-ci[bot] <bot@noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/modutils.py
+Copyright:
+ Copyright (c) 2014-2018, 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2014 Google, Inc.
+ Copyright (c) 2014 Denis Laxalde <denis.laxalde@logilab.fr>
+ Copyright (c) 2014 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2014 Eevee (Alex Munroe) <amunroe@yelp.com>
+ Copyright (c) 2015 Florian Bruhin <me@the-compiler.org>
+ Copyright (c) 2015 Radosław Ganczarek <radoslaw@ganczarek.in>
+ Copyright (c) 2016 Derek Gustafson <degustaf@gmail.com>
+ Copyright (c) 2016 Jakub Wilk <jwilk@jwilk.net>
+ Copyright (c) 2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2018 Ville Skyttä <ville.skytta@iki.fi>
+ Copyright (c) 2018 Mario Corchero <mcorcherojim@bloomberg.net>
+ Copyright (c) 2018 Mario Corchero <mariocj89@gmail.com>
+ Copyright (c) 2018 Anthony Sottile <asottile@umich.edu>
+ Copyright (c) 2019 Hugo van Kemenade <hugovk@users.noreply.github.com>
+ Copyright (c) 2019 markmcclain <markmcclain@users.noreply.github.com>
+ Copyright (c) 2019 BasPH <BasPH@users.noreply.github.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 Peter Kolbus <peter.kolbus@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Keichi Takahashi <hello@keichi.dev>
+ Copyright (c) 2021 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 DudeNr33 <3929834+DudeNr33@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/nodes/as_string.py
+Copyright:
+ Copyright (c) 2009-2011, 2013-2014 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2010 Daniel Harding <dharding@gmail.com>
+ Copyright (c) 2013-2016, 2018-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2013-2014 Google, Inc.
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2016 Jared Garst <jgarst@users.noreply.github.com>
+ Copyright (c) 2016 Jakub Wilk <jwilk@jwilk.net>
+ Copyright (c) 2017, 2019 Łukasz Rogalski <rogalski.91@gmail.com>
+ Copyright (c) 2017 rr- <rr-@sakuya.pl>
+ Copyright (c) 2018 Serhiy Storchaka <storchaka@gmail.com>
+ Copyright (c) 2018 Ville Skyttä <ville.skytta@iki.fi>
+ Copyright (c) 2018 brendanator <brendan.maginnis@gmail.com>
+ Copyright (c) 2018 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2019 Alex Hall <alex.mojaki@gmail.com>
+ Copyright (c) 2019 Hugo van Kemenade <hugovk@users.noreply.github.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 pre-commit-ci[bot] <bot@noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/nodes/__init__.py
+Copyright:
+ Copyright (c) 2006-2011, 2013 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2010 Daniel Harding <dharding@gmail.com>
+ Copyright (c) 2014-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2014 Google, Inc.
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2016 Jared Garst <jgarst@users.noreply.github.com>
+ Copyright (c) 2017 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2017 rr- <rr-@sakuya.pl>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/nodes/node_classes.py
+Copyright:
+ Copyright (c) 2009-2011, 2013-2014 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2010 Daniel Harding <dharding@gmail.com>
+ Copyright (c) 2012 FELD Boris <lothiraldan@gmail.com>
+ Copyright (c) 2013-2014 Google, Inc.
+ Copyright (c) 2014-2021 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2014 Eevee (Alex Munroe) <amunroe@yelp.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2015 Florian Bruhin <me@the-compiler.org>
+ Copyright (c) 2016-2017 Derek Gustafson <degustaf@gmail.com>
+ Copyright (c) 2016 Jared Garst <jgarst@users.noreply.github.com>
+ Copyright (c) 2016 Jakub Wilk <jwilk@jwilk.net>
+ Copyright (c) 2016 Dave Baum <dbaum@google.com>
+ Copyright (c) 2017-2020 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2017, 2019 Łukasz Rogalski <rogalski.91@gmail.com>
+ Copyright (c) 2017 rr- <rr-@sakuya.pl>
+ Copyright (c) 2018, 2021 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2018-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2018 Ville Skyttä <ville.skytta@iki.fi>
+ Copyright (c) 2018 brendanator <brendan.maginnis@gmail.com>
+ Copyright (c) 2018 HoverHell <hoverhell@gmail.com>
+ Copyright (c) 2019 kavins14 <kavin.singh@mail.utoronto.ca>
+ Copyright (c) 2019 kavins14 <kavinsingh@hotmail.com>
+ Copyright (c) 2020 Raphael Gaschignard <raphael@rtpg.co>
+ Copyright (c) 2020 Bryce Guinta <bryce.guinta@protonmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Tushar Sadhwani <86737547+tushar-deepsource@users.noreply.github.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Kian Meng, Ang <kianmeng.ang@gmail.com>
+ Copyright (c) 2021 David Liu <david@cs.toronto.edu>
+ Copyright (c) 2021 Alphadelta14 <alpha@alphaservcomputing.solutions>
+ Copyright (c) 2021 Andrew Haigh <hello@nelf.in>
+ Copyright (c) 2021 Federico Bond <federicobond@gmail.com>
+License: LGPL-2.1+
+
+Files: astroid/nodes/scoped_nodes/scoped_nodes.py
+Copyright:
+ Copyright (c) 2006-2014 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2010 Daniel Harding <dharding@gmail.com>
+ Copyright (c) 2011, 2013-2015 Google, Inc.
+ Copyright (c) 2013-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2013 Phil Schaf <flying-sheep@web.de>
+ Copyright (c) 2014 Eevee (Alex Munroe) <amunroe@yelp.com>
+ Copyright (c) 2015-2016 Florian Bruhin <me@the-compiler.org>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2015 Rene Zhang <rz99@cornell.edu>
+ Copyright (c) 2015 Philip Lorenz <philip@bithub.de>
+ Copyright (c) 2016-2017 Derek Gustafson <degustaf@gmail.com>
+ Copyright (c) 2017-2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2017-2018 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2017 Łukasz Rogalski <rogalski.91@gmail.com>
+ Copyright (c) 2017 David Euresti <david@dropbox.com>
+ Copyright (c) 2018-2019, 2021 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2018 Ville Skyttä <ville.skytta@iki.fi>
+ Copyright (c) 2018 Anthony Sottile <asottile@umich.edu>
+ Copyright (c) 2018 HoverHell <hoverhell@gmail.com>
+ Copyright (c) 2019 Hugo van Kemenade <hugovk@users.noreply.github.com>
+ Copyright (c) 2019 Peter de Blanc <peter@standard.ai>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 Peter Kolbus <peter.kolbus@gmail.com>
+ Copyright (c) 2020 Tim Martin <tim@asymptotic.co.uk>
+ Copyright (c) 2020 Ram Rachum <ram@rachum.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Tushar Sadhwani <86737547+tushar-deepsource@users.noreply.github.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Kian Meng, Ang <kianmeng.ang@gmail.com>
+ Copyright (c) 2021 Dmitry Shachnev <mitya57@users.noreply.github.com>
+ Copyright (c) 2021 David Liu <david@cs.toronto.edu>
+ Copyright (c) 2021 pre-commit-ci[bot] <bot@noreply.github.com>
+ Copyright (c) 2021 doranid <ddandd@gmail.com>
+ Copyright (c) 2021 Andrew Haigh <hello@nelf.in>
+License: LGPL-2.1+
+
+Files: astroid/objects.py
+Copyright:
+ Copyright (c) 2015-2016, 2018-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2015 Florian Bruhin <me@the-compiler.org>
+ Copyright (c) 2016 Derek Gustafson <degustaf@gmail.com>
+ Copyright (c) 2018 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Craig Franklin <craigjfranklin@gmail.com>
+ Copyright (c) 2021 Alphadelta14 <alpha@alphaservcomputing.solutions>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/__pkginfo__.py
+Copyright:
+ Copyright (c) 2006-2014 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2014-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2014 Google, Inc.
+ Copyright (c) 2015-2017 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2015 Florian Bruhin <me@the-compiler.org>
+ Copyright (c) 2015 Radosław Ganczarek <radoslaw@ganczarek.in>
+ Copyright (c) 2016 Moises Lopez <moylop260@vauxoo.com>
+ Copyright (c) 2017 Hugo <hugovk@users.noreply.github.com>
+ Copyright (c) 2017 Łukasz Rogalski <rogalski.91@gmail.com>
+ Copyright (c) 2017 Calen Pennington <cale@edx.org>
+ Copyright (c) 2018 Ville Skyttä <ville.skytta@iki.fi>
+ Copyright (c) 2018 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2019 Uilian Ries <uilianries@gmail.com>
+ Copyright (c) 2019 Thomas Hisch <t.hisch@gmail.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 David Gilman <davidgilman1@gmail.com>
+ Copyright (c) 2020 Konrad Weihmann <kweihmann@outlook.com>
+ Copyright (c) 2020 Felix Mölder <felix.moelder@uni-due.de>
+ Copyright (c) 2020 Michael <michael-k@users.noreply.github.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: astroid/protocols.py
+Copyright:
+ Copyright (c) 2009-2011, 2013-2014 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2014-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2014 Google, Inc.
+ Copyright (c) 2014 Eevee (Alex Munroe) <amunroe@yelp.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2015 Dmitry Pribysh <dmand@yandex.ru>
+ Copyright (c) 2016 Derek Gustafson <degustaf@gmail.com>
+ Copyright (c) 2017-2018 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2017 Łukasz Rogalski <rogalski.91@gmail.com>
+ Copyright (c) 2017 rr- <rr-@sakuya.pl>
+ Copyright (c) 2018 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2018 Ville Skyttä <ville.skytta@iki.fi>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2018 HoverHell <hoverhell@gmail.com>
+ Copyright (c) 2019 Hugo van Kemenade <hugovk@users.noreply.github.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 Vilnis Termanis <vilnis.termanis@iotics.com>
+ Copyright (c) 2020 Ram Rachum <ram@rachum.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Tushar Sadhwani <86737547+tushar-deepsource@users.noreply.github.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 David Liu <david@cs.toronto.edu>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 doranid <ddandd@gmail.com>
+License: LGPL-2.1+
+
+Files: astroid/raw_building.py
+Copyright:
+ Copyright (c) 2006-2014 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2012 FELD Boris <lothiraldan@gmail.com>
+ Copyright (c) 2014-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2014 Google, Inc.
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2015 Florian Bruhin <me@the-compiler.org>
+ Copyright (c) 2015 Ovidiu Sabou <ovidiu@sabou.org>
+ Copyright (c) 2016 Derek Gustafson <degustaf@gmail.com>
+ Copyright (c) 2016 Jakub Wilk <jwilk@jwilk.net>
+ Copyright (c) 2018 Ville Skyttä <ville.skytta@iki.fi>
+ Copyright (c) 2018 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 Becker Awqatty <bawqatty@mide.com>
+ Copyright (c) 2020 Robin Jarry <robin.jarry@6wind.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Andrew Haigh <hello@nelf.in>
+License: LGPL-2.1+
+
+Files: astroid/rebuilder.py
+Copyright:
+ Copyright (c) 2009-2014 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2013-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2013-2014 Google, Inc.
+ Copyright (c) 2014 Alexander Presnyakov <flagist0@gmail.com>
+ Copyright (c) 2014 Eevee (Alex Munroe) <amunroe@yelp.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2016-2017 Derek Gustafson <degustaf@gmail.com>
+ Copyright (c) 2016 Jared Garst <jgarst@users.noreply.github.com>
+ Copyright (c) 2017 Hugo <hugovk@users.noreply.github.com>
+ Copyright (c) 2017 Łukasz Rogalski <rogalski.91@gmail.com>
+ Copyright (c) 2017 rr- <rr-@sakuya.pl>
+ Copyright (c) 2018-2019 Ville Skyttä <ville.skytta@iki.fi>
+ Copyright (c) 2018 Tomas Gavenciak <gavento@ucw.cz>
+ Copyright (c) 2018 Serhiy Storchaka <storchaka@gmail.com>
+ Copyright (c) 2018 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2019-2021 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2019 Hugo van Kemenade <hugovk@users.noreply.github.com>
+ Copyright (c) 2019 Zbigniew Jędrzejewski-Szmek <zbyszek@in.waw.pl>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Federico Bond <federicobond@gmail.com>
+ Copyright (c) 2021 hippo91 <guillaume.peillex@gmail.com>
+License: LGPL-2.1+
+
+Files: astroid/test_utils.py
+Copyright:
+ Copyright (c) 2013-2014 Google, Inc.
+ Copyright (c) 2014 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2015-2016, 2018-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2016 Jakub Wilk <jwilk@jwilk.net>
+ Copyright (c) 2018 Anthony Sottile <asottile@umich.edu>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Andrew Haigh <hello@nelf.in>
+License: LGPL-2.1+
+
+Files: astroid/transforms.py
+Copyright:
+ Copyright (c) 2015-2016, 2018 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2018 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 David Liu <david@cs.toronto.edu>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Andrew Haigh <hello@nelf.in>
+License: LGPL-2.1+
+
+Files: astroid/util.py
+Copyright:
+ Copyright (c) 2015-2018 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2018 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 Bryce Guinta <bryce.guinta@protonmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: tests/resources.py
+Copyright:
+ Copyright (c) 2014 Google, Inc.
+ Copyright (c) 2015-2016, 2018-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2018 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 David Cain <davidjosephcain@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: tests/unittest_brain_numpy_core_fromnumeric.py
+Copyright:
+ Copyright (c) 2019-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: tests/unittest_brain_numpy_core_function_base.py
+Copyright:
+ Copyright (c) 2019-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: tests/unittest_brain_numpy_core_multiarray.py
+Copyright:
+ Copyright (c) 2019-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: tests/unittest_brain_numpy_core_numeric.py
+Copyright:
+ Copyright (c) 2019-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: tests/unittest_brain_numpy_core_numerictypes.py
+Copyright:
+ Copyright (c) 2017-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2017-2018, 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: tests/unittest_brain_numpy_core_umath.py
+Copyright:
+ Copyright (c) 2019-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Andrew Haigh <hello@nelf.in>
+License: LGPL-2.1+
+
+Files: tests/unittest_brain_numpy_ma.py
+Copyright:
+ Copyright (c) 2021 hippo91 <guillaume.peillex@gmail.com>
+License: LGPL-2.1+
+
+Files: tests/unittest_brain_numpy_ndarray.py
+Copyright:
+ Copyright (c) 2017-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2017-2018, 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: tests/unittest_brain_numpy_random_mtrand.py
+Copyright:
+ Copyright (c) 2019-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: tests/unittest_brain.py
+Copyright:
+ Copyright (c) 2013-2014 Google, Inc.
+ Copyright (c) 2014-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2015 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2015 raylu <lurayl@gmail.com>
+ Copyright (c) 2015 Philip Lorenz <philip@bithub.de>
+ Copyright (c) 2016 Florian Bruhin <me@the-compiler.org>
+ Copyright (c) 2017-2018, 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2017-2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2017 Łukasz Rogalski <rogalski.91@gmail.com>
+ Copyright (c) 2017 David Euresti <github@euresti.com>
+ Copyright (c) 2017 Derek Gustafson <degustaf@gmail.com>
+ Copyright (c) 2018, 2021 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2018 Tomas Gavenciak <gavento@ucw.cz>
+ Copyright (c) 2018 David Poirier <david-poirier-csn@users.noreply.github.com>
+ Copyright (c) 2018 Ville Skyttä <ville.skytta@iki.fi>
+ Copyright (c) 2018 Anthony Sottile <asottile@umich.edu>
+ Copyright (c) 2018 Ioana Tagirta <ioana.tagirta@gmail.com>
+ Copyright (c) 2018 Ahmed Azzaoui <ahmed.azzaoui@engie.com>
+ Copyright (c) 2019-2020 Bryce Guinta <bryce.guinta@protonmail.com>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2019 Tomas Novak <ext.Tomas.Novak@skoda-auto.cz>
+ Copyright (c) 2019 Hugo van Kemenade <hugovk@users.noreply.github.com>
+ Copyright (c) 2019 Grygorii Iermolenko <gyermolenko@gmail.com>
+ Copyright (c) 2020 David Gilman <davidgilman1@gmail.com>
+ Copyright (c) 2020 Peter Kolbus <peter.kolbus@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Kian Meng, Ang <kianmeng.ang@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Joshua Cannon <joshua.cannon@ni.com>
+ Copyright (c) 2021 Craig Franklin <craigjfranklin@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Jonathan Striebel <jstriebel@users.noreply.github.com>
+ Copyright (c) 2021 Dimitri Prybysh <dmand@yandex.ru>
+ Copyright (c) 2021 David Liu <david@cs.toronto.edu>
+ Copyright (c) 2021 pre-commit-ci[bot] <bot@noreply.github.com>
+ Copyright (c) 2021 Alphadelta14 <alpha@alphaservcomputing.solutions>
+ Copyright (c) 2021 Tim Martin <tim@asymptotic.co.uk>
+ Copyright (c) 2021 Andrew Haigh <hello@nelf.in>
+ Copyright (c) 2021 Artsiom Kaval <lezeroq@gmail.com>
+ Copyright (c) 2021 Damien Baty <damien@damienbaty.com>
+License: LGPL-2.1+
+
+Files: tests/unittest_builder.py
+Copyright:
+ Copyright (c) 2006-2014 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2014-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2014-2015 Google, Inc.
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2015 Florian Bruhin <me@the-compiler.org>
+ Copyright (c) 2016 Jakub Wilk <jwilk@jwilk.net>
+ Copyright (c) 2017 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2017 Łukasz Rogalski <rogalski.91@gmail.com>
+ Copyright (c) 2018 Ville Skyttä <ville.skytta@iki.fi>
+ Copyright (c) 2018 brendanator <brendan.maginnis@gmail.com>
+ Copyright (c) 2018 Anthony Sottile <asottile@umich.edu>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2019 Hugo van Kemenade <hugovk@users.noreply.github.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Tushar Sadhwani <86737547+tushar-deepsource@users.noreply.github.com>
+ Copyright (c) 2021 Kian Meng, Ang <kianmeng.ang@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Andrew Haigh <hello@nelf.in>
+ Copyright (c) 2021 pre-commit-ci[bot] <bot@noreply.github.com>
+License: LGPL-2.1+
+
+Files: tests/unittest_helpers.py
+Copyright:
+ Copyright (c) 2015-2016, 2018, 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2020 David Gilman <davidgilman1@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 hippo91 <guillaume.peillex@gmail.com>
+License: LGPL-2.1+
+
+Files: tests/unittest_inference.py
+Copyright:
+ Copyright (c) 2006-2015 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2007 Marien Zwart <marienz@gentoo.org>
+ Copyright (c) 2013-2014 Google, Inc.
+ Copyright (c) 2014-2021 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2014 Eevee (Alex Munroe) <amunroe@yelp.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2015 Dmitry Pribysh <dmand@yandex.ru>
+ Copyright (c) 2015 Rene Zhang <rz99@cornell.edu>
+ Copyright (c) 2016 Jakub Wilk <jwilk@jwilk.net>
+ Copyright (c) 2017 Hugo <hugovk@users.noreply.github.com>
+ Copyright (c) 2017 Łukasz Rogalski <rogalski.91@gmail.com>
+ Copyright (c) 2017 Calen Pennington <cale@edx.org>
+ Copyright (c) 2017 Calen Pennington <calen.pennington@gmail.com>
+ Copyright (c) 2017 David Euresti <david@dropbox.com>
+ Copyright (c) 2017 Derek Gustafson <degustaf@gmail.com>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2018 Daniel Martin <daniel.martin@crowdstrike.com>
+ Copyright (c) 2018 Ville Skyttä <ville.skytta@iki.fi>
+ Copyright (c) 2018 Anthony Sottile <asottile@umich.edu>
+ Copyright (c) 2019, 2021 David Liu <david@cs.toronto.edu>
+ Copyright (c) 2019-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2019 Stanislav Levin <slev@altlinux.org>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2019 Hugo van Kemenade <hugovk@users.noreply.github.com>
+ Copyright (c) 2020 David Gilman <davidgilman1@gmail.com>
+ Copyright (c) 2020 Peter Kolbus <peter.kolbus@gmail.com>
+ Copyright (c) 2020 Karthikeyan Singaravelan <tir.karthi@gmail.com>
+ Copyright (c) 2020 Bryce Guinta <bryce.guinta@protonmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Tushar Sadhwani <86737547+tushar-deepsource@users.noreply.github.com>
+ Copyright (c) 2021 Kian Meng, Ang <kianmeng.ang@gmail.com>
+ Copyright (c) 2021 Jacob Walls <jacobtylerwalls@gmail.com>
+ Copyright (c) 2021 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2021 Dmitry Shachnev <mitya57@users.noreply.github.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Andrew Haigh <hello@nelf.in>
+ Copyright (c) 2021 doranid <ddandd@gmail.com>
+ Copyright (c) 2021 Francis Charette Migneault <francis.charette.migneault@gmail.com>
+License: LGPL-2.1+
+
+Files: tests/unittest_lookup.py
+Copyright:
+ Copyright (c) 2007-2013 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2010 Daniel Harding <dharding@gmail.com>
+ Copyright (c) 2014-2016, 2018-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2014 Google, Inc.
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2019 Hugo van Kemenade <hugovk@users.noreply.github.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 David Liu <david@cs.toronto.edu>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: tests/unittest_manager.py
+Copyright:
+ Copyright (c) 2006, 2009-2014 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2013 AndroWiiid <androwiiid@gmail.com>
+ Copyright (c) 2014-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2014 Google, Inc.
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2017 Chris Philip <chrisp533@gmail.com>
+ Copyright (c) 2017 Hugo <hugovk@users.noreply.github.com>
+ Copyright (c) 2017 ioanatia <ioanatia@users.noreply.github.com>
+ Copyright (c) 2018 Ville Skyttä <ville.skytta@iki.fi>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2019 Hugo van Kemenade <hugovk@users.noreply.github.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 David Gilman <davidgilman1@gmail.com>
+ Copyright (c) 2020 Anubhav <35621759+anubh-v@users.noreply.github.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Tushar Sadhwani <86737547+tushar-deepsource@users.noreply.github.com>
+ Copyright (c) 2021 grayjk <grayjk@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Andrew Haigh <hello@nelf.in>
+License: LGPL-2.1+
+
+Files: tests/unittest_modutils.py
+Copyright:
+ Copyright (c) 2014-2016, 2018-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2014 Google, Inc.
+ Copyright (c) 2014 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2015 Florian Bruhin <me@the-compiler.org>
+ Copyright (c) 2015 Radosław Ganczarek <radoslaw@ganczarek.in>
+ Copyright (c) 2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2018 Mario Corchero <mcorcherojim@bloomberg.net>
+ Copyright (c) 2018 Mario Corchero <mariocj89@gmail.com>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2019 Hugo van Kemenade <hugovk@users.noreply.github.com>
+ Copyright (c) 2019 markmcclain <markmcclain@users.noreply.github.com>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 Peter Kolbus <peter.kolbus@gmail.com>
+ Copyright (c) 2021-2022 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 DudeNr33 <3929834+DudeNr33@users.noreply.github.com>
+ Copyright (c) 2021 pre-commit-ci[bot] <bot@noreply.github.com>
+ Copyright (c) 2022 Alexander Shadchin <alexandr.shadchin@gmail.com>
+License: LGPL-2.1+
+
+Files: tests/unittest_nodes.py
+Copyright:
+ Copyright (c) 2006-2007, 2009-2014 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2012 FELD Boris <lothiraldan@gmail.com>
+ Copyright (c) 2013-2021 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2014 Google, Inc.
+ Copyright (c) 2014 Eevee (Alex Munroe) <amunroe@yelp.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2015 Florian Bruhin <me@the-compiler.org>
+ Copyright (c) 2016 Jakub Wilk <jwilk@jwilk.net>
+ Copyright (c) 2017 rr- <rr-@sakuya.pl>
+ Copyright (c) 2017 Derek Gustafson <degustaf@gmail.com>
+ Copyright (c) 2018 Serhiy Storchaka <storchaka@gmail.com>
+ Copyright (c) 2018 brendanator <brendan.maginnis@gmail.com>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2018 Anthony Sottile <asottile@umich.edu>
+ Copyright (c) 2019-2021 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2019 Alex Hall <alex.mojaki@gmail.com>
+ Copyright (c) 2019 Hugo van Kemenade <hugovk@users.noreply.github.com>
+ Copyright (c) 2020 David Gilman <davidgilman1@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Tushar Sadhwani <86737547+tushar-deepsource@users.noreply.github.com>
+ Copyright (c) 2021 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 René Fritze <47802+renefritze@users.noreply.github.com>
+ Copyright (c) 2021 Federico Bond <federicobond@gmail.com>
+ Copyright (c) 2021 hippo91 <guillaume.peillex@gmail.com>
+License: LGPL-2.1+
+
+Files: tests/unittest_object_model.py
+Copyright:
+ Copyright (c) 2016-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2016 Derek Gustafson <degustaf@gmail.com>
+ Copyright (c) 2017 Łukasz Rogalski <rogalski.91@gmail.com>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2020 David Gilman <davidgilman1@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Keichi Takahashi <keichi.t@me.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Andrew Haigh <hello@nelf.in>
+ Copyright (c) 2021 hippo91 <guillaume.peillex@gmail.com>
+License: LGPL-2.1+
+
+Files: tests/unittest_objects.py
+Copyright:
+ Copyright (c) 2015-2016, 2018, 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2020 David Gilman <davidgilman1@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 hippo91 <guillaume.peillex@gmail.com>
+License: LGPL-2.1+
+
+Files: tests/unittest_protocols.py
+Copyright:
+ Copyright (c) 2015-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2016 Jakub Wilk <jwilk@jwilk.net>
+ Copyright (c) 2017 Łukasz Rogalski <rogalski.91@gmail.com>
+ Copyright (c) 2018 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 David Gilman <davidgilman1@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Kian Meng, Ang <kianmeng.ang@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: tests/unittest_python3.py
+Copyright:
+ Copyright (c) 2010, 2013-2014 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2012 FELD Boris <lothiraldan@gmail.com>
+ Copyright (c) 2013-2018, 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2014 Google, Inc.
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2016 Jared Garst <jgarst@users.noreply.github.com>
+ Copyright (c) 2017, 2019 Łukasz Rogalski <rogalski.91@gmail.com>
+ Copyright (c) 2017 Hugo <hugovk@users.noreply.github.com>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 David Gilman <davidgilman1@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: tests/unittest_raw_building.py
+Copyright:
+ Copyright (c) 2013 AndroWiiid <androwiiid@gmail.com>
+ Copyright (c) 2014-2016, 2018-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2014 Google, Inc.
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2018 Anthony Sottile <asottile@umich.edu>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2020 David Gilman <davidgilman1@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: tests/unittest_regrtest.py
+Copyright:
+ Copyright (c) 2006-2008, 2010-2014 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2007 Marien Zwart <marienz@gentoo.org>
+ Copyright (c) 2013-2014 Google, Inc.
+ Copyright (c) 2014-2016, 2018-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2014 Eevee (Alex Munroe) <amunroe@yelp.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2016 Jakub Wilk <jwilk@jwilk.net>
+ Copyright (c) 2018 Nick Drozd <nicholasdrozd@gmail.com>
+ Copyright (c) 2018 Anthony Sottile <asottile@umich.edu>
+ Copyright (c) 2019, 2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2020 David Gilman <davidgilman1@gmail.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Andrew Haigh <hello@nelf.in>
+License: LGPL-2.1+
+
+Files: tests/unittest_scoped_nodes.py
+Copyright:
+ Copyright (c) 2006-2014 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2011, 2013-2015 Google, Inc.
+ Copyright (c) 2013-2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2013 Phil Schaf <flying-sheep@web.de>
+ Copyright (c) 2014 Eevee (Alex Munroe) <amunroe@yelp.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2015 Rene Zhang <rz99@cornell.edu>
+ Copyright (c) 2015 Florian Bruhin <me@the-compiler.org>
+ Copyright (c) 2015 Philip Lorenz <philip@bithub.de>
+ Copyright (c) 2016 Jakub Wilk <jwilk@jwilk.net>
+ Copyright (c) 2017, 2019 Łukasz Rogalski <rogalski.91@gmail.com>
+ Copyright (c) 2017-2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2017 Derek Gustafson <degustaf@gmail.com>
+ Copyright (c) 2018-2019 Ville Skyttä <ville.skytta@iki.fi>
+ Copyright (c) 2018 brendanator <brendan.maginnis@gmail.com>
+ Copyright (c) 2018 Anthony Sottile <asottile@umich.edu>
+ Copyright (c) 2019-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2019 Hugo van Kemenade <hugovk@users.noreply.github.com>
+ Copyright (c) 2019 Peter de Blanc <peter@standard.ai>
+ Copyright (c) 2020 David Gilman <davidgilman1@gmail.com>
+ Copyright (c) 2020 Tim Martin <tim@asymptotic.co.uk>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Tushar Sadhwani <86737547+tushar-deepsource@users.noreply.github.com>
+ Copyright (c) 2021 Daniël van Noord <13665637+DanielNoord@users.noreply.github.com>
+ Copyright (c) 2021 doranid <ddandd@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+ Copyright (c) 2021 Andrew Haigh <hello@nelf.in>
+License: LGPL-2.1+
+
+Files: tests/unittest_transforms.py
+Copyright:
+ Copyright (c) 2015-2018, 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2015-2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2016 Jakub Wilk <jwilk@jwilk.net>
+ Copyright (c) 2018 Bryce Guinta <bryce.paul.guinta@gmail.com>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+
+Files: tests/unittest_utils.py
+Copyright:
+ Copyright (c) 2008-2010, 2013 LOGILAB S.A. (Paris, FRANCE) <contact@logilab.fr>
+ Copyright (c) 2014 Google, Inc.
+ Copyright (c) 2015-2016, 2018, 2020 Claudiu Popa <pcmanticore@gmail.com>
+ Copyright (c) 2016 Ceridwen <ceridwenv@gmail.com>
+ Copyright (c) 2016 Dave Baum <dbaum@google.com>
+ Copyright (c) 2019 Ashley Whetter <ashley@awhetter.co.uk>
+ Copyright (c) 2020-2021 hippo91 <guillaume.peillex@gmail.com>
+ Copyright (c) 2021 Pierre Sassoulas <pierre.sassoulas@gmail.com>
+ Copyright (c) 2021 Marc Mueller <30130371+cdce8p@users.noreply.github.com>
+License: LGPL-2.1+
+

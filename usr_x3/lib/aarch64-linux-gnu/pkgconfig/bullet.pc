@@ -1,6 +1,11 @@
+prefix=/usr
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib/aarch64-linux-gnu
+includedir=${prefix}/include/bullet
+
 Name: bullet
 Description: Bullet Continuous Collision Detection and Physics Library
+Version: 3.05
 Requires:
-Version: 2.88
-Libs: -L/usr/lib/aarch64-linux-gnu -lBulletSoftBody -lBulletDynamics -lBulletCollision -lLinearMath
-Cflags:  -I/usr/include/bullet -I/usr/include
+Libs: -L${libdir} -lBulletSoftBody -lBulletDynamics -lBulletCollision -lLinearMath
+Cflags:  -I${includedir} -I${prefix}/include

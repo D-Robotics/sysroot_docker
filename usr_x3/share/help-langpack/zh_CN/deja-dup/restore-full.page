@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-License-Identifier: CC-BY-SA-4.0
+SPDX-FileCopyrightText: Michael Terry
+-->
+<page xmlns="http://projectmallard.org/1.0/" xmlns:its="http://www.w3.org/2005/11/its" its:version="2.0" type="topic" style="task" id="restore-full" xml:lang="deja-dup-zh-CN">
+<info>
+  <desc>Recover from total system failure</desc>
+  <link type="guide" xref="index#restore"/>
+  <credit type="author" its:translate="no">
+    <name>Michael Terry</name>
+  </credit>
+  <license href="http://creativecommons.org/licenses/by-sa/4.0/"><p>Creative Commons Attribution-Share Alike 4.0 Unported License</p></license>
+
+    <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
+      <mal:name>Kyle Nitzsche</mal:name>
+      <mal:email>https://launchpad.net/~knitzsche</mal:email>
+      <mal:years/>
+    </mal:credit>
+  </info>
+<title>全系统恢复</title>
+<section id="setup">
+<title>设置</title>
+<steps>
+  <item><p>让系统恢复到全新状态。例如，进行全新安装或在一台旧计算机上建立一个新账户。先不用操心使用舒适度和定制设置的事情。可以等到恢复之前设置后再进行任何更改，因为您现在进行的任何定制都可能会在恢复时被覆盖。</p></item>
+  <item><p>Next, you need to install <app>Déjà Dup</app>. Your distribution vendor may package it for you. Otherwise, install it from flathub or the snap store.</p></item>
+</steps>
+</section>
+<section id="restore">
+<title>恢复</title>
+<steps>
+  <item><p>Open <gui>Backups</gui>.</p></item>
+  <item><p>Click on the <gui style="button">Restore From a Previous Backup</gui> button on the <gui>Overview</gui> page.</p></item>
+  <item><p>A <gui>Restore</gui> dialog will appear asking where your backup files are stored (your <gui>Backup location</gui>).</p></item>
+  <item><p>Click <gui style="button">Forward</gui> and wait for <app>Déjà Dup</app> to scan the backup location.</p></item>
+  <item><p>选择您想从哪个日期开始进行恢复。通常不必改动此项，因为默认值便是最近的备份。</p></item>
+  <item><p>单击<gui style="button">前进</gui>。</p></item>
+  <item><p>选择恢复到何处。由于这是全系统备份，因此请保留默认值不变（恢复时覆盖当前安装）。</p></item>
+  <item><p>单击<gui style="button">前进</gui>。</p></item>
+  <item><p>检查所做选择，并单击<gui style="button">恢复</gui>。</p></item>
+  <item><p>等待。可能需要很长时间才能完成恢复。</p></item>
+  <item><p>最后，重新安装您上一次安装时乐于使用的所有程序。</p></item>
+</steps>
+<note style="tip"><p>If for whatever reason you have a problem after trying to restore with the <gui style="checkbox">Restore files to original locations</gui> option, try restoring instead to a temporary directory and moving your files to where they belong.</p>
+<p>If that still doesn’t work, there are <link xref="restore-worst-case">more drastic things</link> you can try.</p>
+</note>
+</section>
+</page>

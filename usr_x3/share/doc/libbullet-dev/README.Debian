@@ -1,0 +1,26 @@
+These packages contain BOTH the single-precision and double-precision
+floating-point builds. By default you get the single-precision floating-point
+builds. The double-precision floating point libraries all have "-float64" in
+their filenames and SONAME tags and the pkgconfig and the cmake files. To use
+the double-precision libraries:
+
+  - Compile with -DBT_USE_DOUBLE_PRECISION
+  - Link with -lBulletXXX-float64 instead of -lBulletXXX
+
+If using pkgconfig you get both of these by switching
+
+  pkg-config --whatever bullet
+
+to
+
+  pkg-config --whatever bullet-float64
+
+Similarly, if using CMake, instead of invoking
+
+  BulletConfig.cmake
+
+you should invoke
+
+  BulletConfig-float64.cmake
+
+ -- Dima Kogan <dkogan@debian.org>, Tue, 30 Oct 2018 17:30:55 -0700

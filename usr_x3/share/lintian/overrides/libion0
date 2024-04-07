@@ -1,0 +1,6 @@
+# The libraries comes with the programs
+# Nobody else uses the library
+libion0: package-name-doesnt-match-sonames
+
+# Override false positive
+libion0: hardening-no-fortify-functions

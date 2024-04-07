@@ -40,6 +40,7 @@
 #define LOG4CXX_HAS_MBSRTOWCS 1
 #define LOG4CXX_HAS_WCSTOMBS 1
 #define LOG4CXX_HAS_FWIDE 1
+#define LOG4CXX_INIT_IOS_BASE 0
 
 #define LOG4CXX_CHARSET_UTF8 0
 #define LOG4CXX_CHARSET_ISO88591 0
@@ -52,5 +53,18 @@
 #define LOG4CXX_WIN32_THREAD_FMTSPEC "0x%.8x"
 #define LOG4CXX_APR_THREAD_FMTSPEC "0x%pt"
 
+#ifdef __BORLANDC__
+/*
+ * embarcadero/RAD Studio compilers don't support thread_local:
+ * http://docwiki.embarcadero.com/RADStudio/Sydney/en/Modern_C%2B%2B_Language_Features_Compliance_Status
+ */
+#define LOG4CXX_THREAD_LOCAL
+#else
+#define LOG4CXX_THREAD_LOCAL thread_local
+#endif
+
+#if defined(_MSC_VER)
+#define LOG4CXX_MEMSET_IOS_BASE 1
+#endif
 
 #endif

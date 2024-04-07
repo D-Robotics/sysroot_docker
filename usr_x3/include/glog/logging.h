@@ -652,7 +652,7 @@ void MakeCheckOpValueString(std::ostream* os, const unsigned char& v);
 // Build the error message string. Specify no inlining for code size.
 template <typename T1, typename T2>
 std::string* MakeCheckOpString(const T1& v1, const T2& v2, const char* exprtext)
-    __attribute__ ((noinline));
+    __attribute__((noinline));
 
 namespace base {
 namespace internal {
@@ -1247,7 +1247,7 @@ public:
   void SendToSyslogAndLog();  // Actually dispatch to syslog and the logs
 
   // Call abort() or similar to perform LOG(FATAL) crash.
-  static void __attribute__ ((noreturn)) Fail();
+  static void __attribute__((noreturn)) Fail();
 
   std::ostream& stream();
 
@@ -1295,7 +1295,7 @@ class GOOGLE_GLOG_DLL_DECL LogMessageFatal : public LogMessage {
  public:
   LogMessageFatal(const char* file, int line);
   LogMessageFatal(const char* file, int line, const CheckOpString& result);
-  __attribute__ ((noreturn)) ~LogMessageFatal();
+  __attribute__((noreturn)) ~LogMessageFatal();
 };
 
 // A non-macro interface to the log facility; (useful
@@ -1629,7 +1629,7 @@ class GOOGLE_GLOG_DLL_DECL NullStreamFatal : public NullStream {
   NullStreamFatal() { }
   NullStreamFatal(const char* file, int line, const CheckOpString& result) :
       NullStream(file, line, result) { }
-  __attribute__ ((noreturn)) ~NullStreamFatal() throw () { _exit(1); }
+  __attribute__((noreturn)) ~NullStreamFatal() throw () { _exit(1); }
 };
 
 // Install a signal handler that will dump signal information and a stack

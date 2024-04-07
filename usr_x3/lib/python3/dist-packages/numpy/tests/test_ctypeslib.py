@@ -1,5 +1,3 @@
-from __future__ import division, absolute_import, print_function
-
 import sys
 import pytest
 import weakref
@@ -38,7 +36,7 @@ else:
                     reason="ctypes not available in this python")
 @pytest.mark.skipif(sys.platform == 'cygwin',
                     reason="Known to fail on cygwin")
-class TestLoadLibrary(object):
+class TestLoadLibrary:
     def test_basic(self):
         try:
             # Should succeed
@@ -64,7 +62,7 @@ class TestLoadLibrary(object):
             print(msg)
 
 
-class TestNdpointer(object):
+class TestNdpointer:
     def test_dtype(self):
         dt = np.intc
         p = ndpointer(dtype=dt)
@@ -131,7 +129,7 @@ class TestNdpointer(object):
 
 @pytest.mark.skipif(ctypes is None,
                     reason="ctypes not available on this python installation")
-class TestNdpointerCFunc(object):
+class TestNdpointerCFunc:
     def test_arguments(self):
         """ Test that arguments are coerced from arrays """
         c_forward_pointer.restype = ctypes.c_void_p
@@ -187,7 +185,7 @@ class TestNdpointerCFunc(object):
 
 @pytest.mark.skipif(ctypes is None,
                     reason="ctypes not available on this python installation")
-class TestAsArray(object):
+class TestAsArray:
     def test_array(self):
         from ctypes import c_int
 
@@ -278,7 +276,7 @@ class TestAsArray(object):
 
 @pytest.mark.skipif(ctypes is None,
                     reason="ctypes not available on this python installation")
-class TestAsCtypesType(object):
+class TestAsCtypesType:
     """ Test conversion from dtypes to ctypes types """
     def test_scalar(self):
         dt = np.dtype('<u2')

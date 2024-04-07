@@ -18,7 +18,7 @@ package Dpkg::BuildFlags;
 use strict;
 use warnings;
 
-our $VERSION = '1.03';
+our $VERSION = '1.04';
 
 use Dpkg ();
 use Dpkg::Gettext;
@@ -34,7 +34,7 @@ Dpkg::BuildFlags - query build flags
 
 =head1 DESCRIPTION
 
-The Dpkg::BuildFlags object is used by dpkg-buildflags and can be used
+This class is used by dpkg-buildflags and can be used
 to query the same information.
 
 =head1 METHODS
@@ -68,38 +68,42 @@ Reset the flags stored to the default set provided by the vendor.
 sub load_vendor_defaults {
     my $self = shift;
 
-    $self->{options} = {};
-    $self->{source} = {};
     $self->{features} = {};
     $self->{flags} = {
+	ASFLAGS => '',
 	CPPFLAGS => '',
 	CFLAGS   => '',
 	CXXFLAGS => '',
 	OBJCFLAGS   => '',
 	OBJCXXFLAGS => '',
 	GCJFLAGS => '',
+	DFLAGS   => '',
 	FFLAGS   => '',
 	FCFLAGS  => '',
 	LDFLAGS  => '',
     };
     $self->{origin} = {
+	ASFLAGS => 'vendor',
 	CPPFLAGS => 'vendor',
 	CFLAGS   => 'vendor',
 	CXXFLAGS => 'vendor',
 	OBJCFLAGS   => 'vendor',
 	OBJCXXFLAGS => 'vendor',
 	GCJFLAGS => 'vendor',
+	DFLAGS   => 'vendor',
 	FFLAGS   => 'vendor',
 	FCFLAGS  => 'vendor',
 	LDFLAGS  => 'vendor',
     };
     $self->{maintainer} = {
+	ASFLAGS => 0,
 	CPPFLAGS => 0,
 	CFLAGS   => 0,
 	CXXFLAGS => 0,
 	OBJCFLAGS   => 0,
 	OBJCXXFLAGS => 0,
 	GCJFLAGS => 0,
+	DFLAGS   => 0,
 	FFLAGS   => 0,
 	FCFLAGS  => 0,
 	LDFLAGS  => 0,
@@ -212,6 +216,20 @@ sub load_config {
     $self->load_user_config();
     $self->load_environment_config();
     $self->load_maintainer_config();
+}
+
+=item $bf->unset($flag)
+
+Unset the build flag $flag, so that it will not be known anymore.
+
+=cut
+
+sub unset {
+    my ($self, $flag) = @_;
+
+    delete $self->{flags}->{$flag};
+    delete $self->{origin}->{$flag};
+    delete $self->{maintainer}->{$flag};
 }
 
 =item $bf->set($flag, $value, $source, $maint)
@@ -441,6 +459,10 @@ sub list {
 =back
 
 =head1 CHANGES
+
+=head2 Version 1.04 (dpkg 1.20.0)
+
+New method: $bf->unset().
 
 =head2 Version 1.03 (dpkg 1.16.5)
 

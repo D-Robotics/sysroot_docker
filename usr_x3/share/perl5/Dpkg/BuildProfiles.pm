@@ -30,6 +30,7 @@ use Exporter qw(import);
 use List::Util qw(any);
 
 use Dpkg::Build::Env;
+use Dpkg::Vendor qw(run_vendor_hook);
 
 my $cache_profiles;
 my @build_profiles;
@@ -63,6 +64,7 @@ sub get_build_profiles {
         @build_profiles = split ' ', Dpkg::Build::Env::get('DEB_BUILD_PROFILES');
     }
     $cache_profiles = 1;
+    run_vendor_hook('update-buildprofiles', \@build_profiles);
 
     return @build_profiles;
 }
@@ -79,7 +81,8 @@ sub set_build_profiles {
 
     $cache_profiles = 1;
     @build_profiles = @profiles;
-    Dpkg::Build::Env::set('DEB_BUILD_PROFILES', join ' ', @profiles);
+    run_vendor_hook('update-buildprofiles', \@build_profiles);
+    Dpkg::Build::Env::set('DEB_BUILD_PROFILES', join ' ', @build_profiles);
 }
 
 =item @profiles = parse_build_profiles($string)

@@ -1,0 +1,1407 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>logilab.common.registry &#8212; logilab common  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for logilab.common.registry</h1><div class="highlight"><pre>
+<span></span><span class="c1"># copyright 2003-2013 LOGILAB S.A. (Paris, FRANCE), all rights reserved.</span>
+<span class="c1"># contact http://www.logilab.fr/ -- mailto:contact@logilab.fr</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of Logilab-common.</span>
+<span class="c1">#</span>
+<span class="c1"># Logilab-common is free software: you can redistribute it and/or modify it</span>
+<span class="c1"># under the terms of the GNU Lesser General Public License as published by the</span>
+<span class="c1"># Free Software Foundation, either version 2.1 of the License, or (at your</span>
+<span class="c1"># option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># Logilab-common is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1"># ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS</span>
+<span class="c1"># FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License along</span>
+<span class="c1"># with Logilab-common.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="sd">&quot;&quot;&quot;This module provides bases for predicates dispatching (the pattern in use</span>
+<span class="sd">here is similar to what&#39;s refered as multi-dispatch or predicate-dispatch in the</span>
+<span class="sd">literature, though a bit different since the idea is to select across different</span>
+<span class="sd">implementation &#39;e.g. classes), not to dispatch a message to a function or</span>
+<span class="sd">method. It contains the following classes:</span>
+
+<span class="sd">* :class:`RegistryStore`, the top level object which loads implementation</span>
+<span class="sd">  objects and stores them into registries. You&#39;ll usually use it to access</span>
+<span class="sd">  registries and their contained objects;</span>
+
+<span class="sd">* :class:`Registry`, the base class which contains objects semantically grouped</span>
+<span class="sd">  (for instance, sharing a same API, hence the &#39;implementation&#39; name). You&#39;ll</span>
+<span class="sd">  use it to select the proper implementation according to a context. Notice you</span>
+<span class="sd">  may use registries on their own without using the store.</span>
+
+<span class="sd">.. Note::</span>
+
+<span class="sd">  implementation objects are usually designed to be accessed through the</span>
+<span class="sd">  registry and not by direct instantiation, besides to use it as base classe.</span>
+
+<span class="sd">The selection procedure is delegated to a selector, which is responsible for</span>
+<span class="sd">scoring the object according to some context. At the end of the selection, if an</span>
+<span class="sd">implementation has been found, an instance of this class is returned. A selector</span>
+<span class="sd">is built from one or more predicates combined together using AND, OR, NOT</span>
+<span class="sd">operators (actually `&amp;`, `|` and `~`). You&#39;ll thus find some base classes to</span>
+<span class="sd">build predicates:</span>
+
+<span class="sd">* :class:`Predicate`, the abstract base predicate class</span>
+
+<span class="sd">* :class:`AndPredicate`, :class:`OrPredicate`, :class:`NotPredicate`, which you</span>
+<span class="sd">  shouldn&#39;t have to use directly. You&#39;ll use `&amp;`, `|` and &#39;~&#39; operators between</span>
+<span class="sd">  predicates directly</span>
+
+<span class="sd">* :func:`objectify_predicate`</span>
+
+<span class="sd">You&#39;ll eventually find one concrete predicate: :class:`yes`</span>
+
+<span class="sd">.. autoclass:: RegistryStore</span>
+<span class="sd">.. autoclass:: Registry</span>
+
+<span class="sd">Predicates</span>
+<span class="sd">----------</span>
+<span class="sd">.. autoclass:: Predicate</span>
+<span class="sd">.. autofunction:: objectify_predicate</span>
+<span class="sd">.. autoclass:: yes</span>
+<span class="sd">.. autoclass:: AndPredicate</span>
+<span class="sd">.. autoclass:: OrPredicate</span>
+<span class="sd">.. autoclass:: NotPredicate</span>
+
+<span class="sd">Debugging</span>
+<span class="sd">---------</span>
+<span class="sd">.. autoclass:: traced_selection</span>
+
+<span class="sd">Exceptions</span>
+<span class="sd">----------</span>
+<span class="sd">.. autoclass:: RegistryException</span>
+<span class="sd">.. autoclass:: RegistryNotFound</span>
+<span class="sd">.. autoclass:: ObjectNotFound</span>
+<span class="sd">.. autoclass:: NoSelectableObject</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="n">__docformat__</span> <span class="o">=</span> <span class="s2">&quot;restructuredtext en&quot;</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">pkgutil</span>
+<span class="kn">import</span> <span class="nn">types</span>
+<span class="kn">import</span> <span class="nn">weakref</span>
+<span class="kn">import</span> <span class="nn">traceback</span> <span class="k">as</span> <span class="nn">tb</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">listdir</span><span class="p">,</span> <span class="n">stat</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">join</span><span class="p">,</span> <span class="n">isdir</span><span class="p">,</span> <span class="n">exists</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Sequence</span>
+<span class="kn">from</span> <span class="nn">logging</span> <span class="kn">import</span> <span class="n">getLogger</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Callable</span>
+<span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">ModuleType</span>
+
+<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TypedDict</span>
+
+    <span class="c1"># TypedDict is also available in typing_extension &gt; 3.7.4,</span>
+    <span class="c1"># but this package is not available on debian buster.</span>
+
+<span class="kn">from</span> <span class="nn">logilab.common.modutils</span> <span class="kn">import</span> <span class="n">modpath_from_file</span>
+<span class="kn">from</span> <span class="nn">logilab.common.logging_ext</span> <span class="kn">import</span> <span class="n">set_log_methods</span>
+<span class="kn">from</span> <span class="nn">logilab.common.decorators</span> <span class="kn">import</span> <span class="n">classproperty</span>
+<span class="kn">from</span> <span class="nn">logilab.common.deprecation</span> <span class="kn">import</span> <span class="n">callable_deprecated</span>
+
+
+<span class="c1"># selector base classes and operations ########################################</span>
+
+
+<div class="viewcode-block" id="objectify_predicate"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.objectify_predicate">[docs]</a><span class="k">def</span> <span class="nf">objectify_predicate</span><span class="p">(</span><span class="n">selector_func</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Most of the time, a simple score function is enough to build a selector.</span>
+<span class="sd">    The :func:`objectify_predicate` decorator turn it into a proper selector</span>
+<span class="sd">    class::</span>
+
+<span class="sd">        @objectify_predicate</span>
+<span class="sd">        def one(cls, req, rset=None, **kwargs):</span>
+<span class="sd">            return 1</span>
+
+<span class="sd">        class MyView(View):</span>
+<span class="sd">            __select__ = View.__select__ &amp; one()</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">type</span><span class="p">(</span>
+        <span class="n">selector_func</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span>
+        <span class="p">(</span><span class="n">Predicate</span><span class="p">,),</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;__doc__&quot;</span><span class="p">:</span> <span class="n">selector_func</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">,</span>
+            <span class="s2">&quot;__call__&quot;</span><span class="p">:</span> <span class="k">lambda</span> <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">:</span> <span class="n">selector_func</span><span class="p">(</span><span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">),</span>
+        <span class="p">},</span>
+    <span class="p">)</span></div>
+
+
+<span class="n">_PREDICATES</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+
+<div class="viewcode-block" id="wrap_predicates"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.wrap_predicates">[docs]</a><span class="k">def</span> <span class="nf">wrap_predicates</span><span class="p">(</span><span class="n">decorator</span><span class="p">:</span> <span class="n">Callable</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">predicate</span> <span class="ow">in</span> <span class="n">_PREDICATES</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="k">if</span> <span class="s2">&quot;_decorators&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">predicate</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+            <span class="n">predicate</span><span class="o">.</span><span class="n">_decorators</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">decorator</span> <span class="ow">in</span> <span class="n">predicate</span><span class="o">.</span><span class="n">_decorators</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">predicate</span><span class="o">.</span><span class="n">_decorators</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">decorator</span><span class="p">)</span>
+        <span class="n">predicate</span><span class="o">.</span><span class="fm">__call__</span> <span class="o">=</span> <span class="n">decorator</span><span class="p">(</span><span class="n">predicate</span><span class="o">.</span><span class="fm">__call__</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PredicateMetaClass"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.PredicateMetaClass">[docs]</a><span class="k">class</span> <span class="nc">PredicateMetaClass</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="n">mcs</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="c1"># use __new__ so subclasses doesn&#39;t have to call Predicate.__init__</span>
+        <span class="n">inst</span> <span class="o">=</span> <span class="nb">type</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="n">mcs</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">proxy</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">proxy</span><span class="p">(</span><span class="n">inst</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">p</span><span class="p">:</span> <span class="n">_PREDICATES</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">p</span><span class="p">)))</span>
+        <span class="n">_PREDICATES</span><span class="p">[</span><span class="nb">id</span><span class="p">(</span><span class="n">proxy</span><span class="p">)]</span> <span class="o">=</span> <span class="n">proxy</span>
+        <span class="k">return</span> <span class="n">inst</span></div>
+
+
+<div class="viewcode-block" id="Predicate"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.Predicate">[docs]</a><span class="k">class</span> <span class="nc">Predicate</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">metaclass</span><span class="o">=</span><span class="n">PredicateMetaClass</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;base class for selector classes providing implementation</span>
+<span class="sd">    for operators ``&amp;``, ``|`` and  ``~``</span>
+
+<span class="sd">    This class is only here to give access to binary operators, the selector</span>
+<span class="sd">    logic itself should be implemented in the :meth:`__call__` method. Notice it</span>
+<span class="sd">    should usually accept any arbitrary arguments (the context), though that may</span>
+<span class="sd">    vary depending on your usage of the registry.</span>
+
+<span class="sd">    a selector is called to help choosing the correct object for a</span>
+<span class="sd">    particular context by returning a score (`int`) telling how well</span>
+<span class="sd">    the implementation given as first argument fit to the given context.</span>
+
+<span class="sd">    0 score means that the class doesn&#39;t apply.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">func_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># backward compatibility</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+
+<div class="viewcode-block" id="Predicate.search_selector"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.Predicate.search_selector">[docs]</a>    <span class="k">def</span> <span class="nf">search_selector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">:</span> <span class="s2">&quot;Predicate&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Predicate&quot;</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;search for the given selector, selector instance or tuple of</span>
+<span class="sd">        selectors in the selectors tree. Return None if not found.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span> <span class="ow">is</span> <span class="n">selector</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">selector</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">selector</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">selector</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span>
+
+    <span class="k">def</span> <span class="fm">__and__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Predicate&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;AndPredicate&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">AndPredicate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__rand__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Predicate&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;AndPredicate&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">AndPredicate</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__iand__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Predicate&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;AndPredicate&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">AndPredicate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__or__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Predicate&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;OrPredicate&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OrPredicate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__ror__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Predicate&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OrPredicate</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__ior__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="s2">&quot;Predicate&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;OrPredicate&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">OrPredicate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__invert__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">NotPredicate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="c1"># XXX (function | function) or (function &amp; function) not managed yet</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="s2">&quot;selector </span><span class="si">%s</span><span class="s2"> must implement its logic &quot;</span> <span class="s2">&quot;in its __call__ method&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;&lt;Predicate </span><span class="si">%s</span><span class="s2"> at </span><span class="si">%x</span><span class="s2">&gt;&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="nb">id</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="MultiPredicate"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.MultiPredicate">[docs]</a><span class="k">class</span> <span class="nc">MultiPredicate</span><span class="p">(</span><span class="n">Predicate</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;base class for compound selector classes&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">selectors</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selectors</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">merge_selectors</span><span class="p">(</span><span class="n">selectors</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">(</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="s2">&quot;,&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">selectors</span><span class="p">))</span>
+
+<div class="viewcode-block" id="MultiPredicate.merge_selectors"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.MultiPredicate.merge_selectors">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">merge_selectors</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">selectors</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Predicate</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Predicate</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;deal with selector instanciation when necessary and merge</span>
+<span class="sd">        multi-selectors if possible:</span>
+
+<span class="sd">        AndPredicate(AndPredicate(sel1, sel2), AndPredicate(sel3, sel4))</span>
+<span class="sd">        ==&gt; AndPredicate(sel1, sel2, sel3, sel4)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">merged_selectors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">selector</span> <span class="ow">in</span> <span class="n">selectors</span><span class="p">:</span>
+            <span class="c1"># XXX do we really want magic-transformations below?</span>
+            <span class="c1"># if so, wanna warn about them?</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">selector</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">FunctionType</span><span class="p">):</span>
+                <span class="n">selector</span> <span class="o">=</span> <span class="n">objectify_predicate</span><span class="p">(</span><span class="n">selector</span><span class="p">)()</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">selector</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">selector</span><span class="p">,</span> <span class="n">Predicate</span><span class="p">):</span>
+                <span class="n">selector</span> <span class="o">=</span> <span class="n">selector</span><span class="p">()</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">selector</span><span class="p">,</span> <span class="n">Predicate</span><span class="p">),</span> <span class="n">selector</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">selector</span><span class="p">,</span> <span class="bp">cls</span><span class="p">):</span>
+                <span class="n">merged_selectors</span> <span class="o">+=</span> <span class="n">selector</span><span class="o">.</span><span class="n">selectors</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">merged_selectors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">selector</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">merged_selectors</span></div>
+
+<div class="viewcode-block" id="MultiPredicate.search_selector"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.MultiPredicate.search_selector">[docs]</a>    <span class="k">def</span> <span class="nf">search_selector</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">:</span> <span class="n">Predicate</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Predicate</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;search for the given selector or selector instance (or tuple of</span>
+<span class="sd">        selectors) in the selectors tree. Return None if not found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">childselector</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">selectors</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">childselector</span> <span class="ow">is</span> <span class="n">selector</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">childselector</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="n">childselector</span><span class="o">.</span><span class="n">search_selector</span><span class="p">(</span><span class="n">selector</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">found</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">found</span>
+        <span class="c1"># if not found in children, maybe we are looking for self?</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">MultiPredicate</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">search_selector</span><span class="p">(</span><span class="n">selector</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="AndPredicate"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.AndPredicate">[docs]</a><span class="k">class</span> <span class="nc">AndPredicate</span><span class="p">(</span><span class="n">MultiPredicate</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;and-chained selectors&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">cls</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">selector</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">selectors</span><span class="p">:</span>
+            <span class="n">partscore</span> <span class="o">=</span> <span class="n">selector</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">partscore</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">0</span>
+            <span class="n">score</span> <span class="o">+=</span> <span class="n">partscore</span>
+        <span class="k">return</span> <span class="n">score</span></div>
+
+
+<div class="viewcode-block" id="OrPredicate"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.OrPredicate">[docs]</a><span class="k">class</span> <span class="nc">OrPredicate</span><span class="p">(</span><span class="n">MultiPredicate</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;or-chained selectors&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">cls</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">selector</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">selectors</span><span class="p">:</span>
+            <span class="n">partscore</span> <span class="o">=</span> <span class="n">selector</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">partscore</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">partscore</span>
+        <span class="k">return</span> <span class="mi">0</span></div>
+
+
+<div class="viewcode-block" id="NotPredicate"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.NotPredicate">[docs]</a><span class="k">class</span> <span class="nc">NotPredicate</span><span class="p">(</span><span class="n">Predicate</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;negation selector&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selector</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selector</span> <span class="o">=</span> <span class="n">selector</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">score</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">selector</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="ow">not</span> <span class="n">score</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;NOT(</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">selector</span></div>
+
+
+<div class="viewcode-block" id="yes"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.yes">[docs]</a><span class="k">class</span> <span class="nc">yes</span><span class="p">(</span><span class="n">Predicate</span><span class="p">):</span>  <span class="c1"># pylint: disable=C0103</span>
+    <span class="sd">&quot;&quot;&quot;Return the score given as parameter, with a default score of 0.5 so any</span>
+<span class="sd">    other selector take precedence.</span>
+
+<span class="sd">    Usually used for objects which can be selected whatever the context, or</span>
+<span class="sd">    also sometimes to add arbitrary points to a score.</span>
+
+<span class="sd">    Take care, `yes(0)` could be named &#39;no&#39;...</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">score</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">score</span> <span class="o">=</span> <span class="n">score</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">score</span></div>
+
+
+<span class="c1"># deprecated stuff #############################################################</span>
+
+
+<span class="nd">@callable_deprecated</span><span class="p">(</span><span class="s2">&quot;[lgc 0.59] use Registry.objid class method instead&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">classid</span><span class="p">(</span><span class="bp">cls</span><span class="p">):</span>
+    <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__module__</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="nd">@callable_deprecated</span><span class="p">(</span><span class="s2">&quot;[lgc 0.59] use obj_registries function instead&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">class_registries</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">registryname</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">obj_registries</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">registryname</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="RegistryException"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.RegistryException">[docs]</a><span class="k">class</span> <span class="nc">RegistryException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for registry exception.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="RegistryNotFound"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.RegistryNotFound">[docs]</a><span class="k">class</span> <span class="nc">RegistryNotFound</span><span class="p">(</span><span class="n">RegistryException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised when an unknown registry is requested.</span>
+
+<span class="sd">    This is usually a programming/typo error.</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="ObjectNotFound"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.ObjectNotFound">[docs]</a><span class="k">class</span> <span class="nc">ObjectNotFound</span><span class="p">(</span><span class="n">RegistryException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised when an unregistered object is requested.</span>
+
+<span class="sd">    This may be a programming/typo or a misconfiguration error.</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="NoSelectableObject"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.NoSelectableObject">[docs]</a><span class="k">class</span> <span class="nc">NoSelectableObject</span><span class="p">(</span><span class="n">RegistryException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised when no object is selectable for a given context.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">objects</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span> <span class="o">=</span> <span class="n">kwargs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">objects</span> <span class="o">=</span> <span class="n">objects</span>
+
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;args: </span><span class="si">%s</span><span class="s2">, kwargs: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">candidates: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">objects</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SelectAmbiguity"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.SelectAmbiguity">[docs]</a><span class="k">class</span> <span class="nc">SelectAmbiguity</span><span class="p">(</span><span class="n">RegistryException</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised when several objects compete at selection time with an equal</span>
+<span class="sd">    score.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+<span class="k">def</span> <span class="nf">_modname_from_path</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">extrapath</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="n">modpath</span> <span class="o">=</span> <span class="n">modpath_from_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">extrapath</span><span class="p">)</span>
+    <span class="c1"># omit &#39;__init__&#39; from package&#39;s name to avoid loading that module</span>
+    <span class="c1"># once for each name when it is imported by some other object</span>
+    <span class="c1"># module. This supposes import in modules are done as::</span>
+    <span class="c1">#</span>
+    <span class="c1">#   from package import something</span>
+    <span class="c1">#</span>
+    <span class="c1"># not::</span>
+    <span class="c1">#</span>
+    <span class="c1">#   from package.__init__ import something</span>
+    <span class="c1">#</span>
+    <span class="c1"># which seems quite correct.</span>
+    <span class="k">if</span> <span class="n">modpath</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;__init__&quot;</span><span class="p">:</span>
+        <span class="n">modpath</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+    <span class="k">return</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">modpath</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_toload_info</span><span class="p">(</span>
+    <span class="n">path</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">extrapath</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">_toload</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">List</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]]:</span>
+    <span class="sd">&quot;&quot;&quot;Return a dictionary of &lt;modname&gt;: &lt;modpath&gt; and an ordered list of</span>
+<span class="sd">    (file, module name) to load</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">_toload</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span>
+        <span class="n">_toload</span> <span class="o">=</span> <span class="p">{},</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">fileordir</span> <span class="ow">in</span> <span class="n">path</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">isdir</span><span class="p">(</span><span class="n">fileordir</span><span class="p">)</span> <span class="ow">and</span> <span class="n">exists</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">fileordir</span><span class="p">,</span> <span class="s2">&quot;__init__.py&quot;</span><span class="p">)):</span>
+            <span class="n">subfiles</span> <span class="o">=</span> <span class="p">[</span><span class="n">join</span><span class="p">(</span><span class="n">fileordir</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span> <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">listdir</span><span class="p">(</span><span class="n">fileordir</span><span class="p">)]</span>
+
+            <span class="n">_toload_info</span><span class="p">(</span><span class="n">subfiles</span><span class="p">,</span> <span class="n">extrapath</span><span class="p">,</span> <span class="n">_toload</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">fileordir</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span> <span class="o">==</span> <span class="s2">&quot;.py&quot;</span><span class="p">:</span>
+            <span class="n">modname</span> <span class="o">=</span> <span class="n">_modname_from_path</span><span class="p">(</span><span class="n">fileordir</span><span class="p">,</span> <span class="n">extrapath</span><span class="p">)</span>
+            <span class="n">_toload</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">modname</span><span class="p">]</span> <span class="o">=</span> <span class="n">fileordir</span>
+
+            <span class="n">_toload</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">fileordir</span><span class="p">,</span> <span class="n">modname</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">_toload</span>
+
+
+<div class="viewcode-block" id="RegistrableObject"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.RegistrableObject">[docs]</a><span class="k">class</span> <span class="nc">RegistrableObject</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This is the base class for registrable objects which are selected</span>
+<span class="sd">    according to a context.</span>
+
+<span class="sd">    :attr:`__registry__`</span>
+<span class="sd">      name of the registry for this object (string like &#39;views&#39;,</span>
+<span class="sd">      &#39;templates&#39;...). You may want to define `__registries__` directly if your</span>
+<span class="sd">      object should be registered in several registries.</span>
+
+<span class="sd">    :attr:`__regid__`</span>
+<span class="sd">      object&#39;s identifier in the registry (string like &#39;main&#39;,</span>
+<span class="sd">      &#39;primary&#39;, &#39;folder_box&#39;)</span>
+
+<span class="sd">    :attr:`__select__`</span>
+<span class="sd">      class&#39;selector</span>
+
+<span class="sd">    Moreover, the `__abstract__` attribute may be set to True to indicate that a</span>
+<span class="sd">    class is abstract and should not be registered.</span>
+
+<span class="sd">    You don&#39;t have to inherit from this class to put it in a registry (having</span>
+<span class="sd">    `__regid__` and `__select__` is enough), though this is needed for classes</span>
+<span class="sd">    that should be automatically registered.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">__registry__</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">__regid__</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">__select__</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="n">Predicate</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">__abstract__</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># see doc snipppets below (in Registry class)</span>
+
+    <span class="nd">@classproperty</span>
+    <span class="k">def</span> <span class="nf">__registries__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__registry__</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">()</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">__registry__</span><span class="p">,)</span></div>
+
+
+<div class="viewcode-block" id="RegistrableInstance"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.RegistrableInstance">[docs]</a><span class="k">class</span> <span class="nc">RegistrableInstance</span><span class="p">(</span><span class="n">RegistrableObject</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Inherit this class if you want instances of the classes to be</span>
+<span class="sd">    automatically registered.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a __module__ attribute telling the module where the instance was</span>
+<span class="sd">        created, for automatic registration.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">module</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s2">&quot;__module__&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">RegistrableInstance</span><span class="p">,</span> <span class="bp">cls</span><span class="p">)</span><span class="o">.</span><span class="fm">__new__</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">module</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;instantiate </span><span class="si">{}</span><span class="s2"> with &quot;</span> <span class="s2">&quot;__module__=__name__&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">),</span>
+                <span class="ne">DeprecationWarning</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="c1"># XXX subclass must no override __new__</span>
+            <span class="n">filepath</span> <span class="o">=</span> <span class="n">tb</span><span class="o">.</span><span class="n">extract_stack</span><span class="p">(</span><span class="n">limit</span><span class="o">=</span><span class="mi">2</span><span class="p">)[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">obj</span><span class="o">.</span><span class="vm">__module__</span> <span class="o">=</span> <span class="n">_modname_from_path</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">obj</span><span class="o">.</span><span class="vm">__module__</span> <span class="o">=</span> <span class="n">module</span>
+        <span class="k">return</span> <span class="n">obj</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="vm">__module__</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RegistrableInstance</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span></div>
+
+
+<span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&gt;=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">8</span><span class="p">):</span>
+    <span class="n">SelectBestReport</span> <span class="o">=</span> <span class="n">TypedDict</span><span class="p">(</span>
+        <span class="s2">&quot;SelectBestReport&quot;</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;all_objects&quot;</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span>
+            <span class="s2">&quot;end_score&quot;</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+            <span class="s2">&quot;winners&quot;</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span>
+            <span class="s2">&quot;winner&quot;</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+            <span class="s2">&quot;self&quot;</span><span class="p">:</span> <span class="s2">&quot;Registry&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span>
+            <span class="s2">&quot;kwargs&quot;</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span>
+            <span class="s2">&quot;registry&quot;</span><span class="p">:</span> <span class="s2">&quot;Registry&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">SelectBestReport</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="s2">&quot;Registry&quot;</span><span class="p">,</span> <span class="n">Dict</span><span class="p">]]</span>
+
+
+<div class="viewcode-block" id="Registry"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.Registry">[docs]</a><span class="k">class</span> <span class="nc">Registry</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;The registry store a set of implementations associated to identifier:</span>
+
+<span class="sd">    * to each identifier are associated a list of implementations</span>
+
+<span class="sd">    * to select an implementation of a given identifier, you should use one of the</span>
+<span class="sd">      :meth:`select` or :meth:`select_or_none` method</span>
+
+<span class="sd">    * to select a list of implementations for a context, you should use the</span>
+<span class="sd">      :meth:`possible_objects` method</span>
+
+<span class="sd">    * dictionary like access to an identifier will return the bare list of</span>
+<span class="sd">      implementations for this identifier.</span>
+
+<span class="sd">    To be usable in a registry, the only requirement is to have a `__select__`</span>
+<span class="sd">    attribute.</span>
+
+<span class="sd">    At the end of the registration process, the :meth:`__registered__`</span>
+<span class="sd">    method is called on each registered object which have them, given the</span>
+<span class="sd">    registry in which it&#39;s registered as argument.</span>
+
+<span class="sd">    Registration methods:</span>
+
+<span class="sd">    .. automethod:: register</span>
+<span class="sd">    .. automethod:: unregister</span>
+
+<span class="sd">    Selection methods:</span>
+
+<span class="sd">    .. automethod:: select</span>
+<span class="sd">    .. automethod:: select_or_none</span>
+<span class="sd">    .. automethod:: possible_objects</span>
+<span class="sd">    .. automethod:: object_by_id</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">debugmode</span><span class="p">:</span> <span class="nb">bool</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Registry</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debugmode</span> <span class="o">=</span> <span class="n">debugmode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_select_listeners</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">SelectBestReport</span><span class="p">],</span> <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the registry (list of implementation objects) associated to</span>
+<span class="sd">        this name</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Registry</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">exc</span> <span class="o">=</span> <span class="n">ObjectNotFound</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">exc</span><span class="o">.</span><span class="n">__traceback__</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">raise</span> <span class="n">exc</span>
+
+<div class="viewcode-block" id="Registry.objid"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.Registry.objid">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">objid</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;returns a unique identifier for an object stored in the registry&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="vm">__module__</span><span class="p">,</span> <span class="bp">cls</span><span class="o">.</span><span class="n">objname</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Registry.objname"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.Registry.objname">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">objname</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;returns a readable name for an object stored in the registry&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;__name__&quot;</span><span class="p">,</span> <span class="nb">id</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Registry.initialization_completed"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.Registry.initialization_completed">[docs]</a>    <span class="k">def</span> <span class="nf">initialization_completed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;call method __registered__() on registered objects when the callback</span>
+<span class="sd">        is defined&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">objects</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">objectcls</span> <span class="ow">in</span> <span class="n">objects</span><span class="p">:</span>
+                <span class="n">registered</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">objectcls</span><span class="p">,</span> <span class="s2">&quot;__registered__&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">registered</span><span class="p">:</span>
+                    <span class="n">registered</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debugmode</span><span class="p">:</span>
+            <span class="n">wrap_predicates</span><span class="p">(</span><span class="n">_lltrace</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Registry.register"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.Registry.register">[docs]</a>    <span class="k">def</span> <span class="nf">register</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">oid</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">clear</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;base method to add an object in the registry&quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="s2">&quot;__abstract__&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">obj</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">,</span> <span class="n">obj</span>
+        <span class="k">assert</span> <span class="n">obj</span><span class="o">.</span><span class="n">__select__</span><span class="p">,</span> <span class="n">obj</span>
+        <span class="n">oid</span> <span class="o">=</span> <span class="n">oid</span> <span class="ow">or</span> <span class="n">obj</span><span class="o">.</span><span class="n">__regid__</span>
+        <span class="k">assert</span> <span class="n">oid</span><span class="p">,</span> <span class="p">(</span>
+            <span class="s2">&quot;no explicit name supplied to register object </span><span class="si">%s</span><span class="s2">, &quot;</span> <span class="s2">&quot;which has no __regid__ set&quot;</span> <span class="o">%</span> <span class="n">obj</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">clear</span><span class="p">:</span>
+            <span class="n">objects</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">oid</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">objects</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="k">assert</span> <span class="n">obj</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">objects</span><span class="p">,</span> <span class="s2">&quot;object </span><span class="si">%s</span><span class="s2"> is already registered&quot;</span> <span class="o">%</span> <span class="n">obj</span>
+        <span class="n">objects</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Registry.register_and_replace"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.Registry.register_and_replace">[docs]</a>    <span class="k">def</span> <span class="nf">register_and_replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">replaced</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;remove &lt;replaced&gt; and register &lt;obj&gt;&quot;&quot;&quot;</span>
+        <span class="c1"># XXXFIXME this is a duplication of unregister()</span>
+        <span class="c1"># remove register_and_replace in favor of unregister + register</span>
+        <span class="c1"># or simplify by calling unregister then register here</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">replaced</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">replaced</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">objid</span><span class="p">(</span><span class="n">replaced</span><span class="p">)</span>
+        <span class="c1"># prevent from misspelling</span>
+        <span class="k">assert</span> <span class="n">obj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">replaced</span><span class="p">,</span> <span class="s2">&quot;replacing an object by itself: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">obj</span>
+        <span class="n">registered_objs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">__regid__</span><span class="p">,</span> <span class="p">())</span>
+        <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">registered</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">registered_objs</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">objid</span><span class="p">(</span><span class="n">registered</span><span class="p">)</span> <span class="o">==</span> <span class="n">replaced</span><span class="p">:</span>
+                <span class="k">del</span> <span class="n">registered_objs</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+                <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;trying to replace </span><span class="si">%s</span><span class="s2"> that is not registered with </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">replaced</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Registry.unregister"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.Registry.unregister">[docs]</a>    <span class="k">def</span> <span class="nf">unregister</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;remove object &lt;obj&gt; from this registry&quot;&quot;&quot;</span>
+        <span class="n">objid</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">objid</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+        <span class="n">oid</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">__regid__</span>
+        <span class="k">for</span> <span class="n">registered</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">oid</span><span class="p">,</span> <span class="p">()):</span>
+            <span class="c1"># use self.objid() to compare objects because vreg will probably</span>
+            <span class="c1"># have its own version of the object, loaded through execfile</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">objid</span><span class="p">(</span><span class="n">registered</span><span class="p">)</span> <span class="o">==</span> <span class="n">objid</span><span class="p">:</span>
+                <span class="bp">self</span><span class="p">[</span><span class="n">oid</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">registered</span><span class="p">)</span>
+                <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;can&#39;t remove </span><span class="si">%s</span><span class="s2">, no id </span><span class="si">%s</span><span class="s2"> in the registry&quot;</span><span class="p">,</span> <span class="n">objid</span><span class="p">,</span> <span class="n">oid</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Registry.all_objects"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.Registry.all_objects">[docs]</a>    <span class="k">def</span> <span class="nf">all_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return a list containing all objects in this registry.&quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">objs</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">result</span> <span class="o">+=</span> <span class="n">objs</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+    <span class="c1"># dynamic selection methods ################################################</span>
+
+<div class="viewcode-block" id="Registry.object_by_id"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.Registry.object_by_id">[docs]</a>    <span class="k">def</span> <span class="nf">object_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">oid</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return object with the `oid` identifier. Only one object is expected</span>
+<span class="sd">        to be found.</span>
+
+<span class="sd">        raise :exc:`ObjectNotFound` if there are no object with id `oid` in this</span>
+<span class="sd">        registry</span>
+
+<span class="sd">        raise :exc:`AssertionError` if there is more than one object there</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">objects</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">oid</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">objects</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="n">objects</span>
+        <span class="k">return</span> <span class="n">objects</span><span class="p">[</span><span class="mi">0</span><span class="p">](</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Registry.select"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.Registry.select">[docs]</a>    <span class="k">def</span> <span class="nf">select</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__oid</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the most specific object among those with the given oid</span>
+<span class="sd">        according to the given context.</span>
+
+<span class="sd">        raise :exc:`ObjectNotFound` if there are no object with id `oid` in this</span>
+<span class="sd">        registry</span>
+
+<span class="sd">        raise :exc:`NoSelectableObject` if no object can be selected</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_best</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">__oid</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NoSelectableObject</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="bp">self</span><span class="p">[</span><span class="n">__oid</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">obj</span></div>
+
+<div class="viewcode-block" id="Registry.select_or_none"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.Registry.select_or_none">[docs]</a>    <span class="k">def</span> <span class="nf">select_or_none</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__oid</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the most specific object among those with the given oid</span>
+<span class="sd">        according to the given context, or None if no object applies.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_best</span><span class="p">(</span><span class="bp">self</span><span class="p">[</span><span class="n">__oid</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">ObjectNotFound</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Registry.possible_objects"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.Registry.possible_objects">[docs]</a>    <span class="k">def</span> <span class="nf">possible_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return an iterator on possible objects in this registry for the given</span>
+<span class="sd">        context</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">objects</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_best</span><span class="p">(</span><span class="n">objects</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">yield</span> <span class="n">obj</span></div>
+
+<div class="viewcode-block" id="Registry.add_select_best_listener"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.Registry.add_select_best_listener">[docs]</a>    <span class="k">def</span> <span class="nf">add_select_best_listener</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">listener</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a listener to the list of one parameters callables (function/method)</span>
+<span class="sd">        that will be called everytime the selection Registry._select_best is</span>
+<span class="sd">        done and they will recieve a dict of the following form::</span>
+
+<span class="sd">          {&quot;all_objects&quot;: [], &quot;end_score&quot;: 0, &quot;winners&quot;: [], &quot;winner&quot;: None or winner,</span>
+<span class="sd">          &quot;self&quot;: self, &quot;args&quot;: args, &quot;kwargs&quot;: kwargs, }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_select_listeners</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">listener</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_select_best</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">objects</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return an instance of the most specific object according</span>
+<span class="sd">        to parameters</span>
+
+<span class="sd">        return None if not object apply (don&#39;t raise `NoSelectableObject` since</span>
+<span class="sd">        it&#39;s costly when searching objects using `possible_objects`</span>
+<span class="sd">        (e.g. searching for hooks).</span>
+
+<span class="sd">        Every callable stored in Registry._select_listeners will be called</span>
+<span class="sd">        once the selection is done and will recieve a dict of the following form::</span>
+
+<span class="sd">          {&quot;all_objects&quot;: [], &quot;end_score&quot;: 0, &quot;winners&quot;: [], &quot;winner&quot;: None or winner,</span>
+<span class="sd">          &quot;self&quot;: self, &quot;args&quot;: args, &quot;kwargs&quot;: kwargs, &quot;registry&quot;: self}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_listeners</span><span class="p">:</span>
+            <span class="n">select_best_report</span><span class="p">:</span> <span class="n">SelectBestReport</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;registry&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="p">,</span>
+                <span class="s2">&quot;all_objects&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s2">&quot;end_score&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                <span class="s2">&quot;winners&quot;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s2">&quot;winner&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                <span class="s2">&quot;self&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="p">,</span>
+                <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="n">args</span><span class="p">,</span>
+                <span class="s2">&quot;kwargs&quot;</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">,</span>
+            <span class="p">}</span>
+
+        <span class="n">score</span><span class="p">,</span> <span class="n">winners</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">objects</span><span class="p">:</span>
+            <span class="n">objectscore</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">__select__</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_listeners</span><span class="p">:</span>
+                <span class="n">select_best_report</span><span class="p">[</span><span class="s2">&quot;all_objects&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s2">&quot;object&quot;</span><span class="p">:</span> <span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;score&quot;</span><span class="p">:</span> <span class="n">objectscore</span><span class="p">})</span>
+
+            <span class="k">if</span> <span class="n">objectscore</span> <span class="o">&gt;</span> <span class="n">score</span><span class="p">:</span>
+                <span class="n">score</span><span class="p">,</span> <span class="n">winners</span> <span class="o">=</span> <span class="n">objectscore</span><span class="p">,</span> <span class="p">[</span><span class="n">obj</span><span class="p">]</span>
+
+            <span class="k">elif</span> <span class="n">objectscore</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">objectscore</span> <span class="o">==</span> <span class="n">score</span><span class="p">:</span>
+                <span class="n">winners</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_listeners</span><span class="p">:</span>
+            <span class="n">select_best_report</span><span class="p">[</span><span class="s2">&quot;winners&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">winners</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span> <span class="k">if</span> <span class="n">winners</span> <span class="k">else</span> <span class="p">[]</span>
+            <span class="n">select_best_report</span><span class="p">[</span><span class="s2">&quot;winner&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">winners</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">winners</span> <span class="k">else</span> <span class="n">winners</span>
+            <span class="n">select_best_report</span><span class="p">[</span><span class="s2">&quot;end_score&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">score</span>
+            <span class="k">for</span> <span class="n">listener</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_select_listeners</span><span class="p">:</span>
+                <span class="n">listener</span><span class="p">(</span><span class="n">select_best_report</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">winners</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">winners</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c1"># log in production environement / test, error while debugging</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;select ambiguity: </span><span class="si">%s</span><span class="se">\n</span><span class="s2">(args: </span><span class="si">%s</span><span class="s2">, kwargs: </span><span class="si">%s</span><span class="s2">)&quot;</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debugmode</span><span class="p">:</span>
+                <span class="c1"># raise bare exception in debug mode</span>
+                <span class="k">raise</span> <span class="n">SelectAmbiguity</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="p">(</span><span class="n">winners</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">winners</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+        <span class="c1"># return the result of calling the object</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">selected</span><span class="p">(</span><span class="n">winners</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Registry.selected"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.Registry.selected">[docs]</a>    <span class="k">def</span> <span class="nf">selected</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">winner</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;override here if for instance you don&#39;t want &quot;instanciation&quot; &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">winner</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+    <span class="c1"># these are overridden by set_log_methods below</span>
+    <span class="c1"># only defining here to prevent pylint from complaining</span>
+    <span class="n">info</span> <span class="o">=</span> <span class="n">warning</span> <span class="o">=</span> <span class="n">error</span> <span class="o">=</span> <span class="n">critical</span> <span class="o">=</span> <span class="n">exception</span> <span class="o">=</span> <span class="n">debug</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">:</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="obj_registries"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.obj_registries">[docs]</a><span class="k">def</span> <span class="nf">obj_registries</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">registryname</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;return a tuple of registry names (see __registries__)&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">registryname</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">registryname</span><span class="p">,)</span>
+    <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__registries__</span></div>
+
+
+<div class="viewcode-block" id="RegistryStore"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.RegistryStore">[docs]</a><span class="k">class</span> <span class="nc">RegistryStore</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This class is responsible for loading objects and storing them</span>
+<span class="sd">    in their registry which is created on the fly as needed.</span>
+
+<span class="sd">    It handles dynamic registration of objects and provides a</span>
+<span class="sd">    convenient api to access them. To be recognized as an object that</span>
+<span class="sd">    should be stored into one of the store&#39;s registry</span>
+<span class="sd">    (:class:`Registry`), an object must provide the following</span>
+<span class="sd">    attributes, used control how they interact with the registry:</span>
+
+<span class="sd">    :attr:`__registries__`</span>
+<span class="sd">      list of registry names (string like &#39;views&#39;, &#39;templates&#39;...) into which</span>
+<span class="sd">      the object should be registered</span>
+
+<span class="sd">    :attr:`__regid__`</span>
+<span class="sd">      object identifier in the registry (string like &#39;main&#39;,</span>
+<span class="sd">      &#39;primary&#39;, &#39;folder_box&#39;)</span>
+
+<span class="sd">    :attr:`__select__`</span>
+<span class="sd">      the object predicate selectors</span>
+
+<span class="sd">    Moreover, the :attr:`__abstract__` attribute may be set to `True`</span>
+<span class="sd">    to indicate that an object is abstract and should not be registered</span>
+<span class="sd">    (such inherited attributes not considered).</span>
+
+<span class="sd">    .. Note::</span>
+
+<span class="sd">      When using the store to load objects dynamically, you *always* have</span>
+<span class="sd">      to use **super()** to get the methods and attributes of the</span>
+<span class="sd">      superclasses, and not use the class identifier. If not, you&#39;ll get into</span>
+<span class="sd">      trouble at reload time.</span>
+
+<span class="sd">      For example, instead of writing::</span>
+
+<span class="sd">          class Thing(Parent):</span>
+<span class="sd">              __regid__ = &#39;athing&#39;</span>
+<span class="sd">              __select__ = yes()</span>
+
+<span class="sd">              def f(self, arg1):</span>
+<span class="sd">                  Parent.f(self, arg1)</span>
+
+<span class="sd">      You must write::</span>
+
+<span class="sd">          class Thing(Parent):</span>
+<span class="sd">              __regid__ = &#39;athing&#39;</span>
+<span class="sd">              __select__ = yes()</span>
+
+<span class="sd">              def f(self, arg1):</span>
+<span class="sd">                  super(Thing, self).f(arg1)</span>
+
+<span class="sd">    Controlling object registration</span>
+<span class="sd">    -------------------------------</span>
+
+<span class="sd">    Dynamic loading is triggered by calling the :meth:`register_modnames`</span>
+<span class="sd">    method, given a list of modules names to inspect.</span>
+
+<span class="sd">    .. automethod:: register_modnames</span>
+
+<span class="sd">    For each module, by default, all compatible objects are registered</span>
+<span class="sd">    automatically. However if some objects come as replacement of</span>
+<span class="sd">    other objects, or have to be included only if some condition is</span>
+<span class="sd">    met, you&#39;ll have to define a `registration_callback(vreg)`</span>
+<span class="sd">    function in the module and explicitly register **all objects** in</span>
+<span class="sd">    this module, using the api defined below.</span>
+
+
+<span class="sd">    .. automethod:: RegistryStore.register_all</span>
+<span class="sd">    .. automethod:: RegistryStore.register_and_replace</span>
+<span class="sd">    .. automethod:: RegistryStore.register</span>
+<span class="sd">    .. automethod:: RegistryStore.unregister</span>
+
+<span class="sd">    .. Note::</span>
+<span class="sd">        Once the function `registration_callback(vreg)` is implemented in a</span>
+<span class="sd">        module, all the objects from this module have to be explicitly</span>
+<span class="sd">        registered as it disables the automatic object registration.</span>
+
+
+<span class="sd">    Examples:</span>
+
+<span class="sd">    .. sourcecode:: python</span>
+
+<span class="sd">       def registration_callback(store):</span>
+<span class="sd">          # register everything in the module except BabarClass</span>
+<span class="sd">          store.register_all(globals().values(), __name__, (BabarClass,))</span>
+
+<span class="sd">          # conditionally register BabarClass</span>
+<span class="sd">          if &#39;babar_relation&#39; in store.schema:</span>
+<span class="sd">              store.register(BabarClass)</span>
+
+<span class="sd">    In this example, we register all application object classes defined in the module</span>
+<span class="sd">    except `BabarClass`. This class is then registered only if the &#39;babar_relation&#39;</span>
+<span class="sd">    relation type is defined in the instance schema.</span>
+
+<span class="sd">    .. sourcecode:: python</span>
+
+<span class="sd">       def registration_callback(store):</span>
+<span class="sd">          store.register(Elephant)</span>
+<span class="sd">          # replace Babar by Celeste</span>
+<span class="sd">          store.register_and_replace(Celeste, Babar)</span>
+
+<span class="sd">    In this example, we explicitly register classes one by one:</span>
+
+<span class="sd">    * the `Elephant` class</span>
+<span class="sd">    * the `Celeste` to replace `Babar`</span>
+
+<span class="sd">    If at some point we register a new appobject class in this module, it won&#39;t be</span>
+<span class="sd">    registered at all without modification to the `registration_callback`</span>
+<span class="sd">    implementation. The first example will register it though, thanks to the call</span>
+<span class="sd">    to the `register_all` method.</span>
+
+<span class="sd">    Controlling registry instantiation</span>
+<span class="sd">    ----------------------------------</span>
+
+<span class="sd">    The `REGISTRY_FACTORY` class dictionary allows to specify which class should</span>
+<span class="sd">    be instantiated for a given registry name. The class associated to `None`</span>
+<span class="sd">    key will be the class used when there is no specific class for a name.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">debugmode</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RegistryStore</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debugmode</span> <span class="o">=</span> <span class="n">debugmode</span>
+
+<div class="viewcode-block" id="RegistryStore.reset"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.RegistryStore.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;clear all registries managed by this store&quot;&quot;&quot;</span>
+        <span class="c1"># don&#39;t use self.clear, we want to keep existing subdictionaries</span>
+        <span class="k">for</span> <span class="n">subdict</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">subdict</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lastmodifs</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Registry</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;return the registry (dictionary of class objects) associated to</span>
+<span class="sd">        this name</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">RegistryStore</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__getitem__</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">exc</span> <span class="o">=</span> <span class="n">RegistryNotFound</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">exc</span><span class="o">.</span><span class="n">__traceback__</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="k">raise</span> <span class="n">exc</span>
+
+    <span class="c1"># methods for explicit (un)registration ###################################</span>
+
+    <span class="c1"># default class, when no specific class set</span>
+    <span class="n">REGISTRY_FACTORY</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="kc">None</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">type</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="kc">None</span><span class="p">:</span> <span class="n">Registry</span><span class="p">}</span>
+
+<div class="viewcode-block" id="RegistryStore.registry_class"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.RegistryStore.registry_class">[docs]</a>    <span class="k">def</span> <span class="nf">registry_class</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">regid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">type</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;return existing registry named regid or use factory to create one and</span>
+<span class="sd">        return it&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">REGISTRY_FACTORY</span><span class="p">[</span><span class="n">regid</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">REGISTRY_FACTORY</span><span class="p">[</span><span class="kc">None</span><span class="p">]</span></div>
+
+    <span class="c1"># mypy: Signature of &quot;setdefault&quot; incompatible with supertype &quot;MutableMapping&quot;&quot;</span>
+    <span class="c1"># I don&#39;t know how to overload signatures of method in mypy</span>
+<div class="viewcode-block" id="RegistryStore.setdefault"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.RegistryStore.setdefault">[docs]</a>    <span class="k">def</span> <span class="nf">setdefault</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">regid</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Registry</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">regid</span><span class="p">]</span>
+        <span class="k">except</span> <span class="n">RegistryNotFound</span><span class="p">:</span>
+            <span class="bp">self</span><span class="p">[</span><span class="n">regid</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">registry_class</span><span class="p">(</span><span class="n">regid</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">debugmode</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">regid</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="RegistryStore.register_all"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.RegistryStore.register_all">[docs]</a>    <span class="k">def</span> <span class="nf">register_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">objects</span><span class="p">:</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">modname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">butclasses</span><span class="p">:</span> <span class="n">Sequence</span> <span class="o">=</span> <span class="p">())</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;register registrable objects into `objects`.</span>
+
+<span class="sd">        Registrable objects are properly configured subclasses of</span>
+<span class="sd">        :class:`RegistrableObject`.  Objects which are not defined in the module</span>
+<span class="sd">        `modname` or which are in `butclasses` won&#39;t be registered.</span>
+
+<span class="sd">        Typical usage is:</span>
+
+<span class="sd">        .. sourcecode:: python</span>
+
+<span class="sd">            store.register_all(globals().values(), __name__, (ClassIWantToRegisterExplicitly,))</span>
+
+<span class="sd">        So you get partially automatic registration, keeping manual registration</span>
+<span class="sd">        for some object (to use</span>
+<span class="sd">        :meth:`~logilab.common.registry.RegistryStore.register_and_replace` for</span>
+<span class="sd">        instance).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">modname</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="p">(</span>
+            <span class="s2">&quot;modname expected to be a module name (ie string), got </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">modname</span>
+        <span class="p">)</span>
+        <span class="k">for</span> <span class="n">obj</span> <span class="ow">in</span> <span class="n">objects</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_registrable</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span> <span class="ow">and</span> <span class="n">obj</span><span class="o">.</span><span class="vm">__module__</span> <span class="o">==</span> <span class="n">modname</span> <span class="ow">and</span> <span class="n">obj</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">butclasses</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_load_ancestors_then_object</span><span class="p">(</span><span class="n">modname</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">butclasses</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RegistryStore.register"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.RegistryStore.register">[docs]</a>    <span class="k">def</span> <span class="nf">register</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">registryname</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">oid</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">clear</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;register `obj` implementation into `registryname` or</span>
+<span class="sd">        `obj.__registries__` if not specified, with identifier `oid` or</span>
+<span class="sd">        `obj.__regid__` if not specified.</span>
+
+<span class="sd">        If `clear` is true, all objects with the same identifier will be</span>
+<span class="sd">        previously unregistered.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">obj</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;__abstract__&quot;</span><span class="p">),</span> <span class="n">obj</span>
+        <span class="k">for</span> <span class="n">registryname</span> <span class="ow">in</span> <span class="n">obj_registries</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">registryname</span><span class="p">):</span>
+            <span class="n">registry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">registryname</span><span class="p">)</span>
+            <span class="n">registry</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">oid</span><span class="o">=</span><span class="n">oid</span><span class="p">,</span> <span class="n">clear</span><span class="o">=</span><span class="n">clear</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="s2">&quot;register </span><span class="si">%s</span><span class="s2"> in </span><span class="si">%s</span><span class="s2">[&#39;</span><span class="si">%s</span><span class="s2">&#39;]&quot;</span><span class="p">,</span> <span class="n">registry</span><span class="o">.</span><span class="n">objname</span><span class="p">(</span><span class="n">obj</span><span class="p">),</span> <span class="n">registryname</span><span class="p">,</span> <span class="n">oid</span> <span class="ow">or</span> <span class="n">obj</span><span class="o">.</span><span class="n">__regid__</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_loadedmods</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="vm">__module__</span><span class="p">,</span> <span class="p">{})[</span><span class="n">registry</span><span class="o">.</span><span class="n">objid</span><span class="p">(</span><span class="n">obj</span><span class="p">)]</span> <span class="o">=</span> <span class="n">obj</span></div>
+
+<div class="viewcode-block" id="RegistryStore.unregister"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.RegistryStore.unregister">[docs]</a>    <span class="k">def</span> <span class="nf">unregister</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">registryname</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;unregister `obj` object from the registry `registryname` or</span>
+<span class="sd">        `obj.__registries__` if not specified.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">registryname</span> <span class="ow">in</span> <span class="n">obj_registries</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">registryname</span><span class="p">):</span>
+            <span class="n">registry</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">registryname</span><span class="p">]</span>
+            <span class="n">registry</span><span class="o">.</span><span class="n">unregister</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="s2">&quot;unregister </span><span class="si">%s</span><span class="s2"> from </span><span class="si">%s</span><span class="s2">[&#39;</span><span class="si">%s</span><span class="s2">&#39;]&quot;</span><span class="p">,</span> <span class="n">registry</span><span class="o">.</span><span class="n">objname</span><span class="p">(</span><span class="n">obj</span><span class="p">),</span> <span class="n">registryname</span><span class="p">,</span> <span class="n">obj</span><span class="o">.</span><span class="n">__regid__</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="RegistryStore.register_and_replace"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.RegistryStore.register_and_replace">[docs]</a>    <span class="k">def</span> <span class="nf">register_and_replace</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">replaced</span><span class="p">,</span> <span class="n">registryname</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;register `obj` object into `registryname` or</span>
+<span class="sd">        `obj.__registries__` if not specified. If found, the `replaced` object</span>
+<span class="sd">        will be unregistered first (else a warning will be issued as it is</span>
+<span class="sd">        generally unexpected).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">registryname</span> <span class="ow">in</span> <span class="n">obj_registries</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">registryname</span><span class="p">):</span>
+            <span class="n">registry</span> <span class="o">=</span> <span class="bp">self</span><span class="p">[</span><span class="n">registryname</span><span class="p">]</span>
+            <span class="n">registry</span><span class="o">.</span><span class="n">register_and_replace</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">replaced</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+                <span class="s2">&quot;register </span><span class="si">%s</span><span class="s2"> in </span><span class="si">%s</span><span class="s2">[&#39;</span><span class="si">%s</span><span class="s2">&#39;] instead of </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="n">registry</span><span class="o">.</span><span class="n">objname</span><span class="p">(</span><span class="n">obj</span><span class="p">),</span>
+                <span class="n">registryname</span><span class="p">,</span>
+                <span class="n">obj</span><span class="o">.</span><span class="n">__regid__</span><span class="p">,</span>
+                <span class="n">registry</span><span class="o">.</span><span class="n">objname</span><span class="p">(</span><span class="n">replaced</span><span class="p">),</span>
+            <span class="p">)</span></div>
+
+    <span class="c1"># initialization methods ###################################################</span>
+
+<div class="viewcode-block" id="RegistryStore.init_registration"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.RegistryStore.init_registration">[docs]</a>    <span class="k">def</span> <span class="nf">init_registration</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">extrapath</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;reset registry and walk down path to return list of (path, name)</span>
+<span class="sd">        file modules to be loaded&quot;&quot;&quot;</span>
+        <span class="c1"># XXX make this private by renaming it to _init_registration ?</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="c1"># compute list of all modules that have to be loaded</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_toloadmods</span><span class="p">,</span> <span class="n">filemods</span> <span class="o">=</span> <span class="n">_toload_info</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">extrapath</span><span class="p">)</span>
+        <span class="c1"># XXX is _loadedmods still necessary ? It seems like it&#39;s useful</span>
+        <span class="c1">#     to avoid loading same module twice, especially with the</span>
+        <span class="c1">#     _load_ancestors_then_object logic but this needs to be checked</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_loadedmods</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">type</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">return</span> <span class="n">filemods</span></div>
+
+    <span class="nd">@callable_deprecated</span><span class="p">(</span><span class="s2">&quot;use register_modnames() instead&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">register_objects</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">extrapath</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;register all objects found walking down &lt;path&gt;&quot;&quot;&quot;</span>
+        <span class="c1"># load views from each directory in the instance&#39;s path</span>
+        <span class="c1"># XXX inline init_registration ?</span>
+        <span class="n">filemods</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_registration</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">extrapath</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">modname</span> <span class="ow">in</span> <span class="n">filemods</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_file</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">modname</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialization_completed</span><span class="p">()</span>
+
+<div class="viewcode-block" id="RegistryStore.register_modnames"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.RegistryStore.register_modnames">[docs]</a>    <span class="k">def</span> <span class="nf">register_modnames</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">modnames</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;register all objects found in &lt;modnames&gt;&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_loadedmods</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_toloadmods</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">toload</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">modname</span> <span class="ow">in</span> <span class="n">modnames</span><span class="p">:</span>
+            <span class="n">loader</span> <span class="o">=</span> <span class="n">pkgutil</span><span class="o">.</span><span class="n">find_loader</span><span class="p">(</span><span class="n">modname</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">loader</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="c1"># mypy: &quot;Loader&quot; has no attribute &quot;get_filename&quot;</span>
+            <span class="c1"># the selected class has one</span>
+            <span class="n">filepath</span> <span class="o">=</span> <span class="n">loader</span><span class="o">.</span><span class="n">get_filename</span><span class="p">()</span>  <span class="c1"># type: ignore</span>
+            <span class="k">if</span> <span class="n">filepath</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">:]</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;.pyc&quot;</span><span class="p">,</span> <span class="s2">&quot;.pyo&quot;</span><span class="p">):</span>
+                <span class="c1"># The source file *must* exists</span>
+                <span class="n">filepath</span> <span class="o">=</span> <span class="n">filepath</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_toloadmods</span><span class="p">[</span><span class="n">modname</span><span class="p">]</span> <span class="o">=</span> <span class="n">filepath</span>
+            <span class="n">toload</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">filepath</span><span class="p">,</span> <span class="n">modname</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">modname</span> <span class="ow">in</span> <span class="n">toload</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">load_file</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">modname</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">initialization_completed</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="RegistryStore.initialization_completed"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.RegistryStore.initialization_completed">[docs]</a>    <span class="k">def</span> <span class="nf">initialization_completed</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;call initialization_completed() on all known registries&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">reg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">reg</span><span class="o">.</span><span class="n">initialization_completed</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_mdate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;return the modification date of a file path&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">stat</span><span class="p">(</span><span class="n">filepath</span><span class="p">)[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="c1"># this typically happens on emacs backup files (.#foo.py)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Unable to load </span><span class="si">%s</span><span class="s2">. It is likely to be a backup file&quot;</span><span class="p">,</span> <span class="n">filepath</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="RegistryStore.is_reload_needed"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.RegistryStore.is_reload_needed">[docs]</a>    <span class="k">def</span> <span class="nf">is_reload_needed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return True if something module changed and the registry should be</span>
+<span class="sd">        reloaded</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">lastmodifs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lastmodifs</span>
+        <span class="k">for</span> <span class="n">fileordir</span> <span class="ow">in</span> <span class="n">path</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">isdir</span><span class="p">(</span><span class="n">fileordir</span><span class="p">)</span> <span class="ow">and</span> <span class="n">exists</span><span class="p">(</span><span class="n">join</span><span class="p">(</span><span class="n">fileordir</span><span class="p">,</span> <span class="s2">&quot;__init__.py&quot;</span><span class="p">)):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_reload_needed</span><span class="p">([</span><span class="n">join</span><span class="p">(</span><span class="n">fileordir</span><span class="p">,</span> <span class="n">fname</span><span class="p">)</span> <span class="k">for</span> <span class="n">fname</span> <span class="ow">in</span> <span class="n">listdir</span><span class="p">(</span><span class="n">fileordir</span><span class="p">)]):</span>
+                    <span class="k">return</span> <span class="kc">True</span>
+            <span class="k">elif</span> <span class="n">fileordir</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span> <span class="o">==</span> <span class="s2">&quot;.py&quot;</span><span class="p">:</span>
+                <span class="n">mdate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdate</span><span class="p">(</span><span class="n">fileordir</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">mdate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">continue</span>  <span class="c1"># backup file, see _mdate implementation</span>
+                <span class="k">elif</span> <span class="s2">&quot;flymake&quot;</span> <span class="ow">in</span> <span class="n">fileordir</span><span class="p">:</span>
+                    <span class="c1"># flymake + pylint in use, don&#39;t consider these they will corrupt the registry</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">fileordir</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">lastmodifs</span> <span class="ow">or</span> <span class="n">lastmodifs</span><span class="p">[</span><span class="n">fileordir</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">mdate</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;File </span><span class="si">%s</span><span class="s2"> changed since last visit&quot;</span><span class="p">,</span> <span class="n">fileordir</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="RegistryStore.load_file"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.RegistryStore.load_file">[docs]</a>    <span class="k">def</span> <span class="nf">load_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">modname</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;load registrable objects (if any) from a python file&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">modname</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loadedmods</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_loadedmods</span><span class="p">[</span><span class="n">modname</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">mdate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mdate</span><span class="p">(</span><span class="n">filepath</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">mdate</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>  <span class="c1"># backup file, see _mdate implementation</span>
+        <span class="k">elif</span> <span class="s2">&quot;flymake&quot;</span> <span class="ow">in</span> <span class="n">filepath</span><span class="p">:</span>
+            <span class="c1"># flymake + pylint in use, don&#39;t consider these they will corrupt the registry</span>
+            <span class="k">return</span>
+        <span class="c1"># set update time before module loading, else we get some reloading</span>
+        <span class="c1"># weirdness in case of syntax error or other error while importing the</span>
+        <span class="c1"># module</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_lastmodifs</span><span class="p">[</span><span class="n">filepath</span><span class="p">]</span> <span class="o">=</span> <span class="n">mdate</span>
+        <span class="c1"># load the module</span>
+        <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">modname</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">modname</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">modname</span><span class="p">)</span>
+        <span class="n">module</span> <span class="o">=</span> <span class="nb">__import__</span><span class="p">(</span><span class="n">modname</span><span class="p">,</span> <span class="n">fromlist</span><span class="o">=</span><span class="n">modname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="n">module</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RegistryStore.load_module"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.RegistryStore.load_module">[docs]</a>    <span class="k">def</span> <span class="nf">load_module</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">module</span><span class="p">:</span> <span class="n">ModuleType</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Automatically handle module objects registration.</span>
+
+<span class="sd">        Instances are registered as soon as they are hashable and have the</span>
+<span class="sd">        following attributes:</span>
+
+<span class="sd">        * __regid__ (a string)</span>
+<span class="sd">        * __select__ (a callable)</span>
+<span class="sd">        * __registries__ (a tuple/list of string)</span>
+
+<span class="sd">        For classes this is a bit more complicated :</span>
+
+<span class="sd">        - first ensure parent classes are already registered</span>
+
+<span class="sd">        - class with __abstract__ == True in their local dictionary are skipped</span>
+
+<span class="sd">        - object class needs to have registries and identifier properly set to a</span>
+<span class="sd">          non empty string to be registered.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;loading </span><span class="si">%s</span><span class="s2"> from </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">module</span><span class="o">.</span><span class="vm">__file__</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s2">&quot;registration_callback&quot;</span><span class="p">):</span>
+            <span class="c1"># mypy: Module has no attribute &quot;registration_callback&quot;</span>
+            <span class="c1"># we check that before</span>
+            <span class="n">module</span><span class="o">.</span><span class="n">registration_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">register_all</span><span class="p">(</span><span class="nb">vars</span><span class="p">(</span><span class="n">module</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">(),</span> <span class="n">module</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_load_ancestors_then_object</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">modname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">objectcls</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span> <span class="n">butclasses</span><span class="p">:</span> <span class="n">Sequence</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">()</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;handle class registration according to rules defined in</span>
+<span class="sd">        :meth:`load_module`</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># backward compat, we used to allow whatever else than classes</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">objectcls</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_registrable</span><span class="p">(</span><span class="n">objectcls</span><span class="p">)</span> <span class="ow">and</span> <span class="n">objectcls</span><span class="o">.</span><span class="vm">__module__</span> <span class="o">==</span> <span class="n">modname</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">objectcls</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="c1"># imported classes</span>
+        <span class="n">objmodname</span> <span class="o">=</span> <span class="n">objectcls</span><span class="o">.</span><span class="vm">__module__</span>
+        <span class="k">if</span> <span class="n">objmodname</span> <span class="o">!=</span> <span class="n">modname</span><span class="p">:</span>
+            <span class="c1"># The module of the object is not the same as the currently</span>
+            <span class="c1"># worked on module, or this is actually an instance, which</span>
+            <span class="c1"># has no module at all</span>
+            <span class="k">if</span> <span class="n">objmodname</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_toloadmods</span><span class="p">:</span>
+                <span class="c1"># if this is still scheduled for loading, let&#39;s proceed immediately,</span>
+                <span class="c1"># but using the object module</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">load_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_toloadmods</span><span class="p">[</span><span class="n">objmodname</span><span class="p">],</span> <span class="n">objmodname</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="c1"># ensure object hasn&#39;t been already processed</span>
+        <span class="n">clsid</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">modname</span><span class="p">,</span> <span class="n">objectcls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">clsid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loadedmods</span><span class="p">[</span><span class="n">modname</span><span class="p">]:</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_loadedmods</span><span class="p">[</span><span class="n">modname</span><span class="p">][</span><span class="n">clsid</span><span class="p">]</span> <span class="o">=</span> <span class="n">objectcls</span>
+        <span class="c1"># ensure ancestors are registered</span>
+        <span class="k">for</span> <span class="n">parent</span> <span class="ow">in</span> <span class="n">objectcls</span><span class="o">.</span><span class="vm">__bases__</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_load_ancestors_then_object</span><span class="p">(</span><span class="n">modname</span><span class="p">,</span> <span class="n">parent</span><span class="p">,</span> <span class="n">butclasses</span><span class="p">)</span>
+        <span class="c1"># ensure object is registrable</span>
+        <span class="k">if</span> <span class="n">objectcls</span> <span class="ow">in</span> <span class="n">butclasses</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_registrable</span><span class="p">(</span><span class="n">objectcls</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="c1"># backward compat</span>
+        <span class="n">reg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">obj_registries</span><span class="p">(</span><span class="n">objectcls</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">reg</span><span class="o">.</span><span class="n">objname</span><span class="p">(</span><span class="n">objectcls</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;_&quot;</span><span class="p">:</span>
+            <span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;[lgc 0.59] object whose name start with &#39;_&#39; won&#39;t be &quot;</span>
+                <span class="s2">&quot;skipped anymore at some point, use __abstract__ = True &quot;</span>
+                <span class="s2">&quot;instead (</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="n">objectcls</span><span class="p">,</span>
+                <span class="ne">DeprecationWarning</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">return</span>
+        <span class="c1"># register, finally</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">objectcls</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RegistryStore.is_registrable"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.RegistryStore.is_registrable">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">is_registrable</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;ensure `obj` should be registered</span>
+
+<span class="sd">        as arbitrary stuff may be registered, do a lot of check and warn about</span>
+<span class="sd">        weird cases (think to dumb proxy objects)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">RegistrableObject</span><span class="p">):</span>
+                <span class="c1"># ducktyping backward compat</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span>
+                    <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;__registries__&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                    <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;__regid__&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                    <span class="ow">and</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="s2">&quot;__select__&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="p">):</span>
+                    <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">elif</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">RegistrableInstance</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">RegistrableInstance</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">obj</span><span class="o">.</span><span class="n">__regid__</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># no regid</span>
+
+        <span class="n">registries</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">__registries__</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">registries</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># no registries</span>
+
+        <span class="n">selector</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="n">__select__</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">selector</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># no selector</span>
+
+        <span class="k">if</span> <span class="n">obj</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;__abstract__&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># then detect potential problems that should be warned</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">registries</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> has __registries__ which is not a list or tuple&quot;</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">callable</span><span class="p">(</span><span class="n">selector</span><span class="p">):</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> has not callable __select__&quot;</span><span class="p">,</span> <span class="n">obj</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+    <span class="c1"># these are overridden by set_log_methods below</span>
+    <span class="c1"># only defining here to prevent pylint from complaining</span>
+    <span class="n">info</span> <span class="o">=</span> <span class="n">warning</span> <span class="o">=</span> <span class="n">error</span> <span class="o">=</span> <span class="n">critical</span> <span class="o">=</span> <span class="n">exception</span> <span class="o">=</span> <span class="n">debug</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">msg</span><span class="p">,</span> <span class="o">*</span><span class="n">a</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">:</span> <span class="kc">None</span></div>
+
+
+<span class="c1"># init logging</span>
+<span class="n">set_log_methods</span><span class="p">(</span><span class="n">RegistryStore</span><span class="p">,</span> <span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;registry.store&quot;</span><span class="p">))</span>
+<span class="n">set_log_methods</span><span class="p">(</span><span class="n">Registry</span><span class="p">,</span> <span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;registry&quot;</span><span class="p">))</span>
+
+
+<span class="c1"># helpers for debugging selectors</span>
+<span class="n">TRACED_OIDS</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<span class="k">def</span> <span class="nf">_trace_selector</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">selector</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ret</span><span class="p">):</span>
+    <span class="n">vobj</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">TRACED_OIDS</span> <span class="o">==</span> <span class="s2">&quot;all&quot;</span> <span class="ow">or</span> <span class="n">vobj</span><span class="o">.</span><span class="n">__regid__</span> <span class="ow">in</span> <span class="n">TRACED_OIDS</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> -&gt; </span><span class="si">%s</span><span class="s2"> for </span><span class="si">%s</span><span class="s2">(</span><span class="si">%s</span><span class="s2">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">ret</span><span class="p">,</span> <span class="n">vobj</span><span class="p">,</span> <span class="n">vobj</span><span class="o">.</span><span class="n">__regid__</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">_lltrace</span><span class="p">(</span><span class="n">selector</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;use this decorator on your predicates so they become traceable with</span>
+<span class="sd">    :class:`traced_selection`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">traced</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">selector</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">TRACED_OIDS</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_trace_selector</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">selector</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">ret</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret</span>
+
+    <span class="n">traced</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="vm">__name__</span>
+    <span class="n">traced</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="vm">__doc__</span>
+    <span class="k">return</span> <span class="n">traced</span>
+
+
+<div class="viewcode-block" id="traced_selection"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.registry.traced_selection">[docs]</a><span class="k">class</span> <span class="nc">traced_selection</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>  <span class="c1"># pylint: disable=C0103</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Typical usage is :</span>
+
+<span class="sd">    .. sourcecode:: python</span>
+
+<span class="sd">        &gt;&gt;&gt; from logilab.common.registry import traced_selection</span>
+<span class="sd">        &gt;&gt;&gt; with traced_selection():</span>
+<span class="sd">        ...     # some code in which you want to debug selectors</span>
+<span class="sd">        ...     # for all objects</span>
+
+<span class="sd">    This will yield lines like this in the logs::</span>
+
+<span class="sd">        selector one_line_rset returned 0 for &lt;class &#39;elephant.Babar&#39;&gt;</span>
+
+<span class="sd">    You can also give to :class:`traced_selection` the identifiers of objects on</span>
+<span class="sd">    which you want to debug selection (&#39;oid1&#39; and &#39;oid2&#39; in the example above).</span>
+
+<span class="sd">    .. sourcecode:: python</span>
+
+<span class="sd">        &gt;&gt;&gt; with traced_selection( (&#39;regid1&#39;, &#39;regid2&#39;) ):</span>
+<span class="sd">        ...     # some code in which you want to debug selectors</span>
+<span class="sd">        ...     # for objects with __regid__ &#39;regid1&#39; and &#39;regid2&#39;</span>
+
+<span class="sd">    A potentially useful point to set up such a tracing function is</span>
+<span class="sd">    the `logilab.common.registry.Registry.select` method body.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">traced</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">traced</span> <span class="o">=</span> <span class="n">traced</span>
+
+    <span class="k">def</span> <span class="fm">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">global</span> <span class="n">TRACED_OIDS</span>
+        <span class="n">TRACED_OIDS</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">traced</span>
+
+    <span class="k">def</span> <span class="fm">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exctype</span><span class="p">,</span> <span class="n">exc</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
+        <span class="k">global</span> <span class="n">TRACED_OIDS</span>
+        <span class="n">TRACED_OIDS</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">traceback</span> <span class="ow">is</span> <span class="kc">None</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">logilab common</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../logilab.common.html">logilab.common package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../logilab.common.ureports.html">logilab.common.ureports package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  <li><a href="../common.html">logilab.common</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Logilab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

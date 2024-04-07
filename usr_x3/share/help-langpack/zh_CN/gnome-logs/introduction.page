@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<page xmlns="http://projectmallard.org/1.0/" xmlns:its="http://www.w3.org/2005/11/its" type="topic" style="task" id="introduction" xml:lang="gnome-logs-zh-CN">
+
+  <info>
+    <link type="guide" xref="index" group="#first"/>
+    <revision pkgversion="3.12" date="2014-03-03" status="review"/>
+
+    <credit type="author copyright">
+      <name>David King</name>
+      <email its:translate="no">davidk@gnome.org</email>
+      <years>2014</years>
+    </credit>
+    <credit type="author copyright">
+      <name>Ekaterina Gerasimova</name>
+      <email its:translate="no">kittykat3756@gmail.com</email>
+      <years>2014</years>
+    </credit>
+
+    <include xmlns="http://www.w3.org/2001/XInclude" href="legal.xml"/>
+
+    <desc><app>日志</app>是一个 <sys>systemd</sys> 日志查看器。</desc>
+  
+    <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
+      <mal:name>Damned</mal:name>
+      <mal:email>damnedlies@163.com</mal:email>
+      <mal:years>2015</mal:years>
+    </mal:credit>
+  </info>
+
+  <title>简介</title>
+
+  <p>“日志”显示了 systemd 日志中的事件，并将其分类，例如硬件和应用程序。</p>
+  
+  <p>使用“日志”，您可以输入一个搜索词来搜索日志，并点击每个事件以查看其详细信息。</p>
+
+  <media type="image" mime="image/png" src="media/gnome-logs-3-34.png">
+    <p>“日志”的屏幕截图，显示了一些日志条目。</p>
+  </media>
+
+</page>

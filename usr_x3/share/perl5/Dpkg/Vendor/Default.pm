@@ -20,7 +20,7 @@ use warnings;
 
 our $VERSION = '0.01';
 
-# If you use this file as template to create a new vendor object, please
+# If you use this file as template to create a new vendor class, please
 # uncomment the following lines
 #use parent qw(Dpkg::Vendor::Default);
 
@@ -28,12 +28,12 @@ our $VERSION = '0.01';
 
 =head1 NAME
 
-Dpkg::Vendor::Default - default vendor object
+Dpkg::Vendor::Default - default vendor class
 
 =head1 DESCRIPTION
 
-A vendor object is used to provide vendor specific behaviour
-in various places. This is the default object used in case
+A vendor class is used to provide vendor specific behaviour
+in various places. This is the default class used in case
 there's none for the current vendor or in case the vendor could
 not be identified (see Dpkg::Vendor documentation).
 
@@ -130,6 +130,12 @@ The hook is called in Dpkg::BuildFlags to allow the vendor to override
 the default values set for the various build flags. $flags is a
 Dpkg::BuildFlags object.
 
+=item update-buildprofiles ($build_profiles_ref)
+
+The hook is called in Dpkg::BuildProfiles to allow the vendor to
+override the default values set. $build_profiles_ref is a array ref to
+Dpkg::BuildProfiles object.
+
 =item builtin-system-build-paths ()
 
 The hook is called by dpkg-genbuildinfo to determine if the current path
@@ -148,6 +154,11 @@ will be recorded in the B<Build-Tainted-By> field (since dpkg 1.19.5). It
 takes no parameters, but returns a (possibly empty) list of tainted reason
 tags (formed by alphanumeric and dash characters).
 
+=item sanitize-environment ()
+
+The hook is called by dpkg-buildpackage to sanitize its build environment
+(since dpkg 1.20.0).
+
 =back
 
 =cut
@@ -157,9 +168,6 @@ sub run_hook {
 
     if ($hook eq 'before-source-build') {
         my $srcpkg = shift @params;
-    } elsif ($hook eq 'keyrings') {
-        warnings::warnif('deprecated', 'obsolete keyrings vendor hook');
-        return ();
     } elsif ($hook eq 'package-keyrings') {
         return ();
     } elsif ($hook eq 'archive-keyrings') {
@@ -178,10 +186,14 @@ sub run_hook {
 	my ($textref, $ch_info) = @params;
     } elsif ($hook eq 'update-buildflags') {
 	my $flags = shift @params;
+    } elsif ($hook eq 'update-buildprofiles') {
+	my $build_profiles_ref = shift @params;
     } elsif ($hook eq 'builtin-system-build-paths') {
         return ();
     } elsif ($hook eq 'build-tainted-by') {
         return ();
+    } elsif ($hook eq 'sanitize-environment') {
+        return;
     }
 
     # Default return value for unknown/unimplemented hooks

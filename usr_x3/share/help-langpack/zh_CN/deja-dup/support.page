@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-License-Identifier: CC-BY-SA-4.0
+SPDX-FileCopyrightText: Michael Terry
+-->
+<page xmlns="http://projectmallard.org/1.0/" xmlns:its="http://www.w3.org/2005/11/its" its:version="2.0" type="topic" style="tip" id="support" xml:lang="deja-dup-zh-CN">
+<info>
+  <desc>Get more help</desc>
+  <link type="guide" xref="index#about"/>
+  <credit type="author" its:translate="no">
+    <name>Michael Terry</name>
+  </credit>
+  <license href="http://creativecommons.org/licenses/by-sa/4.0/"><p>Creative Commons Attribution-Share Alike 4.0 Unported License</p></license>
+
+    <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
+      <mal:name>Kyle Nitzsche</mal:name>
+      <mal:email>https://launchpad.net/~knitzsche</mal:email>
+      <mal:years/>
+    </mal:credit>
+  </info>
+<title>Support</title>
+
+<p>If you have unanswered questions or a problem you don’t understand, please <link href="https://gitlab.gnome.org/World/deja-dup/-/issues/new">file a help request</link> in our issue tracker.</p>
+
+<p>Keep in mind that the people answering your questions are volunteers and that while <app>Déjà Dup</app> is intended to work well, it <link xref="license">comes with no warranty</link>.  So please be polite and patient.</p>
+
+</page>

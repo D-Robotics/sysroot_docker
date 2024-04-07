@@ -5,6 +5,6 @@ includedir=${prefix}/include
 
 Name: sctp
 Description: User-level SCTP API library
-Version: 1.0.18
+Version: 1.0.19
 Libs: -L${libdir} -lsctp
 Cflags: -I${includedir}

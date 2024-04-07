@@ -1,0 +1,169 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>logilab.common.xmlutils &#8212; logilab common  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for logilab.common.xmlutils</h1><div class="highlight"><pre>
+<span></span><span class="c1"># copyright 2003-2011 LOGILAB S.A. (Paris, FRANCE), all rights reserved.</span>
+<span class="c1"># contact http://www.logilab.fr/ -- mailto:contact@logilab.fr</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of logilab-common.</span>
+<span class="c1">#</span>
+<span class="c1"># logilab-common is free software: you can redistribute it and/or modify it under</span>
+<span class="c1"># the terms of the GNU Lesser General Public License as published by the Free</span>
+<span class="c1"># Software Foundation, either version 2.1 of the License, or (at your option) any</span>
+<span class="c1"># later version.</span>
+<span class="c1">#</span>
+<span class="c1"># logilab-common is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1"># ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS</span>
+<span class="c1"># FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License along</span>
+<span class="c1"># with logilab-common.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="sd">&quot;&quot;&quot;XML utilities.</span>
+
+<span class="sd">This module contains useful functions for parsing and using XML data. For the</span>
+<span class="sd">moment, there is only one function that can parse the data inside a processing</span>
+<span class="sd">instruction and return a Python dictionary.</span>
+
+
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">__docformat__</span> <span class="o">=</span> <span class="s2">&quot;restructuredtext en&quot;</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="n">RE_DOUBLE_QUOTE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;([\w\-\.]+)=&quot;([^&quot;]+)&quot;&#39;</span><span class="p">)</span>
+<span class="n">RE_SIMPLE_QUOTE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;([\w\-\.]+)=&#39;([^&#39;]+)&#39;&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="parse_pi_data"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.xmlutils.parse_pi_data">[docs]</a><span class="k">def</span> <span class="nf">parse_pi_data</span><span class="p">(</span><span class="n">pi_data</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Utility function that parses the data contained in an XML</span>
+<span class="sd">    processing instruction and returns a dictionary of keywords and their</span>
+<span class="sd">    associated values (most of the time, the processing instructions contain</span>
+<span class="sd">    data like ``keyword=&quot;value&quot;``, if a keyword is not associated to a value,</span>
+<span class="sd">    for example ``keyword``, it will be associated to ``None``).</span>
+
+<span class="sd">    :param pi_data: data contained in an XML processing instruction.</span>
+<span class="sd">    :type pi_data: unicode</span>
+
+<span class="sd">    :returns: Dictionary of the keywords (Unicode strings) associated to</span>
+<span class="sd">              their values (Unicode strings) as they were defined in the</span>
+<span class="sd">              data.</span>
+<span class="sd">    :rtype: dict</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">elt</span> <span class="ow">in</span> <span class="n">pi_data</span><span class="o">.</span><span class="n">split</span><span class="p">():</span>
+        <span class="n">val</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+        <span class="n">double_match</span> <span class="o">=</span> <span class="n">RE_DOUBLE_QUOTE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">elt</span><span class="p">)</span>
+        <span class="n">simple_match</span> <span class="o">=</span> <span class="n">RE_SIMPLE_QUOTE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">elt</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">double_match</span><span class="p">:</span>
+            <span class="n">kwd</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">double_match</span><span class="o">.</span><span class="n">groups</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="n">simple_match</span><span class="p">:</span>
+            <span class="n">kwd</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">simple_match</span><span class="o">.</span><span class="n">groups</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">kwd</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">elt</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="n">results</span><span class="p">[</span><span class="n">kwd</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+    <span class="k">return</span> <span class="n">results</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">logilab common</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../logilab.common.html">logilab.common package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../logilab.common.ureports.html">logilab.common.ureports package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  <li><a href="../common.html">logilab.common</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Logilab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

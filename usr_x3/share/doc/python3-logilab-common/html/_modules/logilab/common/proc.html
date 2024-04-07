@@ -1,0 +1,383 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>logilab.common.proc &#8212; logilab common  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for logilab.common.proc</h1><div class="highlight"><pre>
+<span></span><span class="c1"># copyright 2003-2011 LOGILAB S.A. (Paris, FRANCE), all rights reserved.</span>
+<span class="c1"># contact http://www.logilab.fr/ -- mailto:contact@logilab.fr</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of logilab-common.</span>
+<span class="c1">#</span>
+<span class="c1"># logilab-common is free software: you can redistribute it and/or modify it under</span>
+<span class="c1"># the terms of the GNU Lesser General Public License as published by the Free</span>
+<span class="c1"># Software Foundation, either version 2.1 of the License, or (at your option) any</span>
+<span class="c1"># later version.</span>
+<span class="c1">#</span>
+<span class="c1"># logilab-common is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1"># ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS</span>
+<span class="c1"># FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License along</span>
+<span class="c1"># with logilab-common.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="sd">&quot;&quot;&quot;module providing:</span>
+<span class="sd">* process information (linux specific: rely on /proc)</span>
+<span class="sd">* a class for resource control (memory / time / cpu time)</span>
+
+<span class="sd">This module doesn&#39;t work on windows platforms (only tested on linux)</span>
+
+<span class="sd">:organization: Logilab</span>
+
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">__docformat__</span> <span class="o">=</span> <span class="s2">&quot;restructuredtext en&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">stat</span>
+<span class="kn">from</span> <span class="nn">resource</span> <span class="kn">import</span> <span class="n">getrlimit</span><span class="p">,</span> <span class="n">setrlimit</span><span class="p">,</span> <span class="n">RLIMIT_CPU</span><span class="p">,</span> <span class="n">RLIMIT_AS</span>
+<span class="kn">from</span> <span class="nn">signal</span> <span class="kn">import</span> <span class="n">signal</span><span class="p">,</span> <span class="n">SIGXCPU</span><span class="p">,</span> <span class="n">SIGKILL</span><span class="p">,</span> <span class="n">SIGUSR2</span><span class="p">,</span> <span class="n">SIGUSR1</span>
+<span class="kn">from</span> <span class="nn">threading</span> <span class="kn">import</span> <span class="n">Timer</span><span class="p">,</span> <span class="n">currentThread</span><span class="p">,</span> <span class="n">Thread</span><span class="p">,</span> <span class="n">Event</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">time</span>
+
+<span class="kn">from</span> <span class="nn">logilab.common.tree</span> <span class="kn">import</span> <span class="n">Node</span>
+
+
+<div class="viewcode-block" id="NoSuchProcess"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.proc.NoSuchProcess">[docs]</a><span class="k">class</span> <span class="nc">NoSuchProcess</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="proc_exists"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.proc.proc_exists">[docs]</a><span class="k">def</span> <span class="nf">proc_exists</span><span class="p">(</span><span class="n">pid</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;check the a pid is registered in /proc</span>
+<span class="sd">    raise NoSuchProcess exception if not</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;/proc/</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">pid</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">NoSuchProcess</span><span class="p">()</span></div>
+
+
+<span class="n">PPID</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">UTIME</span> <span class="o">=</span> <span class="mi">13</span>
+<span class="n">STIME</span> <span class="o">=</span> <span class="mi">14</span>
+<span class="n">CUTIME</span> <span class="o">=</span> <span class="mi">15</span>
+<span class="n">CSTIME</span> <span class="o">=</span> <span class="mi">16</span>
+<span class="n">VSIZE</span> <span class="o">=</span> <span class="mi">22</span>
+
+
+<div class="viewcode-block" id="ProcInfo"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.proc.ProcInfo">[docs]</a><span class="k">class</span> <span class="nc">ProcInfo</span><span class="p">(</span><span class="n">Node</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;provide access to process information found in /proc&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
+        <span class="n">Node</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pid</span><span class="p">)</span>
+        <span class="n">proc_exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file</span> <span class="o">=</span> <span class="s2">&quot;/proc/</span><span class="si">%s</span><span class="s2">/stat&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">pid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ppid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">()[</span><span class="n">PPID</span><span class="p">])</span>
+
+<div class="viewcode-block" id="ProcInfo.memory_usage"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.proc.ProcInfo.memory_usage">[docs]</a>    <span class="k">def</span> <span class="nf">memory_usage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the memory usage of the process in Ko&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">()[</span><span class="n">VSIZE</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="ProcInfo.lineage_memory_usage"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.proc.ProcInfo.lineage_memory_usage">[docs]</a>    <span class="k">def</span> <span class="nf">lineage_memory_usage</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">memory_usage</span><span class="p">()</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">([</span><span class="n">child</span><span class="o">.</span><span class="n">lineage_memory_usage</span><span class="p">()</span> <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">children</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="ProcInfo.time"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.proc.ProcInfo.time">[docs]</a>    <span class="k">def</span> <span class="nf">time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">children</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the number of jiffies that this process has been scheduled</span>
+<span class="sd">        in user and kernel mode&quot;&quot;&quot;</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">()</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">status</span><span class="p">[</span><span class="n">UTIME</span><span class="p">])</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">status</span><span class="p">[</span><span class="n">STIME</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">children</span><span class="p">:</span>
+            <span class="n">time</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">status</span><span class="p">[</span><span class="n">CUTIME</span><span class="p">])</span> <span class="o">+</span> <span class="nb">int</span><span class="p">(</span><span class="n">status</span><span class="p">[</span><span class="n">CSTIME</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">time</span></div>
+
+<div class="viewcode-block" id="ProcInfo.status"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.proc.ProcInfo.status">[docs]</a>    <span class="k">def</span> <span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the list of fields found in /proc/&lt;pid&gt;/stat&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ProcInfo.name"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.proc.ProcInfo.name">[docs]</a>    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the process name found in /proc/&lt;pid&gt;/stat&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">&quot;()&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ProcInfo.age"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.proc.ProcInfo.age">[docs]</a>    <span class="k">def</span> <span class="nf">age</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return the age of the process&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">file</span><span class="p">)[</span><span class="n">stat</span><span class="o">.</span><span class="n">ST_MTIME</span><span class="p">]</span></div></div>
+
+
+<div class="viewcode-block" id="ProcInfoLoader"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.proc.ProcInfoLoader">[docs]</a><span class="k">class</span> <span class="nc">ProcInfoLoader</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;manage process information&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_loaded</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="ProcInfoLoader.list_pids"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.proc.ProcInfoLoader.list_pids">[docs]</a>    <span class="k">def</span> <span class="nf">list_pids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;return a list of existent process ids&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">subdir</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="s2">&quot;/proc&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">subdir</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+                <span class="k">yield</span> <span class="nb">int</span><span class="p">(</span><span class="n">subdir</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ProcInfoLoader.load"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.proc.ProcInfoLoader.load">[docs]</a>    <span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pid</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;get a ProcInfo object for a given pid&quot;&quot;&quot;</span>
+        <span class="n">pid</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loaded</span><span class="p">[</span><span class="n">pid</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">procinfo</span> <span class="o">=</span> <span class="n">ProcInfo</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
+            <span class="n">procinfo</span><span class="o">.</span><span class="n">manager</span> <span class="o">=</span> <span class="bp">self</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_loaded</span><span class="p">[</span><span class="n">pid</span><span class="p">]</span> <span class="o">=</span> <span class="n">procinfo</span>
+            <span class="k">return</span> <span class="n">procinfo</span></div>
+
+<div class="viewcode-block" id="ProcInfoLoader.load_all"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.proc.ProcInfoLoader.load_all">[docs]</a>    <span class="k">def</span> <span class="nf">load_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;load all processes information&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">pid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">list_pids</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">procinfo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">procinfo</span><span class="o">.</span><span class="n">parent</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">procinfo</span><span class="o">.</span><span class="n">ppid</span><span class="p">:</span>
+                    <span class="n">pprocinfo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">procinfo</span><span class="o">.</span><span class="n">ppid</span><span class="p">)</span>
+                    <span class="n">pprocinfo</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">procinfo</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">NoSuchProcess</span><span class="p">:</span>
+                <span class="k">pass</span></div></div>
+
+
+<div class="viewcode-block" id="ResourceError"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.proc.ResourceError">[docs]</a><span class="k">class</span> <span class="nc">ResourceError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Error raise when resource limit is reached&quot;&quot;&quot;</span>
+
+    <span class="n">limit</span> <span class="o">=</span> <span class="s2">&quot;Unknown Resource Limit&quot;</span></div>
+
+
+<div class="viewcode-block" id="XCPUError"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.proc.XCPUError">[docs]</a><span class="k">class</span> <span class="nc">XCPUError</span><span class="p">(</span><span class="n">ResourceError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Error raised when CPU Time limit is reached&quot;&quot;&quot;</span>
+
+    <span class="n">limit</span> <span class="o">=</span> <span class="s2">&quot;CPU Time&quot;</span></div>
+
+
+<div class="viewcode-block" id="LineageMemoryError"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.proc.LineageMemoryError">[docs]</a><span class="k">class</span> <span class="nc">LineageMemoryError</span><span class="p">(</span><span class="n">ResourceError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Error raised when the total amount of memory used by a process and</span>
+<span class="sd">    it&#39;s child is reached&quot;&quot;&quot;</span>
+
+    <span class="n">limit</span> <span class="o">=</span> <span class="s2">&quot;Lineage total Memory&quot;</span></div>
+
+
+<div class="viewcode-block" id="TimeoutError"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.proc.TimeoutError">[docs]</a><span class="k">class</span> <span class="nc">TimeoutError</span><span class="p">(</span><span class="n">ResourceError</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Error raised when the process is running for to much time&quot;&quot;&quot;</span>
+
+    <span class="n">limit</span> <span class="o">=</span> <span class="s2">&quot;Real Time&quot;</span></div>
+
+
+<span class="c1"># Can&#39;t use subclass because the StandardError MemoryError raised</span>
+<span class="n">RESOURCE_LIMIT_EXCEPTION</span> <span class="o">=</span> <span class="p">(</span><span class="n">ResourceError</span><span class="p">,</span> <span class="ne">MemoryError</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="MemorySentinel"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.proc.MemorySentinel">[docs]</a><span class="k">class</span> <span class="nc">MemorySentinel</span><span class="p">(</span><span class="n">Thread</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A class checking a process don&#39;t use too much memory in a separated</span>
+<span class="sd">    daemonic thread</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">interval</span><span class="p">,</span> <span class="n">memory_limit</span><span class="p">,</span> <span class="n">gpid</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">Thread</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;Test.Sentinel&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">memory_limit</span> <span class="o">=</span> <span class="n">memory_limit</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span> <span class="o">=</span> <span class="n">Event</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">interval</span> <span class="o">=</span> <span class="n">interval</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setDaemon</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gpid</span> <span class="o">=</span> <span class="n">gpid</span> <span class="k">if</span> <span class="n">gpid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">()</span>
+
+<div class="viewcode-block" id="MemorySentinel.stop"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.proc.MemorySentinel.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;stop ap&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span><span class="o">.</span><span class="n">set</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">pil</span> <span class="o">=</span> <span class="n">ProcInfoLoader</span><span class="p">()</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span><span class="o">.</span><span class="n">isSet</span><span class="p">():</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">memory_limit</span> <span class="o">&lt;=</span> <span class="n">pil</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gpid</span><span class="p">)</span><span class="o">.</span><span class="n">lineage_memory_usage</span><span class="p">():</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">killpg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gpid</span><span class="p">,</span> <span class="n">SIGUSR1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span><span class="o">.</span><span class="n">wait</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interval</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ResourceController"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.proc.ResourceController">[docs]</a><span class="k">class</span> <span class="nc">ResourceController</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_cpu_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_memory</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_reprieve</span><span class="o">=</span><span class="mi">60</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">SIGXCPU</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Unsupported platform&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="o">=</span> <span class="n">max_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_memory</span> <span class="o">=</span> <span class="n">max_memory</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_cpu_time</span> <span class="o">=</span> <span class="n">max_cpu_time</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reprieve</span> <span class="o">=</span> <span class="n">max_reprieve</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_timer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_msentinel</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_old_max_memory</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_old_usr1_hdlr</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_old_max_cpu_time</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_old_usr2_hdlr</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_old_sigxcpu_hdlr</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_limit_set</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_abort_try</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_elapse_time</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">_hangle_sig_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_hangle_sig_memory</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_abort_try</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reprieve</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_abort_try</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">raise</span> <span class="n">LineageMemoryError</span><span class="p">(</span><span class="s2">&quot;Memory limit reached&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">killpg</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">(),</span> <span class="n">SIGKILL</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_handle_sigxcpu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sig</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_abort_try</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reprieve</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_abort_try</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">raise</span> <span class="n">XCPUError</span><span class="p">(</span><span class="s2">&quot;Soft CPU time limit reached&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">killpg</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">(),</span> <span class="n">SIGKILL</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_time_out</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_abort_try</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_reprieve</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_abort_try</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">killpg</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">(),</span> <span class="n">SIGUSR2</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_limit_set</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_timer</span> <span class="o">=</span> <span class="n">Timer</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_out</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_timer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">killpg</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">(),</span> <span class="n">SIGKILL</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ResourceController.setup_limit"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.proc.ResourceController.setup_limit">[docs]</a>    <span class="k">def</span> <span class="nf">setup_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;set up the process limit&quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">currentThread</span><span class="p">()</span><span class="o">.</span><span class="n">getName</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;MainThread&quot;</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">setpgrp</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_limit_set</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_old_usr2_hdlr</span> <span class="o">=</span> <span class="n">signal</span><span class="p">(</span><span class="n">SIGUSR2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hangle_sig_timeout</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_timer</span> <span class="o">=</span> <span class="n">Timer</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_time</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_elapse_time</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time_out</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="p">())</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_timer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_cpu_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_old_max_cpu_time</span> <span class="o">=</span> <span class="n">getrlimit</span><span class="p">(</span><span class="n">RLIMIT_CPU</span><span class="p">)</span>
+                <span class="n">cpu_limit</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_cpu_time</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_old_max_cpu_time</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_old_sigxcpu_hdlr</span> <span class="o">=</span> <span class="n">signal</span><span class="p">(</span><span class="n">SIGXCPU</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_sigxcpu</span><span class="p">)</span>
+                <span class="n">setrlimit</span><span class="p">(</span><span class="n">RLIMIT_CPU</span><span class="p">,</span> <span class="n">cpu_limit</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_memory</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_msentinel</span> <span class="o">=</span> <span class="n">MemorySentinel</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_memory</span><span class="p">))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_old_max_memory</span> <span class="o">=</span> <span class="n">getrlimit</span><span class="p">(</span><span class="n">RLIMIT_AS</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_old_usr1_hdlr</span> <span class="o">=</span> <span class="n">signal</span><span class="p">(</span><span class="n">SIGUSR1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hangle_sig_memory</span><span class="p">)</span>
+                <span class="n">as_limit</span> <span class="o">=</span> <span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">max_memory</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_old_max_memory</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">setrlimit</span><span class="p">(</span><span class="n">RLIMIT_AS</span><span class="p">,</span> <span class="n">as_limit</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_msentinel</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_limit_set</span> <span class="o">+=</span> <span class="mi">1</span></div>
+
+<div class="viewcode-block" id="ResourceController.clean_limit"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.proc.ResourceController.clean_limit">[docs]</a>    <span class="k">def</span> <span class="nf">clean_limit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;reinstall the old process limit&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_limit_set</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_timer</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_elapse_time</span> <span class="o">+=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="p">())</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_timer</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">signal</span><span class="p">(</span><span class="n">SIGUSR2</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_old_usr2_hdlr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_cpu_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">setrlimit</span><span class="p">(</span><span class="n">RLIMIT_CPU</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_old_max_cpu_time</span><span class="p">)</span>
+                <span class="n">signal</span><span class="p">(</span><span class="n">SIGXCPU</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_old_sigxcpu_hdlr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_memory</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_msentinel</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_msentinel</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="n">setrlimit</span><span class="p">(</span><span class="n">RLIMIT_AS</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_old_max_memory</span><span class="p">)</span>
+                <span class="n">signal</span><span class="p">(</span><span class="n">SIGUSR1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_old_usr1_hdlr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_limit_set</span> <span class="o">-=</span> <span class="mi">1</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">logilab common</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../logilab.common.html">logilab.common package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../logilab.common.ureports.html">logilab.common.ureports package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  <li><a href="../common.html">logilab.common</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Logilab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

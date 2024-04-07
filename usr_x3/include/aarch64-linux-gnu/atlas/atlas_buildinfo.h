@@ -1,0 +1,31 @@
+#ifndef ATL_INSTINFO_H
+   #define ATL_INSTINFO_H
+
+#define ATL_ARCH "GENERIC64"
+#define ATL_INSTFLAGS "-1 0 -a 1 -l 1"
+#define ATL_F2CDEFS "-DAdd_ -DF77_INTEGER=int -DStringSunStyle"
+#define ATL_ARCHDEFS "-DATL_OS_Linux -DATL_ARCH_GENERIC -DATL_USE64BITS -DATL_GAS_ARM64"
+#define ATL_DKCFLAGS "-Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/build/atlas-Sb1Hhr/atlas-3.10.3=. -fstack-protector-strong -fPIC"
+#define ATL_DKC "/usr/bin/gcc"
+#define ATL_SKCFLAGS "-Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/build/atlas-Sb1Hhr/atlas-3.10.3=. -fstack-protector-strong -fPIC"
+#define ATL_SKC "/usr/bin/gcc"
+#define ATL_DMCFLAGS "-Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/build/atlas-Sb1Hhr/atlas-3.10.3=. -fstack-protector-strong -fPIC"
+#define ATL_DMC "/usr/bin/gcc"
+#define ATL_SMCFLAGS "-Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/build/atlas-Sb1Hhr/atlas-3.10.3=. -fstack-protector-strong -fPIC"
+#define ATL_SMC "/usr/bin/gcc"
+#define ATL_ICCFLAGS "-DL2SIZE=33554432 -I/build/atlas-Sb1Hhr/atlas-3.10.3/build/include -I/build/atlas-Sb1Hhr/atlas-3.10.3/build/..//include -I/build/atlas-Sb1Hhr/atlas-3.10.3/build/..//include/contrib -DAdd_ -DF77_INTEGER=int -DStringSunStyle -DATL_OS_Linux -DATL_ARCH_GENERIC -DATL_USE64BITS -DATL_GAS_ARM64 -DATL_DYLIBS -DWALL -Wdate-time -D_FORTIFY_SOURCE=2 -g -O2 -ffile-prefix-map=/build/atlas-Sb1Hhr/atlas-3.10.3=. -fstack-protector-strong -fPIC"
+#define ATL_ICC "/usr/bin/gcc"
+#define ATL_F77FLAGS "-g -O2 -ffile-prefix-map=/build/atlas-Sb1Hhr/atlas-3.10.3=. -fstack-protector-strong -fPIC"
+#define ATL_F77 "/usr/bin/gfortran"
+#define ATL_DKCVERS "gcc (Ubuntu 11.2.0-16ubuntu1) 11.2.0"
+#define ATL_SKCVERS "gcc (Ubuntu 11.2.0-16ubuntu1) 11.2.0"
+#define ATL_DMCVERS "gcc (Ubuntu 11.2.0-16ubuntu1) 11.2.0"
+#define ATL_SMCVERS "gcc (Ubuntu 11.2.0-16ubuntu1) 11.2.0"
+#define ATL_ICCVERS "gcc (Ubuntu 11.2.0-16ubuntu1) 11.2.0"
+#define ATL_F77VERS "GNU Fortran (Ubuntu 11.2.0-16ubuntu1) 11.2.0"
+#define ATL_SYSINFO "Linux bos02-arm64-025 4.15.0-167-generic #175-Ubuntu SMP Wed Jan 5 01:58:16 UTC 2022 aarch64 aarch64 aarch64 GNU/Linux"
+#define ATL_DATE    "Sun Feb 20 21:42:17 UTC 2022"
+#define ATL_UNAM    "buildd"
+#define ATL_VERS    "3.10.3"
+
+#endif

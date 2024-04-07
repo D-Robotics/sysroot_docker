@@ -36,11 +36,11 @@ License: all-permissive
 
 Files: m4/ax_python_devel.m4
 Copyright: 2009 Sebastian Huber <sebastian-huber@web.de>,
-	   2009 Alan W. Irwin,
-	   2009 Rafael Laboissiere <rafael@laboissiere.net>,
-	   2009 Andrew Collier,
-	   2009 Matteo Settenvini <matteo@member.fsf.org>,
-	   2009 Horst Knorr <hk_classes@knoda.org>,
+           2009 Alan W. Irwin,
+           2009 Rafael Laboissiere <rafael@laboissiere.net>,
+           2009 Andrew Collier,
+           2009 Matteo Settenvini <matteo@member.fsf.org>,
+           2009 Horst Knorr <hk_classes@knoda.org>,
            2013 Daniel Mullner <muellner@math.stanford.edu>
 License: GPL-3+ with autoconf exception
 

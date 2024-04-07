@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-License-Identifier: CC-BY-SA-4.0
+SPDX-FileCopyrightText: Michael Terry
+-->
+<page xmlns="http://projectmallard.org/1.0/" xmlns:its="http://www.w3.org/2005/11/its" its:version="2.0" type="topic" style="task" id="prefs" xml:lang="deja-dup-zh-CN">
+<info>
+  <desc>Adjust your backup preferences</desc>
+  <link type="guide" xref="index#backup"/>
+  <credit type="author" its:translate="no">
+    <name>Michael Terry</name>
+  </credit>
+  <license href="http://creativecommons.org/licenses/by-sa/4.0/"><p>Creative Commons Attribution-Share Alike 4.0 Unported License</p></license>
+
+    <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
+      <mal:name>Kyle Nitzsche</mal:name>
+      <mal:email>https://launchpad.net/~knitzsche</mal:email>
+      <mal:years/>
+    </mal:credit>
+  </info>
+<title>首选项</title>
+
+<p>To review your backup preferences, press the menu button in the top-right corner of the window and select <guiseq><gui style="menuitem">Preferences</gui></guiseq>.</p>
+
+  <terms>
+    <item>
+      <title><gui>Storage location</gui></title>
+      <p>The storage location is where <app>Déjà Dup</app> will put its copies of your files so that they can be restored later.</p>
+      <p>Note that backups can be quite large, so make sure you have enough free disk space.</p>
+      <p>If you'd like to use an external drive as a storage location, plug it in and it will show up in the list.</p>
+      <note style="warning"><p>While you can choose a local folder for your backups, this is not recommended. If your hardware fails, you will lose both your original data and your backups all at once.</p></note>
+    </item>
+    <item>
+      <title><gui>Keep Backups</gui></title>
+      <p>选择备份文件的最短保留时间。如果您发现备份文件占用的空间过多，可能想缩短这段时间。由于实现细节上的缘故，文件的保留期可能比选择的时间略长。但不会有任何文件被提前删除。</p>
+      <note><p>Backups are kept forever by default, but still may be deleted earlier if the storage location begins to run out of space.</p></note>
+    </item>
+    <item>
+      <title><gui>Back Up Automatically</gui></title>
+      <p>Turn this option on to have <app>Déjà Dup</app> automatically back up for you. This is recommended so that you don’t forget to do it yourself. Backups are more useful the more recent they are, so it is important to back up regularly.</p>
+    </item>
+    <item>
+      <title><gui>Folders to Back Up</gui></title>
+      <p>Choose a list of folders to save in your backup. Press the <gui style="button">Add</gui> or <gui style="button">Remove</gui> buttons to modify the list. If you are only interested in backing up your own data, the default of <gui>Home</gui> is sufficient.</p>
+    </item>
+    <item>
+      <title><gui>Folders to Ignore</gui></title>
+      <p>Choose a list of folders to not save in your backup. Press the <gui style="button">Add</gui> or <gui style="button">Remove</gui> buttons to modify the list.</p>
+      <p>您的一些数据可能体积庞大，并且对您而言不是非常重要。如果是这样，不备份它们可以为自己节省一些时间和空间。</p>
+      <note style="advanced">
+        <p>Some locations are always ignored by default:</p>
+        <list its:translate="no">
+          <item><p><file>~/.adobe/Flash_Player/AssetCache</file></p></item>
+          <item><p><file>~/.cache</file></p></item>
+          <item><p><file>~/.ccache</file></p></item>
+          <item><p><file>~/.gvfs</file></p></item>
+          <item><p><file>~/.Private</file></p></item>
+          <item><p><file>~/.recent-applications.xbel</file></p></item>
+          <item><p><file>~/.recently-used.xbel</file></p></item>
+          <item><p><file>~/.steam/root</file> <span its:translate="yes">(which by default also ignores <file its:translate="no">~/.local/share/Steam</file>)</span></p></item>
+          <item><p><file>~/.thumbnails</file></p></item>
+          <item><p><file>~/.var/app/*/cache</file></p></item>
+          <item><p><file>~/.xsession-errors</file></p></item>
+          <item><p><file>~/snap/*/*/.cache</file></p></item>
+          <item><p><file>/dev</file></p></item>
+          <item><p><file>/proc</file></p></item>
+          <item><p><file>/run</file></p></item>
+          <item><p><file>/sys</file></p></item>
+          <item><p><file>/tmp</file></p></item>
+          <item><p its:translate="yes">Any folder with a <file its:translate="no">CACHEDIR.TAG</file> or <file its:translate="no">.deja-dup-ignore</file> file in it.</p></item>
+        </list>
+       </note>
+    </item>
+   </terms>
+</page>
