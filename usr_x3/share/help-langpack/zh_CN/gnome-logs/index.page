@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<page xmlns="http://projectmallard.org/1.0/" xmlns:its="http://www.w3.org/2005/11/its" type="guide" id="index" xml:lang="gnome-logs-zh-CN">
+
+  <info>
+    <title type="link" role="trail">日志 帮助</title>
+    <title type="text">日志 帮助</title>
+    <title type="link">日志 帮助</title>
+    <revision pkgversion="3.12" date="2014-02-18" status="review"/>
+
+    <include xmlns="http://www.w3.org/2001/XInclude" href="legal.xml"/>
+
+    <desc>浏览和搜索您的 systemd 日志。</desc>
+  
+    <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
+      <mal:name>Damned</mal:name>
+      <mal:email>damnedlies@163.com</mal:email>
+      <mal:years>2015</mal:years>
+    </mal:credit>
+  </info>
+
+  <title><media type="image" width="48px" height="48px" its:translate="no" src="media/org.gnome.Logs.svg"/> 日志</title>
+
+<!--
+  <section id="prob">
+    <title>Common problems</title>
+  </section>
+-->
+
+</page>

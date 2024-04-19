@@ -1,0 +1,318 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>logilab.common.ureports &#8212; logilab common  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for logilab.common.ureports</h1><div class="highlight"><pre>
+<span></span><span class="c1"># copyright 2003-2011 LOGILAB S.A. (Paris, FRANCE), all rights reserved.</span>
+<span class="c1"># contact http://www.logilab.fr/ -- mailto:contact@logilab.fr</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of logilab-common.</span>
+<span class="c1">#</span>
+<span class="c1"># logilab-common is free software: you can redistribute it and/or modify it</span>
+<span class="c1"># under the terms of the GNU Lesser General Public License as published by the</span>
+<span class="c1"># Free Software Foundation, either version 2.1 of the License,</span>
+<span class="c1"># or (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># logilab-common is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1"># ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS</span>
+<span class="c1"># FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License</span>
+<span class="c1"># along with logilab-common.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="sd">&quot;&quot;&quot;Universal report objects and some formatting drivers.</span>
+
+<span class="sd">A way to create simple reports using python objects, primarily designed to be</span>
+<span class="sd">formatted as text and html.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">__docformat__</span> <span class="o">=</span> <span class="s2">&quot;restructuredtext en&quot;</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span> <span class="k">as</span> <span class="n">ListType</span><span class="p">,</span> <span class="n">Generator</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">TextIO</span>
+
+<span class="kn">from</span> <span class="nn">logilab.common.compat</span> <span class="kn">import</span> <span class="n">StringIO</span>
+<span class="kn">from</span> <span class="nn">logilab.common.textutils</span> <span class="kn">import</span> <span class="n">linesep</span>
+<span class="kn">from</span> <span class="nn">logilab.common.tree</span> <span class="kn">import</span> <span class="n">VNode</span>
+<span class="kn">from</span> <span class="nn">logilab.common.ureports.nodes</span> <span class="kn">import</span> <span class="n">Table</span><span class="p">,</span> <span class="n">Section</span><span class="p">,</span> <span class="n">Link</span><span class="p">,</span> <span class="n">Paragraph</span><span class="p">,</span> <span class="n">Title</span><span class="p">,</span> <span class="n">Text</span>
+
+<span class="kn">from</span> <span class="nn">logilab.common.ureports.nodes</span> <span class="kn">import</span> <span class="n">VerbatimText</span><span class="p">,</span> <span class="n">Image</span><span class="p">,</span> <span class="n">Span</span><span class="p">,</span> <span class="n">List</span>  <span class="c1"># noqa</span>
+
+
+<div class="viewcode-block" id="get_nodes"><a class="viewcode-back" href="../../../logilab.common.ureports.html#logilab.common.ureports.get_nodes">[docs]</a><span class="k">def</span> <span class="nf">get_nodes</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">klass</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;return an iterator on all children node of the given klass&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">klass</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">child</span>
+        <span class="c1"># recurse (FIXME: recursion controled by an option)</span>
+        <span class="k">for</span> <span class="n">grandchild</span> <span class="ow">in</span> <span class="n">get_nodes</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">klass</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">grandchild</span></div>
+
+
+<div class="viewcode-block" id="layout_title"><a class="viewcode-back" href="../../../logilab.common.ureports.html#logilab.common.ureports.layout_title">[docs]</a><span class="k">def</span> <span class="nf">layout_title</span><span class="p">(</span><span class="n">layout</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;try to return the layout&#39;s title as string, return None if not found&quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">layout</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">Title</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">node</span><span class="o">.</span><span class="n">data</span> <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">get_nodes</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">Text</span><span class="p">)])</span></div>
+
+
+<div class="viewcode-block" id="build_summary"><a class="viewcode-back" href="../../../logilab.common.ureports.html#logilab.common.ureports.build_summary">[docs]</a><span class="k">def</span> <span class="nf">build_summary</span><span class="p">(</span><span class="n">layout</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;make a summary for the report, including X level&quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">level</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="n">level</span> <span class="o">-=</span> <span class="mi">1</span>
+    <span class="n">summary</span> <span class="o">=</span> <span class="n">ListType</span><span class="p">(</span><span class="n">klass</span><span class="o">=</span><span class="s2">&quot;summary&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">layout</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">Section</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="n">label</span> <span class="o">=</span> <span class="n">layout_title</span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">label</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">child</span><span class="o">.</span><span class="n">id</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">child</span><span class="o">.</span><span class="n">id</span><span class="p">:</span>
+            <span class="n">child</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">label</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">)</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="n">Link</span><span class="p">(</span><span class="s2">&quot;#&quot;</span> <span class="o">+</span> <span class="n">child</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span> <span class="ow">or</span> <span class="n">child</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="c1"># FIXME: Three following lines produce not very compliant</span>
+        <span class="c1"># docbook: there are some useless &lt;para&gt;&lt;para&gt;. They might be</span>
+        <span class="c1"># replaced by the three commented lines but this then produces</span>
+        <span class="c1"># a bug in html display...</span>
+        <span class="k">if</span> <span class="n">level</span> <span class="ow">and</span> <span class="p">[</span><span class="n">n</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">child</span><span class="o">.</span><span class="n">children</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">Section</span><span class="p">)]:</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">Paragraph</span><span class="p">([</span><span class="n">node</span><span class="p">,</span> <span class="n">build_summary</span><span class="p">(</span><span class="n">child</span><span class="p">,</span> <span class="n">level</span><span class="p">)])</span>
+        <span class="n">summary</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+    <span class="c1">#         summary.append(node)</span>
+    <span class="c1">#         if level and [n for n in child.children if isinstance(n, Section)]:</span>
+    <span class="c1">#             summary.append(build_summary(child, level))</span>
+    <span class="k">return</span> <span class="n">summary</span></div>
+
+
+<div class="viewcode-block" id="BaseWriter"><a class="viewcode-back" href="../../../logilab.common.ureports.html#logilab.common.ureports.BaseWriter">[docs]</a><span class="k">class</span> <span class="nc">BaseWriter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;base class for ureport writers&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="BaseWriter.format"><a class="viewcode-back" href="../../../logilab.common.ureports.html#logilab.common.ureports.BaseWriter.format">[docs]</a>    <span class="k">def</span> <span class="nf">format</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">layout</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+        <span class="n">stream</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="n">StringIO</span><span class="p">,</span> <span class="n">TextIO</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">encoding</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;format and write the given layout into the stream object</span>
+
+<span class="sd">        unicode policy: unicode strings may be found in the layout;</span>
+<span class="sd">        try to call stream.write with it, but give it back encoded using</span>
+<span class="sd">        the given encoding if it fails</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">stream</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">stream</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">encoding</span><span class="p">:</span>
+            <span class="n">encoding</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="s2">&quot;encoding&quot;</span><span class="p">,</span> <span class="s2">&quot;UTF-8&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">encoding</span> <span class="o">=</span> <span class="n">encoding</span> <span class="ow">or</span> <span class="s2">&quot;UTF-8&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__compute_funcs</span><span class="p">:</span> <span class="n">ListType</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Any</span><span class="p">],</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">out</span> <span class="o">=</span> <span class="n">stream</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">begin_format</span><span class="p">(</span><span class="n">layout</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">accept</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end_format</span><span class="p">(</span><span class="n">layout</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BaseWriter.format_children"><a class="viewcode-back" href="../../../logilab.common.ureports.html#logilab.common.ureports.BaseWriter.format_children">[docs]</a>    <span class="k">def</span> <span class="nf">format_children</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layout</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="s2">&quot;Paragraph&quot;</span><span class="p">,</span> <span class="s2">&quot;Section&quot;</span><span class="p">,</span> <span class="s2">&quot;Title&quot;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;recurse on the layout children and call their accept method</span>
+<span class="sd">        (see the Visitor pattern)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">layout</span><span class="p">,</span> <span class="s2">&quot;children&quot;</span><span class="p">,</span> <span class="p">()):</span>
+            <span class="n">child</span><span class="o">.</span><span class="n">accept</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BaseWriter.writeln"><a class="viewcode-back" href="../../../logilab.common.ureports.html#logilab.common.ureports.BaseWriter.writeln">[docs]</a>    <span class="k">def</span> <span class="nf">writeln</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;write a line in the output buffer&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">string</span> <span class="o">+</span> <span class="n">linesep</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BaseWriter.write"><a class="viewcode-back" href="../../../logilab.common.ureports.html#logilab.common.ureports.BaseWriter.write">[docs]</a>    <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;write a string in the output buffer&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">UnicodeEncodeError</span><span class="p">:</span>
+            <span class="c1"># mypy: Argument 1 to &quot;write&quot; of &quot;IO&quot; has incompatible type &quot;bytes&quot;; expected &quot;str&quot;</span>
+            <span class="c1"># probably a python3 port issue?</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding</span><span class="p">))</span>  <span class="c1"># type: ignore</span></div>
+
+<div class="viewcode-block" id="BaseWriter.begin_format"><a class="viewcode-back" href="../../../logilab.common.ureports.html#logilab.common.ureports.BaseWriter.begin_format">[docs]</a>    <span class="k">def</span> <span class="nf">begin_format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layout</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;begin to format a layout&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">section</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="BaseWriter.end_format"><a class="viewcode-back" href="../../../logilab.common.ureports.html#logilab.common.ureports.BaseWriter.end_format">[docs]</a>    <span class="k">def</span> <span class="nf">end_format</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layout</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;finished to format a layout&quot;&quot;&quot;</span></div>
+
+<div class="viewcode-block" id="BaseWriter.get_table_content"><a class="viewcode-back" href="../../../logilab.common.ureports.html#logilab.common.ureports.BaseWriter.get_table_content">[docs]</a>    <span class="k">def</span> <span class="nf">get_table_content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">:</span> <span class="n">Table</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ListType</span><span class="p">[</span><span class="n">ListType</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;trick to get table content without actually writing it</span>
+
+<span class="sd">        return an aligned list of lists containing table cells values as string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span><span class="p">:</span> <span class="n">ListType</span><span class="p">[</span><span class="n">ListType</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[[]]</span>
+        <span class="c1"># mypy: &quot;Table&quot; has no attribute &quot;cols&quot;</span>
+        <span class="c1"># dynamic attribute</span>
+        <span class="n">cols</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">cols</span>  <span class="c1"># type: ignore</span>
+
+        <span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">compute_content</span><span class="p">(</span><span class="n">table</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">cols</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">([])</span>
+                <span class="c1"># mypy: &quot;Table&quot; has no attribute &quot;cols&quot;</span>
+                <span class="c1"># dynamic attribute</span>
+                <span class="n">cols</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">cols</span>  <span class="c1"># type: ignore</span>
+
+            <span class="n">cols</span> <span class="o">-=</span> <span class="mi">1</span>
+            <span class="n">result</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+
+        <span class="c1"># fill missing cells</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">&lt;</span> <span class="n">cols</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="BaseWriter.compute_content"><a class="viewcode-back" href="../../../logilab.common.ureports.html#logilab.common.ureports.BaseWriter.compute_content">[docs]</a>    <span class="k">def</span> <span class="nf">compute_content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">layout</span><span class="p">:</span> <span class="n">VNode</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Generator</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;trick to compute the formatting of children layout before actually</span>
+<span class="sd">        writing it</span>
+
+<span class="sd">        return an iterator on strings (one for each child element)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># use cells !</span>
+        <span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">UnicodeEncodeError</span><span class="p">:</span>
+                <span class="c1"># mypy: Argument 1 to &quot;write&quot; of &quot;TextIOWrapper&quot; has incompatible type &quot;bytes&quot;;</span>
+                <span class="c1"># mypy: expected &quot;str&quot;</span>
+                <span class="c1"># error from porting to python3?</span>
+                <span class="n">stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding</span><span class="p">))</span>  <span class="c1"># type: ignore</span>
+
+        <span class="k">def</span> <span class="nf">writeln</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span> <span class="o">+</span> <span class="n">linesep</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">UnicodeEncodeError</span><span class="p">:</span>
+                <span class="c1"># mypy: Unsupported operand types for + (&quot;bytes&quot; and &quot;str&quot;)</span>
+                <span class="c1"># error from porting to python3?</span>
+                <span class="n">stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">encoding</span><span class="p">)</span> <span class="o">+</span> <span class="n">linesep</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+        <span class="c1"># mypy: Cannot assign to a method</span>
+        <span class="c1"># this really looks like black dirty magic since self.write is reused elsewhere in the code</span>
+        <span class="c1"># especially since self.write and self.writeln are conditionally</span>
+        <span class="c1"># deleted at the end of this function</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">write</span> <span class="o">=</span> <span class="n">write</span>  <span class="c1"># type: ignore</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">writeln</span> <span class="o">=</span> <span class="n">writeln</span>  <span class="c1"># type: ignore</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__compute_funcs</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">write</span><span class="p">,</span> <span class="n">writeln</span><span class="p">))</span>
+
+        <span class="c1"># mypy: Item &quot;Table&quot; of &quot;Union[ListType[Any], Table, Title]&quot; has no attribute &quot;children&quot;</span>
+        <span class="c1"># dynamic attribute?</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="n">layout</span><span class="o">.</span><span class="n">children</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+            <span class="n">stream</span> <span class="o">=</span> <span class="n">StringIO</span><span class="p">()</span>
+
+            <span class="n">child</span><span class="o">.</span><span class="n">accept</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+            <span class="k">yield</span> <span class="n">stream</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__compute_funcs</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># mypy: Cannot assign to a method</span>
+            <span class="c1"># even more black dirty magic</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">write</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">writeln</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__compute_funcs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># type: ignore</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">write</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">writeln</span></div></div>
+
+
+<span class="kn">from</span> <span class="nn">logilab.common.ureports.text_writer</span> <span class="kn">import</span> <span class="n">TextWriter</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">logilab.common.ureports.html_writer</span> <span class="kn">import</span> <span class="n">HTMLWriter</span>  <span class="c1"># noqa</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">logilab common</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../logilab.common.html">logilab.common package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../logilab.common.ureports.html">logilab.common.ureports package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  <li><a href="../common.html">logilab.common</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Logilab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,516 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>logilab.common.fileutils &#8212; logilab common  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for logilab.common.fileutils</h1><div class="highlight"><pre>
+<span></span><span class="c1"># copyright 2003-2011 LOGILAB S.A. (Paris, FRANCE), all rights reserved.</span>
+<span class="c1"># contact http://www.logilab.fr/ -- mailto:contact@logilab.fr</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of logilab-common.</span>
+<span class="c1">#</span>
+<span class="c1"># logilab-common is free software: you can redistribute it and/or modify it under</span>
+<span class="c1"># the terms of the GNU Lesser General Public License as published by the Free</span>
+<span class="c1"># Software Foundation, either version 2.1 of the License, or (at your option) any</span>
+<span class="c1"># later version.</span>
+<span class="c1">#</span>
+<span class="c1"># logilab-common is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1"># ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS</span>
+<span class="c1"># FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License along</span>
+<span class="c1"># with logilab-common.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="sd">&quot;&quot;&quot;File and file-path manipulation utilities.</span>
+
+<span class="sd">:group path manipulation: first_level_directory, relative_path, is_binary,\</span>
+<span class="sd">get_by_ext, remove_dead_links</span>
+<span class="sd">:group file manipulation: norm_read, norm_open, lines, stream_lines, lines,\</span>
+<span class="sd">write_open_mode, ensure_fs_mode, export</span>
+<span class="sd">:sort: path manipulation, file manipulation</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="n">__docformat__</span> <span class="o">=</span> <span class="s2">&quot;restructuredtext en&quot;</span>
+
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">mimetypes</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">isabs</span><span class="p">,</span> <span class="n">isdir</span><span class="p">,</span> <span class="n">islink</span><span class="p">,</span> <span class="n">split</span><span class="p">,</span> <span class="n">exists</span><span class="p">,</span> <span class="n">normpath</span><span class="p">,</span> <span class="n">join</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">abspath</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">sep</span><span class="p">,</span> <span class="n">mkdir</span><span class="p">,</span> <span class="n">remove</span><span class="p">,</span> <span class="n">listdir</span><span class="p">,</span> <span class="n">stat</span><span class="p">,</span> <span class="n">chmod</span><span class="p">,</span> <span class="n">walk</span>
+<span class="kn">from</span> <span class="nn">stat</span> <span class="kn">import</span> <span class="n">ST_MODE</span><span class="p">,</span> <span class="n">S_IWRITE</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span> <span class="nn">_io</span> <span class="kn">import</span> <span class="n">TextIOWrapper</span>
+
+<span class="kn">from</span> <span class="nn">logilab.common</span> <span class="kn">import</span> <span class="n">STD_BLACKLIST</span> <span class="k">as</span> <span class="n">BASE_BLACKLIST</span><span class="p">,</span> <span class="n">IGNORED_EXTENSIONS</span>
+<span class="kn">from</span> <span class="nn">logilab.common.deprecation</span> <span class="kn">import</span> <span class="n">callable_deprecated</span>
+<span class="kn">from</span> <span class="nn">logilab.common.compat</span> <span class="kn">import</span> <span class="n">FileIO</span>
+
+
+<div class="viewcode-block" id="first_level_directory"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.fileutils.first_level_directory">[docs]</a><span class="k">def</span> <span class="nf">first_level_directory</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Return the first level directory of a path.</span>
+
+<span class="sd">    &gt;&gt;&gt; first_level_directory(&#39;home/syt/work&#39;)</span>
+<span class="sd">    &#39;home&#39;</span>
+<span class="sd">    &gt;&gt;&gt; first_level_directory(&#39;/home/syt/work&#39;)</span>
+<span class="sd">    &#39;/&#39;</span>
+<span class="sd">    &gt;&gt;&gt; first_level_directory(&#39;work&#39;)</span>
+<span class="sd">    &#39;work&#39;</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+
+<span class="sd">    :type path: str</span>
+<span class="sd">    :param path: the path for which we want the first level directory</span>
+
+<span class="sd">    :rtype: str</span>
+<span class="sd">    :return: the first level directory appearing in `path`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">head</span><span class="p">,</span> <span class="n">tail</span> <span class="o">=</span> <span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">while</span> <span class="n">head</span> <span class="ow">and</span> <span class="n">tail</span><span class="p">:</span>
+        <span class="n">head</span><span class="p">,</span> <span class="n">tail</span> <span class="o">=</span> <span class="n">split</span><span class="p">(</span><span class="n">head</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">tail</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">tail</span>
+    <span class="c1"># path was absolute, head is the fs root</span>
+    <span class="k">return</span> <span class="n">head</span></div>
+
+
+<div class="viewcode-block" id="abspath_listdir"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.fileutils.abspath_listdir">[docs]</a><span class="k">def</span> <span class="nf">abspath_listdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Lists path&#39;s content using absolute paths.&quot;&quot;&quot;</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">abspath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span> <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">listdir</span><span class="p">(</span><span class="n">path</span><span class="p">)]</span></div>
+
+
+<div class="viewcode-block" id="is_binary"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.fileutils.is_binary">[docs]</a><span class="k">def</span> <span class="nf">is_binary</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Return true if filename may be a binary file, according to it&#39;s</span>
+<span class="sd">    extension.</span>
+
+<span class="sd">    :type filename: str</span>
+<span class="sd">    :param filename: the name of the file</span>
+
+<span class="sd">    :rtype: bool</span>
+<span class="sd">    :return:</span>
+<span class="sd">      true if the file is a binary file (actually if it&#39;s mime type</span>
+<span class="sd">      isn&#39;t beginning by text/)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># mypy: Item &quot;None&quot; of &quot;Optional[str]&quot; has no attribute &quot;startswith&quot;</span>
+        <span class="c1"># it&#39;s handle by the exception</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="n">mimetypes</span><span class="o">.</span><span class="n">guess_type</span><span class="p">(</span><span class="n">filename</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;text&quot;</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">1</span></div>
+
+
+<div class="viewcode-block" id="write_open_mode"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.fileutils.write_open_mode">[docs]</a><span class="k">def</span> <span class="nf">write_open_mode</span><span class="p">(</span><span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Return the write mode that should used to open file.</span>
+
+<span class="sd">    :type filename: str</span>
+<span class="sd">    :param filename: the name of the file</span>
+
+<span class="sd">    :rtype: str</span>
+<span class="sd">    :return: the mode that should be use to open the file (&#39;w&#39; or &#39;wb&#39;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">is_binary</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;wb&quot;</span>
+    <span class="k">return</span> <span class="s2">&quot;w&quot;</span></div>
+
+
+<div class="viewcode-block" id="ensure_fs_mode"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.fileutils.ensure_fs_mode">[docs]</a><span class="k">def</span> <span class="nf">ensure_fs_mode</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">desired_mode</span><span class="o">=</span><span class="n">S_IWRITE</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check that the given file has the given mode(s) set, else try to</span>
+<span class="sd">    set it.</span>
+
+<span class="sd">    :type filepath: str</span>
+<span class="sd">    :param filepath: path of the file</span>
+
+<span class="sd">    :type desired_mode: int</span>
+<span class="sd">    :param desired_mode:</span>
+<span class="sd">      ORed flags describing the desired mode. Use constants from the</span>
+<span class="sd">      `stat` module for file permission&#39;s modes</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mode</span> <span class="o">=</span> <span class="n">stat</span><span class="p">(</span><span class="n">filepath</span><span class="p">)[</span><span class="n">ST_MODE</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">mode</span> <span class="o">&amp;</span> <span class="n">desired_mode</span><span class="p">:</span>
+        <span class="n">chmod</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">mode</span> <span class="o">|</span> <span class="n">desired_mode</span><span class="p">)</span></div>
+
+
+<span class="c1"># XXX (syt) unused? kill?</span>
+<div class="viewcode-block" id="ProtectedFile"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.fileutils.ProtectedFile">[docs]</a><span class="k">class</span> <span class="nc">ProtectedFile</span><span class="p">(</span><span class="n">FileIO</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A special file-object class that automatically does a &#39;chmod +w&#39; when</span>
+<span class="sd">    needed.</span>
+
+<span class="sd">    XXX: for now, the way it is done allows &#39;normal file-objects&#39; to be</span>
+<span class="sd">    created during the ProtectedFile object lifetime.</span>
+<span class="sd">    One way to circumvent this would be to chmod / unchmod on each</span>
+<span class="sd">    write operation.</span>
+
+<span class="sd">    One other way would be to :</span>
+
+<span class="sd">    - catch the IOError in the __init__</span>
+
+<span class="sd">    - if IOError, then create a StringIO object</span>
+
+<span class="sd">    - each write operation writes in this StringIO object</span>
+
+<span class="sd">    - on close()/del(), write/append the StringIO content to the file and</span>
+<span class="sd">      do the chmod only once</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">original_mode</span> <span class="o">=</span> <span class="n">stat</span><span class="p">(</span><span class="n">filepath</span><span class="p">)[</span><span class="n">ST_MODE</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mode_changed</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">mode</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">,</span> <span class="s2">&quot;ab&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_mode</span> <span class="o">&amp;</span> <span class="n">S_IWRITE</span><span class="p">:</span>
+                <span class="n">chmod</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_mode</span> <span class="o">|</span> <span class="n">S_IWRITE</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mode_changed</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">FileIO</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filepath</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_restore_mode</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;restores the original mode if needed&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mode_changed</span><span class="p">:</span>
+            <span class="n">chmod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_mode</span><span class="p">)</span>
+            <span class="c1"># Don&#39;t re-chmod in case of several restore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mode_changed</span> <span class="o">=</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="ProtectedFile.close"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.fileutils.ProtectedFile.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;restore mode before closing&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_restore_mode</span><span class="p">()</span>
+        <span class="n">FileIO</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__del__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">closed</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="UnresolvableError"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.fileutils.UnresolvableError">[docs]</a><span class="k">class</span> <span class="nc">UnresolvableError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Exception raised by relative path when it&#39;s unable to compute relative</span>
+<span class="sd">    path between two paths.</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="relative_path"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.fileutils.relative_path">[docs]</a><span class="k">def</span> <span class="nf">relative_path</span><span class="p">(</span><span class="n">from_file</span><span class="p">,</span> <span class="n">to_file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Try to get a relative path from `from_file` to `to_file`</span>
+<span class="sd">    (path will be absolute if to_file is an absolute file). This function</span>
+<span class="sd">    is useful to create link in `from_file` to `to_file`. This typical use</span>
+<span class="sd">    case is used in this function description.</span>
+
+<span class="sd">    If both files are relative, they&#39;re expected to be relative to the same</span>
+<span class="sd">    directory.</span>
+
+<span class="sd">    &gt;&gt;&gt; relative_path( from_file=&#39;toto/index.html&#39;, to_file=&#39;index.html&#39;)</span>
+<span class="sd">    &#39;../index.html&#39;</span>
+<span class="sd">    &gt;&gt;&gt; relative_path( from_file=&#39;index.html&#39;, to_file=&#39;toto/index.html&#39;)</span>
+<span class="sd">    &#39;toto/index.html&#39;</span>
+<span class="sd">    &gt;&gt;&gt; relative_path( from_file=&#39;tutu/index.html&#39;, to_file=&#39;toto/index.html&#39;)</span>
+<span class="sd">    &#39;../toto/index.html&#39;</span>
+<span class="sd">    &gt;&gt;&gt; relative_path( from_file=&#39;toto/index.html&#39;, to_file=&#39;/index.html&#39;)</span>
+<span class="sd">    &#39;/index.html&#39;</span>
+<span class="sd">    &gt;&gt;&gt; relative_path( from_file=&#39;/toto/index.html&#39;, to_file=&#39;/index.html&#39;)</span>
+<span class="sd">    &#39;../index.html&#39;</span>
+<span class="sd">    &gt;&gt;&gt; relative_path( from_file=&#39;/toto/index.html&#39;, to_file=&#39;/toto/summary.html&#39;)</span>
+<span class="sd">    &#39;summary.html&#39;</span>
+<span class="sd">    &gt;&gt;&gt; relative_path( from_file=&#39;index.html&#39;, to_file=&#39;index.html&#39;)</span>
+<span class="sd">    &#39;&#39;</span>
+<span class="sd">    &gt;&gt;&gt; relative_path( from_file=&#39;/index.html&#39;, to_file=&#39;toto/index.html&#39;)</span>
+<span class="sd">    Traceback (most recent call last):</span>
+<span class="sd">      File &quot;&lt;string&gt;&quot;, line 1, in ?</span>
+<span class="sd">      File &quot;&lt;stdin&gt;&quot;, line 37, in relative_path</span>
+<span class="sd">    UnresolvableError</span>
+<span class="sd">    &gt;&gt;&gt; relative_path( from_file=&#39;/index.html&#39;, to_file=&#39;/index.html&#39;)</span>
+<span class="sd">    &#39;&#39;</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+
+<span class="sd">    :type from_file: str</span>
+<span class="sd">    :param from_file: source file (where links will be inserted)</span>
+
+<span class="sd">    :type to_file: str</span>
+<span class="sd">    :param to_file: target file (on which links point)</span>
+
+<span class="sd">    :raise UnresolvableError: if it has been unable to guess a correct path</span>
+
+<span class="sd">    :rtype: str</span>
+<span class="sd">    :return: the relative path of `to_file` from `from_file`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">from_file</span> <span class="o">=</span> <span class="n">normpath</span><span class="p">(</span><span class="n">from_file</span><span class="p">)</span>
+    <span class="n">to_file</span> <span class="o">=</span> <span class="n">normpath</span><span class="p">(</span><span class="n">to_file</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">from_file</span> <span class="o">==</span> <span class="n">to_file</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">isabs</span><span class="p">(</span><span class="n">to_file</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">isabs</span><span class="p">(</span><span class="n">from_file</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">to_file</span>
+    <span class="k">elif</span> <span class="n">isabs</span><span class="p">(</span><span class="n">from_file</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">UnresolvableError</span><span class="p">()</span>
+    <span class="n">from_parts</span> <span class="o">=</span> <span class="n">from_file</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+    <span class="n">to_parts</span> <span class="o">=</span> <span class="n">to_file</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span>
+    <span class="n">idem</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">from_parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">dirname</span> <span class="o">=</span> <span class="n">from_parts</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">idem</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">to_parts</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">dirname</span> <span class="o">==</span> <span class="n">to_parts</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">to_parts</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">idem</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;..&quot;</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">+=</span> <span class="n">to_parts</span>
+    <span class="k">return</span> <span class="n">sep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">result</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">norm_read</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return the content of the file with normalized line feeds.</span>
+
+<span class="sd">    :type path: str</span>
+<span class="sd">    :param path: path to the file to read</span>
+
+<span class="sd">    :rtype: str</span>
+<span class="sd">    :return: the content of the file with normalized line feeds</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;U&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+
+<span class="n">norm_read</span> <span class="o">=</span> <span class="n">callable_deprecated</span><span class="p">(</span><span class="s2">&quot;use </span><span class="se">\&quot;</span><span class="s2">open(path, &#39;U&#39;).read()</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">)(</span><span class="n">norm_read</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">norm_open</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a stream for a file with content with normalized line feeds.</span>
+
+<span class="sd">    :type path: str</span>
+<span class="sd">    :param path: path to the file to open</span>
+
+<span class="sd">    :rtype: file or StringIO</span>
+<span class="sd">    :return: the opened file with normalized line feeds</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">open</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s2">&quot;U&quot;</span><span class="p">)</span>
+
+
+<span class="n">norm_open</span> <span class="o">=</span> <span class="n">callable_deprecated</span><span class="p">(</span><span class="s2">&quot;use </span><span class="se">\&quot;</span><span class="s2">open(path, &#39;U&#39;)</span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="p">)(</span><span class="n">norm_open</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="lines"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.fileutils.lines">[docs]</a><span class="k">def</span> <span class="nf">lines</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">comments</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Return a list of non empty lines in the file located at `path`.</span>
+
+<span class="sd">    :type path: str</span>
+<span class="sd">    :param path: path to the file</span>
+
+<span class="sd">    :type comments: str or None</span>
+<span class="sd">    :param comments:</span>
+<span class="sd">      optional string which can be used to comment a line in the file</span>
+<span class="sd">      (i.e. lines starting with this string won&#39;t be returned)</span>
+
+<span class="sd">    :rtype: list</span>
+<span class="sd">    :return:</span>
+<span class="sd">      a list of stripped line in the file, without empty and commented</span>
+<span class="sd">      lines</span>
+
+<span class="sd">    :warning: at some point this function will probably return an iterator</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="n">io</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span> <span class="k">as</span> <span class="n">stream</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">stream_lines</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">comments</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="stream_lines"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.fileutils.stream_lines">[docs]</a><span class="k">def</span> <span class="nf">stream_lines</span><span class="p">(</span><span class="n">stream</span><span class="p">:</span> <span class="n">TextIOWrapper</span><span class="p">,</span> <span class="n">comments</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Return a list of non empty lines in the given `stream`.</span>
+
+<span class="sd">    :type stream: object implementing &#39;xreadlines&#39; or &#39;readlines&#39;</span>
+<span class="sd">    :param stream: file like object</span>
+
+<span class="sd">    :type comments: str or None</span>
+<span class="sd">    :param comments:</span>
+<span class="sd">      optional string which can be used to comment a line in the file</span>
+<span class="sd">      (i.e. lines starting with this string won&#39;t be returned)</span>
+
+<span class="sd">    :rtype: list</span>
+<span class="sd">    :return:</span>
+<span class="sd">      a list of stripped line in the file, without empty and commented</span>
+<span class="sd">      lines</span>
+
+<span class="sd">    :warning: at some point this function will probably return an iterator</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">readlines</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">xreadlines</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="n">readlines</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">readlines</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">readlines</span><span class="p">():</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">line</span> <span class="ow">and</span> <span class="p">(</span><span class="n">comments</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">comments</span><span class="p">)):</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+<div class="viewcode-block" id="export"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.fileutils.export">[docs]</a><span class="k">def</span> <span class="nf">export</span><span class="p">(</span>
+    <span class="n">from_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">to_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">blacklist</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">BASE_BLACKLIST</span><span class="p">,</span>
+    <span class="n">ignore_ext</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">IGNORED_EXTENSIONS</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Make a mirror of `from_dir` in `to_dir`, omitting directories and</span>
+<span class="sd">    files listed in the black list or ending with one of the given</span>
+<span class="sd">    extensions.</span>
+
+<span class="sd">    :type from_dir: str</span>
+<span class="sd">    :param from_dir: directory to export</span>
+
+<span class="sd">    :type to_dir: str</span>
+<span class="sd">    :param to_dir: destination directory</span>
+
+<span class="sd">    :type blacklist: list or tuple</span>
+<span class="sd">    :param blacklist:</span>
+<span class="sd">      list of files or directories to ignore, default to the content of</span>
+<span class="sd">      `BASE_BLACKLIST`</span>
+
+<span class="sd">    :type ignore_ext: list or tuple</span>
+<span class="sd">    :param ignore_ext:</span>
+<span class="sd">      list of extensions to ignore, default to  the content of</span>
+<span class="sd">      `IGNORED_EXTENSIONS`</span>
+
+<span class="sd">    :type verbose: bool</span>
+<span class="sd">    :param verbose:</span>
+<span class="sd">      flag indicating whether information about exported files should be</span>
+<span class="sd">      printed to stderr, default to False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">mkdir</span><span class="p">(</span><span class="n">to_dir</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+        <span class="k">pass</span>  <span class="c1"># FIXME we should use &quot;exists&quot; if the point is about existing dir</span>
+        <span class="c1"># else (permission problems?) shouldn&#39;t return / raise ?</span>
+    <span class="k">for</span> <span class="n">directory</span><span class="p">,</span> <span class="n">dirnames</span><span class="p">,</span> <span class="n">filenames</span> <span class="ow">in</span> <span class="n">walk</span><span class="p">(</span><span class="n">from_dir</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">norecurs</span> <span class="ow">in</span> <span class="n">blacklist</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">dirnames</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">norecurs</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">continue</span>
+        <span class="k">for</span> <span class="n">dirname</span> <span class="ow">in</span> <span class="n">dirnames</span><span class="p">:</span>
+            <span class="n">src</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">dirname</span><span class="p">)</span>
+            <span class="n">dest</span> <span class="o">=</span> <span class="n">to_dir</span> <span class="o">+</span> <span class="n">src</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">from_dir</span><span class="p">)</span> <span class="p">:]</span>
+            <span class="k">if</span> <span class="n">isdir</span><span class="p">(</span><span class="n">src</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">exists</span><span class="p">(</span><span class="n">dest</span><span class="p">):</span>
+                    <span class="n">mkdir</span><span class="p">(</span><span class="n">dest</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+            <span class="c1"># don&#39;t include binary files</span>
+            <span class="c1"># endswith does not accept tuple in 2.4</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">([</span><span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span> <span class="k">for</span> <span class="n">ext</span> <span class="ow">in</span> <span class="n">ignore_ext</span><span class="p">]):</span>
+                <span class="k">continue</span>
+            <span class="n">src</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+            <span class="n">dest</span> <span class="o">=</span> <span class="n">to_dir</span> <span class="o">+</span> <span class="n">src</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">from_dir</span><span class="p">)</span> <span class="p">:]</span>
+            <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="s2">&quot;-&gt;&quot;</span><span class="p">,</span> <span class="n">dest</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">exists</span><span class="p">(</span><span class="n">dest</span><span class="p">):</span>
+                <span class="n">remove</span><span class="p">(</span><span class="n">dest</span><span class="p">)</span>
+            <span class="n">shutil</span><span class="o">.</span><span class="n">copy2</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dest</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="remove_dead_links"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.fileutils.remove_dead_links">[docs]</a><span class="k">def</span> <span class="nf">remove_dead_links</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Recursively traverse directory and remove all dead links.</span>
+
+<span class="sd">    :type directory: str</span>
+<span class="sd">    :param directory: directory to cleanup</span>
+
+<span class="sd">    :type verbose: bool</span>
+<span class="sd">    :param verbose:</span>
+<span class="sd">      flag indicating whether information about deleted links should be</span>
+<span class="sd">      printed to stderr, default to False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">dirpath</span><span class="p">,</span> <span class="n">dirnames</span><span class="p">,</span> <span class="n">filenames</span> <span class="ow">in</span> <span class="n">walk</span><span class="p">(</span><span class="n">directory</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">dirnames</span> <span class="o">+</span> <span class="n">filenames</span><span class="p">:</span>
+            <span class="n">src</span> <span class="o">=</span> <span class="n">join</span><span class="p">(</span><span class="n">dirpath</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">islink</span><span class="p">(</span><span class="n">src</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">exists</span><span class="p">(</span><span class="n">src</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;remove dead link&quot;</span><span class="p">,</span> <span class="n">src</span><span class="p">)</span>
+                <span class="n">remove</span><span class="p">(</span><span class="n">src</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">logilab common</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../logilab.common.html">logilab.common package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../logilab.common.ureports.html">logilab.common.ureports package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  <li><a href="../common.html">logilab.common</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Logilab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

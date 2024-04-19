@@ -1,7 +1,7 @@
 /* @(#)yp.x	2.1 88/08/01 4.0 RPCSRC */
 
 /*
- * Copyright (c) 2010, Oracle America, Inc.
+ * Copyright (c) 2010 Oracle America, Inc.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -36,7 +36,7 @@
  */
 
 const YPMAXRECORD = 1024;
-const YPMAXDOMAIN = 64;
+const YPMAXDOMAIN = 256;
 const YPMAXMAP = 64;
 const YPMAXPEER = 64;
 
@@ -279,12 +279,8 @@ program YPPUSH_XFRRESPPROG {
 		YPPUSHPROC_NULL(void) = 0;
 
 #ifdef STUPID_SUN_BUG
-		/* This is the form as distributed by Sun.  But even
-		   the Sun NIS servers expect the values in the other
-		   order.  So their implementation somehow must change
-		   the order internally.  We don't want to follow this
-		   bad example since the user should be able to use
-		   rpcgen on this file.  */
+		/* This is the form as distributed by Sun.
+		   But this is not what the programs use. */
 		yppushresp_xfr
 		YPPUSHPROC_XFRRESP(void) = 1;
 #else

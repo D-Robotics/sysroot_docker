@@ -1,0 +1,415 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>logilab.common.decorators &#8212; logilab common  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for logilab.common.decorators</h1><div class="highlight"><pre>
+<span></span><span class="c1"># copyright 2003-2013 LOGILAB S.A. (Paris, FRANCE), all rights reserved.</span>
+<span class="c1"># contact http://www.logilab.fr/ -- mailto:contact@logilab.fr</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of logilab-common.</span>
+<span class="c1">#</span>
+<span class="c1"># logilab-common is free software: you can redistribute it and/or modify it under</span>
+<span class="c1"># the terms of the GNU Lesser General Public License as published by the Free</span>
+<span class="c1"># Software Foundation, either version 2.1 of the License, or (at your option) any</span>
+<span class="c1"># later version.</span>
+<span class="c1">#</span>
+<span class="c1"># logilab-common is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1"># ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS</span>
+<span class="c1"># FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License along</span>
+<span class="c1"># with logilab-common.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="sd">&quot;&quot;&quot; A few useful function/method decorators. &quot;&quot;&quot;</span>
+
+
+<span class="n">__docformat__</span> <span class="o">=</span> <span class="s2">&quot;restructuredtext en&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">process_time</span><span class="p">,</span> <span class="n">time</span>
+<span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">isgeneratorfunction</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">getfullargspec</span>
+
+<span class="kn">from</span> <span class="nn">logilab.common.compat</span> <span class="kn">import</span> <span class="n">method_type</span>
+
+<span class="c1"># XXX rewrite so we can use the decorator syntax when keyarg has to be specified</span>
+
+
+<div class="viewcode-block" id="cached_decorator"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.cache.cached_decorator">[docs]</a><span class="k">class</span> <span class="nc">cached_decorator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cacheattr</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">keyarg</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cacheattr</span> <span class="o">=</span> <span class="n">cacheattr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keyarg</span> <span class="o">=</span> <span class="n">keyarg</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callableobj</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">isgeneratorfunction</span><span class="p">(</span><span class="n">callableobj</span><span class="p">),</span> <span class="p">(</span>
+            <span class="s2">&quot;cannot cache generator function: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">callableobj</span>
+        <span class="p">)</span>
+        <span class="k">assert</span> <span class="n">callableobj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">getfullargspec</span><span class="p">(</span><span class="n">callableobj</span><span class="p">)</span><span class="o">.</span><span class="n">args</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">keyarg</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">cache</span> <span class="o">=</span> <span class="n">_SingleValueCache</span><span class="p">(</span><span class="n">callableobj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cacheattr</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">keyarg</span><span class="p">:</span>
+            <span class="n">cache</span> <span class="o">=</span> <span class="n">_MultiValuesKeyArgCache</span><span class="p">(</span><span class="n">callableobj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">keyarg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cacheattr</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cache</span> <span class="o">=</span> <span class="n">_MultiValuesCache</span><span class="p">(</span><span class="n">callableobj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cacheattr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">cache</span><span class="o">.</span><span class="n">closure</span><span class="p">()</span></div>
+
+
+<span class="k">class</span> <span class="nc">_SingleValueCache</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callableobj</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">cacheattr</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">callable</span> <span class="o">=</span> <span class="n">callableobj</span>
+        <span class="k">if</span> <span class="n">cacheattr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cacheattr</span> <span class="o">=</span> <span class="s2">&quot;_</span><span class="si">%s</span><span class="s2">_cache_&quot;</span> <span class="o">%</span> <span class="n">callableobj</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">cacheattr</span> <span class="o">!=</span> <span class="n">callableobj</span><span class="o">.</span><span class="vm">__name__</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cacheattr</span> <span class="o">=</span> <span class="n">cacheattr</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="n">__me</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">__me</span><span class="o">.</span><span class="n">cacheattr</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">__me</span><span class="o">.</span><span class="n">callable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">__me</span><span class="o">.</span><span class="n">cacheattr</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="nf">closure</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+        <span class="k">def</span> <span class="nf">wrapped</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__call__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># mypy: &quot;Callable[[VarArg(Any), KwArg(Any)], Any]&quot; has no attribute &quot;cache_obj&quot;</span>
+        <span class="c1"># dynamic attribute for magic</span>
+        <span class="n">wrapped</span><span class="o">.</span><span class="n">cache_obj</span> <span class="o">=</span> <span class="bp">self</span>  <span class="c1"># type: ignore</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">wrapped</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">callable</span><span class="o">.</span><span class="vm">__doc__</span>
+            <span class="n">wrapped</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">callable</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">wrapped</span>
+
+    <span class="k">def</span> <span class="nf">clear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">holder</span><span class="p">):</span>
+        <span class="n">holder</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cacheattr</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">_MultiValuesCache</span><span class="p">(</span><span class="n">_SingleValueCache</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">_get_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">holder</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">_cache</span> <span class="o">=</span> <span class="n">holder</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">cacheattr</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">_cache</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">holder</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cacheattr</span><span class="p">,</span> <span class="n">_cache</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">_cache</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="n">__me</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">_cache</span> <span class="o">=</span> <span class="n">__me</span><span class="o">.</span><span class="n">_get_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span> <span class="o">=</span> <span class="n">__me</span><span class="o">.</span><span class="n">callable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">_cache</span><span class="p">[</span><span class="n">args</span><span class="p">]</span>
+
+
+<span class="k">class</span> <span class="nc">_MultiValuesKeyArgCache</span><span class="p">(</span><span class="n">_MultiValuesCache</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">callableobj</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">keyarg</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">cacheattr</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">_MultiValuesKeyArgCache</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">callableobj</span><span class="p">,</span> <span class="n">cacheattr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">keyarg</span> <span class="o">=</span> <span class="n">keyarg</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="n">__me</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">_cache</span> <span class="o">=</span> <span class="n">__me</span><span class="o">.</span><span class="n">_get_cache</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="n">__me</span><span class="o">.</span><span class="n">keyarg</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">__me</span><span class="o">.</span><span class="n">callable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">_cache</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="cached"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.cache.cached">[docs]</a><span class="k">def</span> <span class="nf">cached</span><span class="p">(</span>
+    <span class="n">callableobj</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">keyarg</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="n">cached_decorator</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Simple decorator to cache result of method call.&quot;&quot;&quot;</span>
+    <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;keyarg&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">keyarg</span>
+    <span class="n">decorator</span> <span class="o">=</span> <span class="n">cached_decorator</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">callableobj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">decorator</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">decorator</span><span class="p">(</span><span class="n">callableobj</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="cachedproperty"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.cache.cachedproperty">[docs]</a><span class="k">class</span> <span class="nc">cachedproperty</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Provides a cached property equivalent to the stacking of</span>
+<span class="sd">    @cached and @property, but more efficient.</span>
+
+<span class="sd">    After first usage, the &lt;property_name&gt; becomes part of the object&#39;s</span>
+<span class="sd">    __dict__. Doing:</span>
+
+<span class="sd">      del obj.&lt;property_name&gt; empties the cache.</span>
+
+<span class="sd">    Idea taken from the pyramid_ framework and the mercurial_ project.</span>
+
+<span class="sd">    .. _pyramid: http://pypi.python.org/pypi/pyramid</span>
+<span class="sd">    .. _mercurial: http://pypi.python.org/pypi/Mercurial</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;wrapped&quot;</span><span class="p">,)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wrapped</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">wrapped</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> must have a __name__ attribute&quot;</span> <span class="o">%</span> <span class="n">wrapped</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wrapped</span> <span class="o">=</span> <span class="n">wrapped</span>
+
+    <span class="c1"># otherwise this breaks sphinx static analysis for __doc__</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">!=</span> <span class="s2">&quot;sphinx-build&quot;</span><span class="p">:</span>
+        <span class="c1"># mypy: Signature of &quot;__doc__&quot; incompatible with supertype &quot;object&quot;</span>
+        <span class="c1"># but this works?</span>
+        <span class="nd">@property</span>
+        <span class="k">def</span> <span class="nf">__doc__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+            <span class="n">doc</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wrapped</span><span class="p">,</span> <span class="s2">&quot;__doc__&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">return</span> <span class="s2">&quot;&lt;wrapped by the cachedproperty decorator&gt;</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">doc</span> <span class="k">if</span> <span class="n">doc</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__get__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inst</span><span class="p">,</span> <span class="n">objtype</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">inst</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapped</span><span class="p">(</span><span class="n">inst</span><span class="p">)</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">inst</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wrapped</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">val</span></div>
+
+
+<div class="viewcode-block" id="get_cache_impl"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.cache.get_cache_impl">[docs]</a><span class="k">def</span> <span class="nf">get_cache_impl</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">funcname</span><span class="p">):</span>
+    <span class="bp">cls</span> <span class="o">=</span> <span class="n">obj</span><span class="o">.</span><span class="vm">__class__</span>
+    <span class="n">member</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">funcname</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">member</span><span class="p">,</span> <span class="nb">property</span><span class="p">):</span>
+        <span class="n">member</span> <span class="o">=</span> <span class="n">member</span><span class="o">.</span><span class="n">fget</span>
+    <span class="k">return</span> <span class="n">member</span><span class="o">.</span><span class="n">cache_obj</span></div>
+
+
+<div class="viewcode-block" id="clear_cache"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.cache.clear_cache">[docs]</a><span class="k">def</span> <span class="nf">clear_cache</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">funcname</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Clear a cache handled by the :func:`cached` decorator. If &#39;x&#39; class has</span>
+<span class="sd">    @cached on its method `foo`, type</span>
+
+<span class="sd">    &gt;&gt;&gt; clear_cache(x, &#39;foo&#39;)</span>
+
+<span class="sd">    to purge this method&#39;s cache on the instance.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">get_cache_impl</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">funcname</span><span class="p">)</span><span class="o">.</span><span class="n">clear</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="copy_cache"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.cache.copy_cache">[docs]</a><span class="k">def</span> <span class="nf">copy_cache</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">funcname</span><span class="p">,</span> <span class="n">cacheobj</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Copy cache for &lt;funcname&gt; from cacheobj to obj.&quot;&quot;&quot;</span>
+    <span class="n">cacheattr</span> <span class="o">=</span> <span class="n">get_cache_impl</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">funcname</span><span class="p">)</span><span class="o">.</span><span class="n">cacheattr</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">cacheattr</span><span class="p">,</span> <span class="n">cacheobj</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">cacheattr</span><span class="p">])</span>
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="wproperty"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.cache.wproperty">[docs]</a><span class="k">class</span> <span class="nc">wproperty</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Simple descriptor expecting to take a modifier function as first argument</span>
+<span class="sd">    and looking for a _&lt;function name&gt; to retrieve the attribute.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">setfunc</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setfunc</span> <span class="o">=</span> <span class="n">setfunc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attrname</span> <span class="o">=</span> <span class="s2">&quot;_</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">setfunc</span><span class="o">.</span><span class="vm">__name__</span>
+
+    <span class="k">def</span> <span class="fm">__set__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setfunc</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__get__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">,</span> <span class="bp">cls</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">obj</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">attrname</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="classproperty"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.cache.classproperty">[docs]</a><span class="k">class</span> <span class="nc">classproperty</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;this is a simple property-like class but for class attributes.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">get</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">get</span> <span class="o">=</span> <span class="n">get</span>
+
+    <span class="k">def</span> <span class="fm">__get__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inst</span><span class="p">,</span> <span class="bp">cls</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="iclassmethod"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.cache.iclassmethod">[docs]</a><span class="k">class</span> <span class="nc">iclassmethod</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Descriptor for method which should be available as class method if called</span>
+<span class="sd">    on the class or instance method if called on an instance.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">func</span> <span class="o">=</span> <span class="n">func</span>
+
+    <span class="k">def</span> <span class="fm">__get__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">objtype</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">instance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">method_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">,</span> <span class="n">objtype</span><span class="p">,</span> <span class="n">objtype</span><span class="o">.</span><span class="vm">__class__</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">method_type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">func</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">objtype</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__set__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">instance</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;can&#39;t set attribute&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="timed"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.cache.timed">[docs]</a><span class="k">def</span> <span class="nf">timed</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">wrap</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">time</span><span class="p">()</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="n">process_time</span><span class="p">()</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> clock: </span><span class="si">%.9f</span><span class="s2"> / time: </span><span class="si">%.9f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="vm">__name__</span><span class="p">,</span> <span class="n">process_time</span><span class="p">()</span> <span class="o">-</span> <span class="n">c</span><span class="p">,</span> <span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">res</span>
+
+    <span class="k">return</span> <span class="n">wrap</span></div>
+
+
+<div class="viewcode-block" id="locked"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.cache.locked">[docs]</a><span class="k">def</span> <span class="nf">locked</span><span class="p">(</span><span class="n">acquire</span><span class="p">,</span> <span class="n">release</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Decorator taking two methods to acquire/release a lock as argument,</span>
+<span class="sd">    returning a decorator function which will call the inner method after</span>
+<span class="sd">    having called acquire(self) et will call release(self) afterwards.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+            <span class="n">acquire</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">f</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">release</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">wrapper</span>
+
+    <span class="k">return</span> <span class="n">decorator</span></div>
+
+
+<div class="viewcode-block" id="monkeypatch"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.cache.monkeypatch">[docs]</a><span class="k">def</span> <span class="nf">monkeypatch</span><span class="p">(</span><span class="n">klass</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span> <span class="n">methodname</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Decorator extending class with the decorated callable. This is basically</span>
+<span class="sd">    a syntactic sugar vs class assignment.</span>
+
+<span class="sd">    &gt;&gt;&gt; class A:</span>
+<span class="sd">    ...     pass</span>
+<span class="sd">    &gt;&gt;&gt; @monkeypatch(A)</span>
+<span class="sd">    ... def meth(self):</span>
+<span class="sd">    ...     return 12</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt; a = A()</span>
+<span class="sd">    &gt;&gt;&gt; a.meth()</span>
+<span class="sd">    12</span>
+<span class="sd">    &gt;&gt;&gt; @monkeypatch(A, &#39;foo&#39;)</span>
+<span class="sd">    ... def meth(self):</span>
+<span class="sd">    ...     return 12</span>
+<span class="sd">    ...</span>
+<span class="sd">    &gt;&gt;&gt; a.foo()</span>
+<span class="sd">    12</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">methodname</span> <span class="ow">or</span> <span class="n">func</span><span class="o">.</span><span class="vm">__name__</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span>
+                <span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> has no __name__ attribute: &quot;</span>
+                <span class="s2">&quot;you should provide an explicit `methodname`&quot;</span> <span class="o">%</span> <span class="n">func</span>
+            <span class="p">)</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">klass</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">func</span>
+
+    <span class="k">return</span> <span class="n">decorator</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">logilab common</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../logilab.common.html">logilab.common package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../logilab.common.ureports.html">logilab.common.ureports package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  <li><a href="../common.html">logilab.common</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Logilab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

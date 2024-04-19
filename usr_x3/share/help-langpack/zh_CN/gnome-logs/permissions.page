@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<page xmlns="http://projectmallard.org/1.0/" xmlns:its="http://www.w3.org/2005/11/its" type="topic" id="permissions" xml:lang="gnome-logs-zh-CN">
+
+  <info>
+    <link type="guide" xref="index"/>
+    <revision pkgversion="3.12" date="2014-02-18" status="review"/>
+
+    <credit type="author copyright">
+      <name>Ekaterina Gerasimova</name>
+      <email its:translate="no">kittykat3756@gmail.com</email>
+      <years>2013</years>
+    </credit>
+
+    <include xmlns="http://www.w3.org/2001/XInclude" href="legal.xml"/>
+
+    <desc>您可以阅读某些或所有日志，取决于您拥有哪些权限。</desc>
+  
+    <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
+      <mal:name>Damned</mal:name>
+      <mal:email>damnedlies@163.com</mal:email>
+      <mal:years>2015</mal:years>
+    </mal:credit>
+  </info>
+
+  <title>我可以查看所有日志吗？</title>
+
+  <p>您可以浏览自上次重新启动后记录的某些消息，取决于您拥有哪些权限。有些权限是发行版设置的，但系统管理员可以更改这些设置。</p>
+
+  <p its:locNote="TRANSLATORS: 'Standard' is taken from the user account type   in the control panel when used in &lt;em&gt; or &lt;gui&gt; tags.">默认情况下，对<em href="help:gnome-help/user-admin-explain">标准</em>用户会显示有限的一部分日志，例如应用程序日志和用户自己的会话日志。如果您是一个<gui>标准</gui>用户而看不到任何日志，可能是因为您的系统管理员已禁止您查看日志。</p>
+
+  <p its:locNote="TRANSLATORS: 'Administrator' is taken from the user account   type in the control panel when used in &lt;em&gt; or &lt;gui&gt;   tags."><em>管理员</em>用户通常可以查看更为敏感的日志，例如内核日志和其他用户的日志。管理员可能有不同程度的日志访问权，所以您可能无法查看所有日志。如果您是一个<gui>管理员</gui>用户，那么只有其他管理员可以更改您能访问哪些日志。要获取关于日志访问权限的更多信息，<link href="man:systemd-journald">请查看<cmd its:translate="no">systemd-journald</cmd>手册页</link>。</p>
+
+</page>

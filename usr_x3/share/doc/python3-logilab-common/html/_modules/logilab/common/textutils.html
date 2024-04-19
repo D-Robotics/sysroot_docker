@@ -1,0 +1,679 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>logilab.common.textutils &#8212; logilab common  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for logilab.common.textutils</h1><div class="highlight"><pre>
+<span></span><span class="c1"># copyright 2003-2011 LOGILAB S.A. (Paris, FRANCE), all rights reserved.</span>
+<span class="c1"># contact http://www.logilab.fr/ -- mailto:contact@logilab.fr</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of logilab-common.</span>
+<span class="c1">#</span>
+<span class="c1"># logilab-common is free software: you can redistribute it and/or modify it under</span>
+<span class="c1"># the terms of the GNU Lesser General Public License as published by the Free</span>
+<span class="c1"># Software Foundation, either version 2.1 of the License, or (at your option) any</span>
+<span class="c1"># later version.</span>
+<span class="c1">#</span>
+<span class="c1"># logilab-common is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1"># ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS</span>
+<span class="c1"># FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License along</span>
+<span class="c1"># with logilab-common.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="sd">&quot;&quot;&quot;Some text manipulation utility functions.</span>
+
+
+<span class="sd">:group text formatting: normalize_text, normalize_paragraph, pretty_match,\</span>
+<span class="sd">unquote, colorize_ansi</span>
+<span class="sd">:group text manipulation: searchall, splitstrip</span>
+<span class="sd">:sort: text formatting, text manipulation</span>
+
+<span class="sd">:type ANSI_STYLES: dict(str)</span>
+<span class="sd">:var ANSI_STYLES: dictionary mapping style identifier to ANSI terminal code</span>
+
+<span class="sd">:type ANSI_COLORS: dict(str)</span>
+<span class="sd">:var ANSI_COLORS: dictionary mapping color identifier to ANSI terminal code</span>
+
+<span class="sd">:type ANSI_PREFIX: str</span>
+<span class="sd">:var ANSI_PREFIX:</span>
+<span class="sd">  ANSI terminal code notifying the start of an ANSI escape sequence</span>
+
+<span class="sd">:type ANSI_END: str</span>
+<span class="sd">:var ANSI_END:</span>
+<span class="sd">  ANSI terminal code notifying the end of an ANSI escape sequence</span>
+
+<span class="sd">:type ANSI_RESET: str</span>
+<span class="sd">:var ANSI_RESET:</span>
+<span class="sd">  ANSI terminal code resetting format defined by a previous ANSI escape sequence</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="n">__docformat__</span> <span class="o">=</span> <span class="s2">&quot;restructuredtext en&quot;</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">os.path</span> <span class="k">as</span> <span class="nn">osp</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">re</span> <span class="kn">import</span> <span class="n">Pattern</span><span class="p">,</span> <span class="n">Match</span>  <span class="c1"># type: ignore</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="c1"># Pattern and Match are python &gt; 3.6 only.</span>
+    <span class="c1">#</span>
+    <span class="c1"># To be compatible with python &lt;= 3.6, and still provide some typing, we</span>
+    <span class="c1"># manually define Pattern and Match, in the same manner they are defined in</span>
+    <span class="c1"># the re module of python &gt; 3.7</span>
+    <span class="c1"># cf https://github.com/python/cpython/blob/3.7/Lib/re.py#L264</span>
+    <span class="n">Pattern</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">sre_compile</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>  <span class="c1"># type: ignore</span>
+    <span class="n">Match</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">sre_compile</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">))</span>  <span class="c1"># type: ignore</span>
+<span class="kn">from</span> <span class="nn">warnings</span> <span class="kn">import</span> <span class="n">warn</span>
+<span class="kn">from</span> <span class="nn">unicodedata</span> <span class="kn">import</span> <span class="n">normalize</span> <span class="k">as</span> <span class="n">_uninormalize</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">linesep</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">linesep</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>  <span class="c1"># gae</span>
+
+<span class="kn">from</span> <span class="nn">logilab.common.deprecation</span> <span class="kn">import</span> <span class="n">callable_deprecated</span>
+
+<span class="n">MANUAL_UNICODE_MAP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;</span><span class="se">\xa1</span><span class="s2">&quot;</span><span class="p">:</span> <span class="s2">&quot;!&quot;</span><span class="p">,</span>  <span class="c1"># INVERTED EXCLAMATION MARK</span>
+    <span class="s2">&quot;</span><span class="se">\u0142</span><span class="s2">&quot;</span><span class="p">:</span> <span class="s2">&quot;l&quot;</span><span class="p">,</span>  <span class="c1"># LATIN SMALL LETTER L WITH STROKE</span>
+    <span class="s2">&quot;</span><span class="se">\u2044</span><span class="s2">&quot;</span><span class="p">:</span> <span class="s2">&quot;/&quot;</span><span class="p">,</span>  <span class="c1"># FRACTION SLASH</span>
+    <span class="s2">&quot;</span><span class="se">\xc6</span><span class="s2">&quot;</span><span class="p">:</span> <span class="s2">&quot;AE&quot;</span><span class="p">,</span>  <span class="c1"># LATIN CAPITAL LETTER AE</span>
+    <span class="s2">&quot;</span><span class="se">\xa9</span><span class="s2">&quot;</span><span class="p">:</span> <span class="s2">&quot;(c)&quot;</span><span class="p">,</span>  <span class="c1"># COPYRIGHT SIGN</span>
+    <span class="s2">&quot;</span><span class="se">\xab</span><span class="s2">&quot;</span><span class="p">:</span> <span class="s1">&#39;&quot;&#39;</span><span class="p">,</span>  <span class="c1"># LEFT-POINTING DOUBLE ANGLE QUOTATION MARK</span>
+    <span class="s2">&quot;</span><span class="se">\xe6</span><span class="s2">&quot;</span><span class="p">:</span> <span class="s2">&quot;ae&quot;</span><span class="p">,</span>  <span class="c1"># LATIN SMALL LETTER AE</span>
+    <span class="s2">&quot;</span><span class="se">\xae</span><span class="s2">&quot;</span><span class="p">:</span> <span class="s2">&quot;(r)&quot;</span><span class="p">,</span>  <span class="c1"># REGISTERED SIGN</span>
+    <span class="s2">&quot;</span><span class="se">\u0153</span><span class="s2">&quot;</span><span class="p">:</span> <span class="s2">&quot;oe&quot;</span><span class="p">,</span>  <span class="c1"># LATIN SMALL LIGATURE OE</span>
+    <span class="s2">&quot;</span><span class="se">\u0152</span><span class="s2">&quot;</span><span class="p">:</span> <span class="s2">&quot;OE&quot;</span><span class="p">,</span>  <span class="c1"># LATIN CAPITAL LIGATURE OE</span>
+    <span class="s2">&quot;</span><span class="se">\xd8</span><span class="s2">&quot;</span><span class="p">:</span> <span class="s2">&quot;O&quot;</span><span class="p">,</span>  <span class="c1"># LATIN CAPITAL LETTER O WITH STROKE</span>
+    <span class="s2">&quot;</span><span class="se">\xf8</span><span class="s2">&quot;</span><span class="p">:</span> <span class="s2">&quot;o&quot;</span><span class="p">,</span>  <span class="c1"># LATIN SMALL LETTER O WITH STROKE</span>
+    <span class="s2">&quot;</span><span class="se">\xbb</span><span class="s2">&quot;</span><span class="p">:</span> <span class="s1">&#39;&quot;&#39;</span><span class="p">,</span>  <span class="c1"># RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK</span>
+    <span class="s2">&quot;</span><span class="se">\xdf</span><span class="s2">&quot;</span><span class="p">:</span> <span class="s2">&quot;ss&quot;</span><span class="p">,</span>  <span class="c1"># LATIN SMALL LETTER SHARP S</span>
+    <span class="s2">&quot;</span><span class="se">\u2013</span><span class="s2">&quot;</span><span class="p">:</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span>  <span class="c1"># HYPHEN</span>
+    <span class="s2">&quot;</span><span class="se">\u2019</span><span class="s2">&quot;</span><span class="p">:</span> <span class="s2">&quot;&#39;&quot;</span><span class="p">,</span>  <span class="c1"># SIMPLE QUOTE</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="unormalize"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.textutils.unormalize">[docs]</a><span class="k">def</span> <span class="nf">unormalize</span><span class="p">(</span>
+    <span class="n">ustring</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">ignorenonascii</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">substitute</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;replace diacritical characters with their corresponding ascii characters</span>
+
+<span class="sd">    Convert the unicode string to its long normalized form (unicode character</span>
+<span class="sd">    will be transform into several characters) and keep the first one only.</span>
+<span class="sd">    The normal form KD (NFKD) will apply the compatibility decomposition, i.e.</span>
+<span class="sd">    replace all compatibility characters with their equivalents.</span>
+
+<span class="sd">    :type substitute: str</span>
+<span class="sd">    :param substitute: replacement character to use if decomposition fails</span>
+
+<span class="sd">    :see: Another project about ASCII transliterations of Unicode text</span>
+<span class="sd">          http://pypi.python.org/pypi/Unidecode</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># backward compatibility, ignorenonascii was a boolean</span>
+    <span class="k">if</span> <span class="n">ignorenonascii</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;ignorenonascii is deprecated, use substitute named parameter instead&quot;</span><span class="p">,</span>
+            <span class="ne">DeprecationWarning</span><span class="p">,</span>
+            <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">ignorenonascii</span><span class="p">:</span>
+            <span class="n">substitute</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">letter</span> <span class="ow">in</span> <span class="n">ustring</span><span class="p">[:]:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">replacement</span> <span class="o">=</span> <span class="n">MANUAL_UNICODE_MAP</span><span class="p">[</span><span class="n">letter</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="n">replacement</span> <span class="o">=</span> <span class="n">_uninormalize</span><span class="p">(</span><span class="s2">&quot;NFKD&quot;</span><span class="p">,</span> <span class="n">letter</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">ord</span><span class="p">(</span><span class="n">replacement</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span> <span class="o">**</span> <span class="mi">7</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">substitute</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;can&#39;t deal with non-ascii based characters&quot;</span><span class="p">)</span>
+                <span class="n">replacement</span> <span class="o">=</span> <span class="n">substitute</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">replacement</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">res</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="unquote"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.textutils.unquote">[docs]</a><span class="k">def</span> <span class="nf">unquote</span><span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;remove optional quotes (simple or double) from the string</span>
+
+<span class="sd">    :type string: str or unicode</span>
+<span class="sd">    :param string: an optionally quoted string</span>
+
+<span class="sd">    :rtype: str or unicode</span>
+<span class="sd">    :return: the unquoted string (or the input string if it wasn&#39;t quoted)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">string</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">string</span>
+    <span class="k">if</span> <span class="n">string</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&#39;&quot;</span><span class="p">:</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="n">string</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="k">if</span> <span class="n">string</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">&#39;&quot;</span><span class="p">:</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="n">string</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">string</span></div>
+
+
+<span class="n">_BLANKLINES_RGX</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\r</span><span class="s2">?</span><span class="se">\n\r</span><span class="s2">?</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">_NORM_SPACES_RGX</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\s+&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="normalize_text"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.textutils.normalize_text">[docs]</a><span class="k">def</span> <span class="nf">normalize_text</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">line_len</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">80</span><span class="p">,</span> <span class="n">indent</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">rest</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;normalize a text to display it with a maximum line size and</span>
+<span class="sd">    optionally arbitrary indentation. Line jumps are normalized but blank</span>
+<span class="sd">    lines are kept. The indentation string may be used to insert a</span>
+<span class="sd">    comment (#) or a quoting (&gt;) mark  for instance.</span>
+
+<span class="sd">    :type text: str or unicode</span>
+<span class="sd">    :param text: the input text to normalize</span>
+
+<span class="sd">    :type line_len: int</span>
+<span class="sd">    :param line_len: expected maximum line&#39;s length, default to 80</span>
+
+<span class="sd">    :type indent: str or unicode</span>
+<span class="sd">    :param indent: optional string to use as indentation</span>
+
+<span class="sd">    :rtype: str or unicode</span>
+<span class="sd">    :return:</span>
+<span class="sd">      the input text normalized to fit on lines with a maximized size</span>
+<span class="sd">      inferior to `line_len`, and optionally prefixed by an</span>
+<span class="sd">      indentation string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">rest</span><span class="p">:</span>
+        <span class="n">normp</span> <span class="o">=</span> <span class="n">normalize_rest_paragraph</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">normp</span> <span class="o">=</span> <span class="n">normalize_paragraph</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">text</span> <span class="ow">in</span> <span class="n">_BLANKLINES_RGX</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">normp</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">line_len</span><span class="p">,</span> <span class="n">indent</span><span class="p">))</span>
+    <span class="k">return</span> <span class="p">(</span><span class="s2">&quot;</span><span class="si">%s%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">linesep</span><span class="p">,</span> <span class="n">indent</span><span class="p">,</span> <span class="n">linesep</span><span class="p">))</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">result</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="normalize_paragraph"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.textutils.normalize_paragraph">[docs]</a><span class="k">def</span> <span class="nf">normalize_paragraph</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">line_len</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">80</span><span class="p">,</span> <span class="n">indent</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;normalize a text to display it with a maximum line size and</span>
+<span class="sd">    optionally arbitrary indentation. Line jumps are normalized. The</span>
+<span class="sd">    indentation string may be used top insert a comment mark for</span>
+<span class="sd">    instance.</span>
+
+<span class="sd">    :type text: str or unicode</span>
+<span class="sd">    :param text: the input text to normalize</span>
+
+<span class="sd">    :type line_len: int</span>
+<span class="sd">    :param line_len: expected maximum line&#39;s length, default to 80</span>
+
+<span class="sd">    :type indent: str or unicode</span>
+<span class="sd">    :param indent: optional string to use as indentation</span>
+
+<span class="sd">    :rtype: str or unicode</span>
+<span class="sd">    :return:</span>
+<span class="sd">      the input text normalized to fit on lines with a maximized size</span>
+<span class="sd">      inferior to `line_len`, and optionally prefixed by an</span>
+<span class="sd">      indentation string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">text</span> <span class="o">=</span> <span class="n">_NORM_SPACES_RGX</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span>
+    <span class="n">line_len</span> <span class="o">=</span> <span class="n">line_len</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">indent</span><span class="p">)</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">while</span> <span class="n">text</span><span class="p">:</span>
+        <span class="n">aline</span><span class="p">,</span> <span class="n">text</span> <span class="o">=</span> <span class="n">splittext</span><span class="p">(</span><span class="n">text</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">line_len</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">indent</span> <span class="o">+</span> <span class="n">aline</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">linesep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="normalize_rest_paragraph"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.textutils.normalize_rest_paragraph">[docs]</a><span class="k">def</span> <span class="nf">normalize_rest_paragraph</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">line_len</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">80</span><span class="p">,</span> <span class="n">indent</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;normalize a ReST text to display it with a maximum line size and</span>
+<span class="sd">    optionally arbitrary indentation. Line jumps are normalized. The</span>
+<span class="sd">    indentation string may be used top insert a comment mark for</span>
+<span class="sd">    instance.</span>
+
+<span class="sd">    :type text: str or unicode</span>
+<span class="sd">    :param text: the input text to normalize</span>
+
+<span class="sd">    :type line_len: int</span>
+<span class="sd">    :param line_len: expected maximum line&#39;s length, default to 80</span>
+
+<span class="sd">    :type indent: str or unicode</span>
+<span class="sd">    :param indent: optional string to use as indentation</span>
+
+<span class="sd">    :rtype: str or unicode</span>
+<span class="sd">    :return:</span>
+<span class="sd">      the input text normalized to fit on lines with a maximized size</span>
+<span class="sd">      inferior to `line_len`, and optionally prefixed by an</span>
+<span class="sd">      indentation string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">toreport</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">line_len</span> <span class="o">=</span> <span class="n">line_len</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">indent</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">toreport</span> <span class="o">+</span> <span class="n">_NORM_SPACES_RGX</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+        <span class="n">toreport</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">line_len</span><span class="p">:</span>
+            <span class="c1"># too long line, need split</span>
+            <span class="n">line</span><span class="p">,</span> <span class="n">toreport</span> <span class="o">=</span> <span class="n">splittext</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">line_len</span><span class="p">)</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">indent</span> <span class="o">+</span> <span class="n">line</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">toreport</span><span class="p">:</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="n">toreport</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span>
+                <span class="n">toreport</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">line</span><span class="p">:</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">indent</span> <span class="o">+</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">linesep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="splittext"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.textutils.splittext">[docs]</a><span class="k">def</span> <span class="nf">splittext</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">line_len</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;split the given text on space according to the given max line size</span>
+
+<span class="sd">    return a 2-uple:</span>
+<span class="sd">    * a line &lt;= line_len if possible</span>
+<span class="sd">    * the rest of the text which has to be reported on another line</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">line_len</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">text</span><span class="p">,</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">pos</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">line_len</span><span class="p">)</span>
+    <span class="k">while</span> <span class="n">pos</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">text</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot; &quot;</span><span class="p">:</span>
+        <span class="n">pos</span> <span class="o">-=</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">pos</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">pos</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">),</span> <span class="n">line_len</span><span class="p">)</span>
+        <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">pos</span> <span class="ow">and</span> <span class="n">text</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot; &quot;</span><span class="p">:</span>
+            <span class="n">pos</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">text</span><span class="p">[:</span><span class="n">pos</span><span class="p">],</span> <span class="n">text</span><span class="p">[</span><span class="n">pos</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">:]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="splitstrip"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.textutils.splitstrip">[docs]</a><span class="k">def</span> <span class="nf">splitstrip</span><span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sep</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;,&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;return a list of stripped string by splitting the string given as</span>
+<span class="sd">    argument on `sep` (&#39;,&#39; by default). Empty string are discarded.</span>
+
+<span class="sd">    &gt;&gt;&gt; splitstrip(&#39;a, b, c   ,  4,,&#39;)</span>
+<span class="sd">    [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;4&#39;]</span>
+<span class="sd">    &gt;&gt;&gt; splitstrip(&#39;a&#39;)</span>
+<span class="sd">    [&#39;a&#39;]</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+
+<span class="sd">    :type string: str or unicode</span>
+<span class="sd">    :param string: a csv line</span>
+
+<span class="sd">    :type sep: str or unicode</span>
+<span class="sd">    :param sep: field separator, default to the comma (&#39;,&#39;)</span>
+
+<span class="sd">    :rtype: str or unicode</span>
+<span class="sd">    :return: the unquoted string (or the input string if it wasn&#39;t quoted)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">word</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">word</span> <span class="ow">in</span> <span class="n">string</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">sep</span><span class="p">)</span> <span class="k">if</span> <span class="n">word</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span></div>
+
+
+<span class="n">get_csv</span> <span class="o">=</span> <span class="n">callable_deprecated</span><span class="p">(</span><span class="s2">&quot;get_csv is deprecated, use splitstrip&quot;</span><span class="p">)(</span><span class="n">splitstrip</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="split_url_or_path"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.textutils.split_url_or_path">[docs]</a><span class="k">def</span> <span class="nf">split_url_or_path</span><span class="p">(</span><span class="n">url_or_path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;return the latest component of a string containing either an url of the</span>
+<span class="sd">    form &lt;scheme&gt;://&lt;path&gt; or a local file system path</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s2">&quot;://&quot;</span> <span class="ow">in</span> <span class="n">url_or_path</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">url_or_path</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">osp</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">url_or_path</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="n">osp</span><span class="o">.</span><span class="n">sep</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="text_to_dict"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.textutils.text_to_dict">[docs]</a><span class="k">def</span> <span class="nf">text_to_dict</span><span class="p">(</span><span class="n">text</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;parse multilines text containing simple &#39;key=value&#39; lines and return a</span>
+<span class="sd">    dict of {&#39;key&#39;: &#39;value&#39;}. When the same key is encountered multiple time,</span>
+<span class="sd">    value is turned into a list containing all values.</span>
+
+<span class="sd">    &gt;&gt;&gt; d = text_to_dict(&#39;&#39;&#39;multiple=1</span>
+<span class="sd">    ... multiple= 2</span>
+<span class="sd">    ... single =3</span>
+<span class="sd">    ... &#39;&#39;&#39;)</span>
+<span class="sd">    &gt;&gt;&gt; d[&#39;single&#39;]</span>
+<span class="sd">    &#39;3&#39;</span>
+<span class="sd">    &gt;&gt;&gt; d[&#39;multiple&#39;]</span>
+<span class="sd">    [&#39;1&#39;, &#39;2&#39;]</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">text</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">res</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">line</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">line</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;#&quot;</span><span class="p">):</span>
+            <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="n">w</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">res</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">res</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                    <span class="n">res</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">res</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">value</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">res</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+    <span class="k">return</span> <span class="n">res</span></div>
+
+
+<span class="n">_BLANK_URE</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;(\s|,)+&quot;</span>
+<span class="n">_BLANK_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">_BLANK_URE</span><span class="p">)</span>
+<span class="n">__VALUE_URE</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;-?(([0-9]+\.[0-9]*)|((0x?)?[0-9]+))&quot;</span>
+<span class="n">__UNITS_URE</span> <span class="o">=</span> <span class="sa">r</span><span class="s2">&quot;[a-zA-Z]+&quot;</span>
+<span class="n">_VALUE_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(?P&lt;value&gt;</span><span class="si">%s</span><span class="s2">)(?P&lt;unit&gt;</span><span class="si">%s</span><span class="s2">)?&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">__VALUE_URE</span><span class="p">,</span> <span class="n">__UNITS_URE</span><span class="p">))</span>
+<span class="n">_VALIDATION_RE</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;^((</span><span class="si">%s</span><span class="s2">)(</span><span class="si">%s</span><span class="s2">))*(</span><span class="si">%s</span><span class="s2">)?$&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">__VALUE_URE</span><span class="p">,</span> <span class="n">__UNITS_URE</span><span class="p">,</span> <span class="n">__VALUE_URE</span><span class="p">))</span>
+
+<span class="n">BYTE_UNITS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;kb&quot;</span><span class="p">:</span> <span class="mi">1024</span><span class="p">,</span>
+    <span class="s2">&quot;mb&quot;</span><span class="p">:</span> <span class="mi">1024</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span>
+    <span class="s2">&quot;gb&quot;</span><span class="p">:</span> <span class="mi">1024</span> <span class="o">**</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="s2">&quot;tb&quot;</span><span class="p">:</span> <span class="mi">1024</span> <span class="o">**</span> <span class="mi">4</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">TIME_UNITS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;ms&quot;</span><span class="p">:</span> <span class="mf">0.0001</span><span class="p">,</span>
+    <span class="s2">&quot;s&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;min&quot;</span><span class="p">:</span> <span class="mi">60</span><span class="p">,</span>
+    <span class="s2">&quot;h&quot;</span><span class="p">:</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span><span class="p">,</span>
+    <span class="s2">&quot;d&quot;</span><span class="p">:</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">60</span> <span class="o">*</span> <span class="mi">24</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="apply_units"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.textutils.apply_units">[docs]</a><span class="k">def</span> <span class="nf">apply_units</span><span class="p">(</span>
+    <span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">units</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+    <span class="n">inter</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="nb">type</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">final</span><span class="p">:</span> <span class="nb">type</span> <span class="o">=</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">blank_reg</span><span class="p">:</span> <span class="n">Pattern</span> <span class="o">=</span> <span class="n">_BLANK_RE</span><span class="p">,</span>
+    <span class="n">value_reg</span><span class="p">:</span> <span class="n">Pattern</span> <span class="o">=</span> <span class="n">_VALUE_RE</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;Parse the string applying the units defined in units</span>
+<span class="sd">    (e.g.: &quot;1.5m&quot;,{&#39;m&#39;,60} -&gt; 80).</span>
+
+<span class="sd">    :type string: str or unicode</span>
+<span class="sd">    :param string: the string to parse</span>
+
+<span class="sd">    :type units: dict (or any object with __getitem__ using basestring key)</span>
+<span class="sd">    :param units: a dict mapping a unit string repr to its value</span>
+
+<span class="sd">    :type inter: type</span>
+<span class="sd">    :param inter: used to parse every intermediate value (need __sum__)</span>
+
+<span class="sd">    :type blank_reg: regexp</span>
+<span class="sd">    :param blank_reg: should match every blank char to ignore.</span>
+
+<span class="sd">    :type value_reg: regexp with &quot;value&quot; and optional &quot;unit&quot; group</span>
+<span class="sd">    :param value_reg: match a value and it&#39;s unit into the</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">inter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">inter</span> <span class="o">=</span> <span class="n">final</span>
+    <span class="n">fstring</span> <span class="o">=</span> <span class="n">_BLANK_RE</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">string</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">fstring</span> <span class="ow">and</span> <span class="n">_VALIDATION_RE</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">fstring</span><span class="p">)):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid unit string: </span><span class="si">%r</span><span class="s2">.&quot;</span> <span class="o">%</span> <span class="n">string</span><span class="p">)</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">value_reg</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">fstring</span><span class="p">):</span>
+        <span class="n">dic</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">groupdict</span><span class="p">()</span>
+        <span class="n">lit</span><span class="p">,</span> <span class="n">unit</span> <span class="o">=</span> <span class="n">dic</span><span class="p">[</span><span class="s2">&quot;value&quot;</span><span class="p">],</span> <span class="n">dic</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;unit&quot;</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">inter</span><span class="p">(</span><span class="n">lit</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">unit</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">*=</span> <span class="n">units</span><span class="p">[</span><span class="n">unit</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;invalid unit </span><span class="si">%s</span><span class="s2">. valid units are </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">unit</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">units</span><span class="o">.</span><span class="n">keys</span><span class="p">())))</span>
+        <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">final</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">values</span><span class="p">))</span></div>
+
+
+<span class="n">_LINE_RGX</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\r\n</span><span class="s2">|</span><span class="se">\r</span><span class="s2">+|</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="pretty_match"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.textutils.pretty_match">[docs]</a><span class="k">def</span> <span class="nf">pretty_match</span><span class="p">(</span><span class="n">match</span><span class="p">:</span> <span class="n">Match</span><span class="p">,</span> <span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">underline_char</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;^&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;return a string with the match location underlined:</span>
+
+<span class="sd">    &gt;&gt;&gt; import re</span>
+<span class="sd">    &gt;&gt;&gt; print(pretty_match(re.search(&#39;mange&#39;, &#39;il mange du bacon&#39;), &#39;il mange du bacon&#39;))</span>
+<span class="sd">    il mange du bacon</span>
+<span class="sd">       ^^^^^</span>
+<span class="sd">    &gt;&gt;&gt;</span>
+
+<span class="sd">    :type match: _sre.SRE_match</span>
+<span class="sd">    :param match: object returned by re.match, re.search or re.finditer</span>
+
+<span class="sd">    :type string: str or unicode</span>
+<span class="sd">    :param string:</span>
+<span class="sd">      the string on which the regular expression has been applied to</span>
+<span class="sd">      obtain the `match` object</span>
+
+<span class="sd">    :type underline_char: str or unicode</span>
+<span class="sd">    :param underline_char:</span>
+<span class="sd">      character to use to underline the matched section, default to the</span>
+<span class="sd">      carret &#39;^&#39;</span>
+
+<span class="sd">    :rtype: str or unicode</span>
+<span class="sd">    :return:</span>
+<span class="sd">      the original string with an inserted line to underline the match</span>
+<span class="sd">      location</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">end</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+    <span class="n">string</span> <span class="o">=</span> <span class="n">_LINE_RGX</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">linesep</span><span class="p">,</span> <span class="n">string</span><span class="p">)</span>
+    <span class="n">start_line_pos</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">rfind</span><span class="p">(</span><span class="n">linesep</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">start</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">start_line_pos</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">start_line_pos</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="n">string</span><span class="p">[:</span><span class="n">start_line_pos</span><span class="p">]]</span>
+        <span class="n">start_line_pos</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">linesep</span><span class="p">)</span>
+    <span class="n">offset</span> <span class="o">=</span> <span class="n">start</span> <span class="o">-</span> <span class="n">start_line_pos</span>
+    <span class="n">underline</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="n">offset</span> <span class="o">+</span> <span class="n">underline_char</span> <span class="o">*</span> <span class="p">(</span><span class="n">end</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span>
+    <span class="n">end_line_pos</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">linesep</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">end_line_pos</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="n">string</span><span class="p">[</span><span class="n">start_line_pos</span><span class="p">:]</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">underline</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># mypy: Incompatible types in assignment (expression has type &quot;str&quot;,</span>
+        <span class="c1"># mypy: variable has type &quot;int&quot;)</span>
+        <span class="c1"># but it&#39;s a str :|</span>
+        <span class="n">end</span> <span class="o">=</span> <span class="n">string</span><span class="p">[</span><span class="n">end_line_pos</span> <span class="o">+</span> <span class="nb">len</span><span class="p">(</span><span class="n">linesep</span><span class="p">)</span> <span class="p">:]</span>  <span class="c1"># type: ignore</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="n">string</span><span class="p">[</span><span class="n">start_line_pos</span><span class="p">:</span><span class="n">end_line_pos</span><span class="p">]</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">underline</span><span class="p">)</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>  <span class="c1"># type: ignore # see previous comment</span>
+    <span class="k">return</span> <span class="n">linesep</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">result</span><span class="p">)</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span></div>
+
+
+<span class="c1"># Ansi colorization ###########################################################</span>
+
+<span class="n">ANSI_PREFIX</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[&quot;</span>
+<span class="n">ANSI_END</span> <span class="o">=</span> <span class="s2">&quot;m&quot;</span>
+<span class="n">ANSI_RESET</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\033</span><span class="s2">[0m&quot;</span>
+<span class="n">ANSI_STYLES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;reset&quot;</span><span class="p">:</span> <span class="s2">&quot;0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;bold&quot;</span><span class="p">:</span> <span class="s2">&quot;1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;italic&quot;</span><span class="p">:</span> <span class="s2">&quot;3&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;underline&quot;</span><span class="p">:</span> <span class="s2">&quot;4&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;blink&quot;</span><span class="p">:</span> <span class="s2">&quot;5&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;inverse&quot;</span><span class="p">:</span> <span class="s2">&quot;7&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;strike&quot;</span><span class="p">:</span> <span class="s2">&quot;9&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+<span class="n">ANSI_COLORS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;reset&quot;</span><span class="p">:</span> <span class="s2">&quot;0&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;black&quot;</span><span class="p">:</span> <span class="s2">&quot;30&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;red&quot;</span><span class="p">:</span> <span class="s2">&quot;31&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;green&quot;</span><span class="p">:</span> <span class="s2">&quot;32&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;yellow&quot;</span><span class="p">:</span> <span class="s2">&quot;33&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;blue&quot;</span><span class="p">:</span> <span class="s2">&quot;34&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;magenta&quot;</span><span class="p">:</span> <span class="s2">&quot;35&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;cyan&quot;</span><span class="p">:</span> <span class="s2">&quot;36&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;white&quot;</span><span class="p">:</span> <span class="s2">&quot;37&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span> <span class="nf">_get_ansi_code</span><span class="p">(</span><span class="n">color</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">style</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;return ansi escape code corresponding to color and style</span>
+
+<span class="sd">    :type color: str or None</span>
+<span class="sd">    :param color:</span>
+<span class="sd">      the color name (see `ANSI_COLORS` for available values)</span>
+<span class="sd">      or the color number when 256 colors are available</span>
+
+<span class="sd">    :type style: str or None</span>
+<span class="sd">    :param style:</span>
+<span class="sd">      style string (see `ANSI_COLORS` for available values). To get</span>
+<span class="sd">      several style effects at the same time, use a coma as separator.</span>
+
+<span class="sd">    :raise KeyError: if an unexistent color or style identifier is given</span>
+
+<span class="sd">    :rtype: str</span>
+<span class="sd">    :return: the built escape code</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ansi_code</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">style</span><span class="p">:</span>
+        <span class="n">style_attrs</span> <span class="o">=</span> <span class="n">splitstrip</span><span class="p">(</span><span class="n">style</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">effect</span> <span class="ow">in</span> <span class="n">style_attrs</span><span class="p">:</span>
+            <span class="n">ansi_code</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ANSI_STYLES</span><span class="p">[</span><span class="n">effect</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">color</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">color</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+            <span class="n">ansi_code</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;38&quot;</span><span class="p">,</span> <span class="s2">&quot;5&quot;</span><span class="p">])</span>
+            <span class="n">ansi_code</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">color</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ansi_code</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ANSI_COLORS</span><span class="p">[</span><span class="n">color</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">ansi_code</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">ANSI_PREFIX</span> <span class="o">+</span> <span class="s2">&quot;;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ansi_code</span><span class="p">)</span> <span class="o">+</span> <span class="n">ANSI_END</span>
+    <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="colorize_ansi"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.textutils.colorize_ansi">[docs]</a><span class="k">def</span> <span class="nf">colorize_ansi</span><span class="p">(</span><span class="n">msg</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">color</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">style</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;colorize message by wrapping it with ansi escape codes</span>
+
+<span class="sd">    :type msg: str or unicode</span>
+<span class="sd">    :param msg: the message string to colorize</span>
+
+<span class="sd">    :type color: str or None</span>
+<span class="sd">    :param color:</span>
+<span class="sd">      the color identifier (see `ANSI_COLORS` for available values)</span>
+
+<span class="sd">    :type style: str or None</span>
+<span class="sd">    :param style:</span>
+<span class="sd">      style string (see `ANSI_COLORS` for available values). To get</span>
+<span class="sd">      several style effects at the same time, use a coma as separator.</span>
+
+<span class="sd">    :raise KeyError: if an unexistent color or style identifier is given</span>
+
+<span class="sd">    :rtype: str or unicode</span>
+<span class="sd">    :return: the ansi escaped string</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># If both color and style are not defined, then leave the text as is</span>
+    <span class="k">if</span> <span class="n">color</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">style</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">msg</span>
+    <span class="n">escape_code</span> <span class="o">=</span> <span class="n">_get_ansi_code</span><span class="p">(</span><span class="n">color</span><span class="p">,</span> <span class="n">style</span><span class="p">)</span>
+    <span class="c1"># If invalid (or unknown) color, don&#39;t wrap msg with ansi codes</span>
+    <span class="k">if</span> <span class="n">escape_code</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s%s%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">escape_code</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">ANSI_RESET</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">msg</span></div>
+
+
+<span class="n">DIFF_STYLE</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;separator&quot;</span><span class="p">:</span> <span class="s2">&quot;cyan&quot;</span><span class="p">,</span> <span class="s2">&quot;remove&quot;</span><span class="p">:</span> <span class="s2">&quot;red&quot;</span><span class="p">,</span> <span class="s2">&quot;add&quot;</span><span class="p">:</span> <span class="s2">&quot;green&quot;</span><span class="p">}</span>
+
+
+<div class="viewcode-block" id="diff_colorize_ansi"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.textutils.diff_colorize_ansi">[docs]</a><span class="k">def</span> <span class="nf">diff_colorize_ansi</span><span class="p">(</span><span class="n">lines</span><span class="p">,</span> <span class="n">out</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">DIFF_STYLE</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">line</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;--- &quot;</span><span class="p">,</span> <span class="s2">&quot;+++ &quot;</span><span class="p">):</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">colorize_ansi</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">style</span><span class="p">[</span><span class="s2">&quot;separator&quot;</span><span class="p">]))</span>
+        <span class="k">elif</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;-&quot;</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">colorize_ansi</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">style</span><span class="p">[</span><span class="s2">&quot;remove&quot;</span><span class="p">]))</span>
+        <span class="k">elif</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;+&quot;</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">colorize_ansi</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">style</span><span class="p">[</span><span class="s2">&quot;add&quot;</span><span class="p">]))</span>
+        <span class="k">elif</span> <span class="n">line</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;--- &quot;</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">colorize_ansi</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">style</span><span class="p">[</span><span class="s2">&quot;separator&quot;</span><span class="p">]))</span>
+        <span class="k">elif</span> <span class="n">line</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;+++ &quot;</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">colorize_ansi</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">style</span><span class="p">[</span><span class="s2">&quot;separator&quot;</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">out</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">logilab common</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../logilab.common.html">logilab.common package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../logilab.common.ureports.html">logilab.common.ureports package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  <li><a href="../common.html">logilab.common</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Logilab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

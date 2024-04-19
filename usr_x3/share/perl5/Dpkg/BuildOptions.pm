@@ -34,7 +34,7 @@ Dpkg::BuildOptions - parse and update build options
 
 =head1 DESCRIPTION
 
-The Dpkg::BuildOptions object can be used to manipulate options stored
+This class can be used to manipulate options stored
 in environment variables like DEB_BUILD_OPTIONS and
 DEB_BUILD_MAINT_OPTIONS.
 
@@ -118,7 +118,7 @@ sub set {
     my ($self, $key, $value, $source) = @_;
 
     # Sanity checks
-    if ($key =~ /^(noopt|nostrip|nocheck)$/ && defined($value)) {
+    if ($key =~ /^(terse|noopt|nostrip|nocheck)$/ && defined($value)) {
 	$value = undef;
     } elsif ($key eq 'parallel')  {
 	$value //= '';

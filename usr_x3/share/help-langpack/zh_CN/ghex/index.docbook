@@ -1,0 +1,670 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
+<!ENTITY appversion "2.19">
+<!ENTITY manrevision "2.5">
+<!ENTITY date "December 2005">
+<!ENTITY app "GHex">
+]>
+<!-- 
+      (Do not remove this comment block.)
+  Maintained by the GNOME Documentation Project
+  http://developer.gnome.org/projects/gdp
+  Template version: 2.0 beta
+  Template last modified Feb 12, 2002
+  
+-->
+<!-- =============Document Header ============================= -->
+<article id="index" lang="zh-CN">
+<!-- please do not change the id; for translations, change lang to -->
+<!-- appropriate code -->
+  <articleinfo> 
+    <title>GHex 用户手册。</title>
+
+    <abstract role="description">
+      <para lang="en">
+      GHex is a simple binary editor. It lets users view and edit a binary
+      file in both hex and ascii with a multiple level undo/redo mechanism.
+      Features include find and replace functions, conversion between binary,
+      octal, decimal and hexadecimal values, and use of an alternative,
+      user-configurable MDI concept that lets users edit multiple documents
+      with multiple views of each.
+      </para>
+    </abstract>
+
+    <copyright lang="en"> 
+      <year>2002</year> 
+      <year>2003</year> 
+      <year>2004</year> 
+      <holder>Sun Microsystems</holder> 
+    </copyright> 
+    <copyright lang="en"> 
+      <year>1998-2000</year>	 
+      <holder>Jaka Mocnik</holder> 
+    </copyright>
+	<!-- translators: uncomment this:
+  	<copyright>
+   	  <year>2002</year>
+      <holder>ME-THE-TRANSLATOR (Latin translation)</holder>
+  	</copyright>
+   	-->
+
+    <publisher role="maintainer">
+      <publishername>GNOME 文档项目</publishername> 
+    </publisher> 
+
+    <xi:include xmlns:xi="http://www.w3.org/2001/XInclude" href="legal.xml"/>
+    <!-- This file  contains link to license for the documentation (GNU FDL), and
+        other legal stuff such as "NO WARRANTY" statement. Please do not change 
+	any of this. -->
+
+    <authorgroup> 
+      <author lang="en"> 
+		<firstname>Sun</firstname> 
+		<surname>GNOME Documentation Team</surname> 
+		<affiliation> 
+	  		<orgname>Sun Microsystems</orgname>
+	  		<address/> 
+		</affiliation> 
+      </author> 
+      <author lang="en"> 
+		<firstname>Jaka</firstname> 
+		<surname>Mocnik</surname> 
+		<affiliation> 
+	  		<orgname>GNOME Documentation Project</orgname> 
+	  		<address> <email>jaka@gnu.org</email> </address> 
+		</affiliation> 
+      </author> 
+<!-- This is appropriate place for other contributors: translators,
+      maintainers,  etc. Commented out by default.
+      <othercredit role="translator">
+		<firstname>Latin</firstname> 
+		<surname>Translator 1</surname> 
+		<affiliation> 
+	 		<orgname>Latin Translation Team</orgname> 
+	  		<address> <email>translator@gnome.org</email> </address> 
+		</affiliation>
+		<contrib>Latin translation</contrib>
+      </othercredit>
+-->
+    </authorgroup>
+ 
+    <revhistory>
+      <revision lang="en"> 
+			<revnumber>GHex Manual V2.5</revnumber> 
+			<date>December 2005</date> 
+			<revdescription> 
+	  			<para role="author" lang="en">Sun GNOME Documentation Team</para>
+	  			<para role="publisher" lang="en">GNOME Documentation Project</para>
+			</revdescription> 
+      </revision> 
+      <revision lang="en"> 
+			<revnumber>GHex Manual V2.4</revnumber> 
+			<date>April 2003</date> 
+			<revdescription> 
+	  			<para role="author" lang="en">Sun GNOME Documentation Team</para>
+	  			<para role="publisher" lang="en">GNOME Documentation Project</para>
+			</revdescription> 
+      </revision>
+      <revision lang="en"> 
+			<revnumber>GHex Manual V2.3</revnumber> 
+			<date>August 2002</date> 
+			<revdescription> 
+	  			<para role="author" lang="en">Sun GNOME Documentation Team</para>
+	  			<para role="publisher" lang="en">GNOME Documentation Project</para>
+			</revdescription> 
+      </revision>
+      <revision lang="en"> 
+			<revnumber>GHex Manual V2.2</revnumber> 
+			<date>August 2002</date> 
+			<revdescription> 
+	  			<para role="author" lang="en">Sun GNOME Documentation Team</para>
+	  			<para role="publisher" lang="en">GNOME Documentation Project</para>
+			</revdescription> 
+      </revision>
+      <revision lang="en"> 
+			<revnumber>GHex Manual V2.1</revnumber> 
+			<date>July 2002</date> 
+			<revdescription> 
+	  			<para role="author" lang="en">Sun GNOME Documentation Team</para>
+	  			<para role="publisher" lang="en">GNOME Documentation Project</para>
+			</revdescription> 
+      </revision> 
+      <revision lang="en"> 
+			<revnumber>GHex Manual V2.0</revnumber> 
+			<date>March 2002</date> 
+			<revdescription> 
+	  			<para role="author" lang="en">Sun GNOME Documentation Team</para>
+	  			<para role="publisher" lang="en">GNOME Documentation Project</para>
+			</revdescription> 
+      </revision> 
+      <revision lang="en"> 
+			<revnumber>GHex Manual V1.0</revnumber> 
+			<date>2000</date> 
+			<revdescription> 
+	  			<para role="author" lang="en">Jaka Mocnik
+	    		<email>jaka@gnu.org</email>
+	  			</para>
+	  			<para role="publisher" lang="en">GNOME Documentation Project</para>
+			</revdescription> 
+      </revision> 
+    </revhistory> 
+
+    <releaseinfo>本手册介绍 GHex 2.19 版。</releaseinfo> 
+    <legalnotice> 
+      <title>反馈</title> 
+      <para lang="en">To report a bug or make a suggestion regarding the GHex application or this manual, follow the directions in the <ulink url="help:gnome-feedback" type="help">GNOME Feedback Page</ulink>. 
+      </para>
+<!-- Translators may also add here feedback address for translations -->
+    </legalnotice> 
+  </articleinfo> 
+
+  <indexterm lang="en"> 
+    <primary>GHex</primary> 
+  </indexterm> 
+
+
+<!-- ============= Document Body ============================= -->
+
+<!-- ============= Introduction ============================== -->
+
+<sect1 id="ghex-intro">
+<title>简介</title>
+<para><application>GHex</application> 应用程序使您可以执行以下操作：</para>
+<itemizedlist>
+<listitem><para>同时以 ASCII 或十六进制格式查看文件。</para>
+</listitem>
+<listitem><para>以 ASCII 或十六进制格式编辑文件。</para>
+</listitem>
+</itemizedlist>
+</sect1>
+
+<!-- ============= Getting Started ============================== -->
+
+<sect1 id="ghex-getting-started">
+<title>入门</title>
+
+<!-- ============= To Start GHex ============================== -->
+
+<sect2 id="ghex-to-start">
+<title>启动 GHex</title>
+
+<para>可以通过以下方式启动 <application>GHex</application>：</para>
+<variablelist>
+<varlistentry>
+<term><guimenu>"应用程序"</guimenu>菜单</term>
+<listitem>
+<para>选择<menuchoice><guisubmenu>"附件"</guisubmenu><guimenuitem>"十六进制编辑器"</guimenuitem></menuchoice>。</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>命令行</term>
+<listitem>
+<para>执行如下命令：<command>ghex</command></para>
+</listitem>
+</varlistentry>
+</variablelist>
+</sect2>
+
+
+<!-- ============= To Open a file ============================== -->
+
+<sect2 id="ghex-open-file">
+<title>打开文件</title>
+<para>要打开文件，请选择<menuchoice><guimenu>"文件"</guimenu><guimenuitem>"打开"</guimenuitem></menuchoice>。选择要打开的文件，然后单击<guibutton>"确定"</guibutton>。您可以在 <application>GHex</application> 中打开多个文件。<application>GHex</application> 在新窗口中显示每个文件。</para>
+<para>在 <application>GHex</application> 中打开文件时，应用程序会在下面的窗口中显示该文件。</para>
+
+<!-- ==== Figure ==== -->
+<figure id="ghex-window-open">
+<title>打开了文件的 GHex 窗口</title>
+<screenshot>
+ <mediaobject lang="en">
+   <imageobject>
+     <imagedata fileref="figures/ghex_window_open.png" format="PNG"/>
+   </imageobject>
+ <textobject>
+   <phrase>Shows GHex main window with an open file</phrase>
+ </textobject>
+ </mediaobject>
+</screenshot>
+</figure>
+<!-- ==== End of Figure ==== -->
+
+<para><application>GHex</application> 窗口包含如下元素：</para>
+<variablelist>
+<varlistentry>
+<term>菜单栏</term>
+<listitem>
+<para>菜单栏上的菜单包含您在 <application>GHex</application> 中处理文件所需的所有命令。</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>光标偏移柱</term>
+<listitem>
+<para>光标偏移量是文件的开始处和每行的第一个字节之间的距离。 在默认情况下，<application>GHex</application> 在十六进制视图的左侧显示光标偏移柱。</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>左侧的显示窗格</term>
+<listitem>
+<para>显示区域上左侧的显示窗格显示了文件的十六进制视图。</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>右侧的显示窗格</term>
+<listitem>
+<para>显示区域右侧的显示窗格显示了文件的 ASCII 视图。</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term>类型转换对话框</term>
+<listitem>
+<para lang="en">The type conversion dialog below the display area displays the value of the selected character in several different numeric types.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</sect2>
+</sect1>
+
+<!-- ============= Usage ============================== -->
+
+<sect1 id="ghex-usage">
+<title>用法</title>
+
+<!-- ============= To Edit a File ============================== -->
+
+<sect2 id="ghex-edit-file">
+<title>编辑文件</title>
+<para>要编辑文件，请执行以下步骤：</para>
+<orderedlist>
+<listitem><para>单击文件的十六进制或 ASCII 视图。光标处于活动状态的视图会显示完整的光标。光标处于不活动状态的视图会显示光标的轮廓。</para>
+</listitem>
+<listitem><para>使用以下任意方法可以在文件中移动光标：</para>
+<itemizedlist>
+<listitem><para>使用窗口上的滚动条或键盘上的箭头键卷动浏览该文件。</para>
+</listitem>
+<listitem><para>选择<menuchoice><guimenu>"编辑"</guimenu><guimenuitem>"转到字节"</guimenuitem></menuchoice>，以十进制或十六进制值的形式键入光标偏移量，然后单击<guibutton>"确定"</guibutton>。十六进制值的格式必须是 0x 后面跟着偏移量，例如 0x3。</para>
+</listitem>
+</itemizedlist>
+</listitem>
+<listitem><para>按照与编辑普通文本文件相同的方式编辑 ASCII 格式。使用 0 到 9 和 a 到 f 的值来编辑十六进制格式。</para>
+</listitem>
+</orderedlist>
+<para lang="en">To insert data and not overwrite existing data, choose <menuchoice><guimenu>Edit</guimenu><guimenuitem>Insert Mode</guimenuitem></menuchoice>.</para>
+<para lang="en">To cut, copy, and paste data, choose <menuchoice><guimenu>Edit</guimenu><guimenuitem>Cut</guimenuitem></menuchoice>, <menuchoice><guimenu>Edit</guimenu><guimenuitem>Copy</guimenuitem></menuchoice>, and <menuchoice><guimenu>Edit</guimenu><guimenuitem>Paste</guimenuitem></menuchoice>.</para>
+<para lang="en">To undo an edit, choose <menuchoice><guimenu>Edit</guimenu><guimenuitem>Undo</guimenuitem></menuchoice>. To redo an edit, choose <menuchoice><guimenu>Edit</guimenu><guimenuitem>Redo</guimenuitem></menuchoice>. The number of previous edits that you can undo is determined by the <guilabel>Maximum number of undo levels</guilabel> setting in the <xref linkend="ghex-prefs-editing"/> tabbed section of the <guilabel>Preferences</guilabel> dialog.  </para>
+</sect2>
+
+<!-- ============= To Save a File ============================== -->
+
+<sect2 id="ghex-save-file">
+<title>保存文件</title>
+<para>您可以通过以下方式保存文件：</para>
+<itemizedlist>
+<listitem><para>要保存对当前文件的更改，请选择<menuchoice><guimenu>"文件"</guimenu><guimenuitem>"保存"</guimenuitem></menuchoice>。</para>
+</listitem>
+<listitem><para>要以新文件名保存当前文件，请选择<menuchoice><guimenu>"文件"</guimenu><guimenuitem>"另存为"</guimenuitem></menuchoice>。在<guilabel>"选择将缓冲保存为的文件"</guilabel>对话框中输入该文件的名称，然后单击<guibutton>"确定"</guibutton>。</para>
+</listitem>
+</itemizedlist>
+</sect2>
+
+<!-- ============= To Revert a File ===================== -->
+
+<sect2 id="ghex-revert">
+<title lang="en">To Revert to the Last Saved Version of a File</title>
+<para lang="en">To revert to the last version of the current file that you saved and undo all of the edits that you made to the file since you last saved the file, choose <menuchoice><guimenu>File</guimenu><guimenuitem>Revert</guimenuitem></menuchoice>, then click <guibutton>Yes</guibutton> in the <guilabel>Question</guilabel> dialog.</para>
+</sect2>
+
+<!-- ============= To Find Data in a File ============================== -->
+
+<sect2 id="ghex-find-data">
+<title>在文件中查找数据</title>
+<para>要在文件中搜索十六进制或 ASCII 字符串，请执行以下步骤：</para>
+<orderedlist>
+<listitem><para>选择<menuchoice><guimenu>"编辑"</guimenu><guimenuitem>"查找"</guimenuitem></menuchoice>。</para>
+</listitem>
+<listitem><para>在<guilabel>"查找数据"</guilabel>对话框中，选择以下选项之一：</para>
+<itemizedlist>
+<listitem><para lang="en"><guilabel>Search for hex data</guilabel></para>
+</listitem>
+<listitem><para lang="en"><guilabel>Search for ASCII data</guilabel></para>
+</listitem>
+</itemizedlist>
+</listitem>
+<listitem><para>键入要查找的字符串。</para>
+</listitem>
+<listitem><para>单击<guibutton>"查找下一个"</guibutton>以查找下一个出现的该字符串。</para>
+</listitem>
+<listitem><para>单击<guibutton>"查找上一个"</guibutton>以查找前一个出现的该字符串。</para>
+</listitem>
+<listitem><para>点击 <guibutton>Cancel</guibutton> 按钮关闭 <guilabel>Find Data</guilabel> 对话框。</para>
+</listitem>
+</orderedlist>
+</sect2>
+
+<!-- ============= To Perform an Advanced Find ============================== -->
+
+<sect2 id="ghex-find-data-adv">
+<title>要执行高级查找</title>
+<para>要执行高级查找，请执行以下步骤：</para>
+<orderedlist>
+<listitem><para>选择<menuchoice><guimenu>编辑</guimenu><guimenuitem>高级查找</guimenuitem></menuchoice>。</para>
+</listitem>
+<listitem><para lang="en">In the <guilabel>Find Data</guilabel> dialog, select the required search criteria. For information about how to add new search criteria, see <xref linkend="ghex-search-criteria-add"/>.
+</para>
+</listitem>
+<listitem><para>单击<guibutton>"查找下一个"</guibutton>以查找下一个出现的该字符串。</para>
+</listitem>
+<listitem><para>单击<guibutton>"查找上一个"</guibutton>以查找前一个出现的该字符串。</para>
+</listitem>
+<listitem><para>点击 <guibutton>关闭</guibutton> 关闭 <guilabel>查找数据</guilabel> 对话框。</para>
+</listitem>
+</orderedlist>
+</sect2>
+
+<!-- ============= To Add Search Criteria  ============================== -->
+
+<sect2 id="ghex-search-criteria-add">
+<title lang="en">To Add Search Criteria</title>
+<para lang="en">To add search criteria, perform the following steps: </para>
+<orderedlist>
+<listitem><para>选择<menuchoice><guimenu>编辑</guimenu><guimenuitem>高级查找</guimenuitem></menuchoice>。</para>
+</listitem>
+<listitem><para>在<guilabel>查找数据</guilabel>对话框中，点击 <guibutton>添加新数据</guibutton>。</para>
+</listitem>
+<listitem><para lang="en">In the <guilabel>Find Data: Add Search</guilabel> dialog, choose one of the following options:</para>
+<itemizedlist>
+<listitem><para lang="en"><guilabel>Search for hex data</guilabel></para>
+</listitem>
+<listitem><para lang="en"><guilabel>Search for ASCII data</guilabel></para>
+</listitem>
+</itemizedlist>
+</listitem>
+<listitem><para>键入要查找的字符串。</para>
+</listitem>
+<listitem><para lang="en">Use the color wheel or the spin boxes to select a color to highlight the search criteria.
+</para>
+</listitem>
+<listitem><para>单击<guibutton>“添加”</guibutton>。</para>
+</listitem>
+<listitem><para>点击 <guibutton>Cancel</guibutton> 按钮关闭 <guilabel>Find Data</guilabel> 对话框。</para>
+</listitem>
+</orderedlist>
+</sect2>
+
+<sect2 id="ghex-search-criteria-remove">
+<title lang="en">To Remove Search Criteria</title>
+<para lang="en">To remove search criteria, perform the following steps: </para>
+<orderedlist>
+<listitem><para>选择<menuchoice><guimenu>编辑</guimenu><guimenuitem>高级查找</guimenuitem></menuchoice>。</para>
+</listitem>
+<listitem><para lang="en">In the <guilabel>Find Data</guilabel> dialog, select the search criteria that you want to remove.  </para>
+</listitem>
+<listitem><para>单击<guibutton>“移除选中项”</guibutton>。</para>
+</listitem>
+<listitem><para>点击 <guibutton>Cancel</guibutton> 按钮关闭 <guilabel>Find Data</guilabel> 对话框。</para>
+</listitem>
+</orderedlist>
+</sect2>
+
+<!-- ============= To Find and Replace Data in a File ====================== -->
+
+<sect2 id="ghex-find-replace-data">
+<title>在文件中查找和替换数据</title>
+<para>要在文件中搜索十六进制或 ASCII 字符串并替换该字符串，请执行以下步骤：</para>
+<orderedlist>
+<listitem><para>选择<menuchoice><guimenu>"编辑"</guimenu><guimenuitem>"替换"</guimenuitem></menuchoice>。</para>
+</listitem>
+<listitem><para>在<guilabel>"查找并替换数据"</guilabel>对话框中，选择以下选项之一：</para>
+<itemizedlist>
+<listitem><para lang="en"><guilabel>Replace hex data</guilabel></para>
+</listitem>
+<listitem><para lang="en"><guilabel>Replace ASCII data</guilabel></para>
+</listitem>
+</itemizedlist>
+</listitem>
+<listitem><para>在第一个文本框中，键入要查找的字符串。</para>
+</listitem>
+<listitem><para>在第二个文本框中，键入用于替换所查找字符串的字符串。</para>
+</listitem>
+<listitem><para>单击<guibutton>"查找下一个"</guibutton>。</para>
+</listitem>
+<listitem><para>单击<guibutton>"替换"</guibutton>会替换当前找到的字符串，或单击<guibutton>"全部替换"</guibutton>来替换找到的所有字符串。</para>
+</listitem>
+<listitem><para lang="en">Click <guibutton>Cancel</guibutton> to close the <guilabel>Find &amp; Replace Data</guilabel> dialog.</para>
+</listitem>
+</orderedlist>
+</sect2>
+
+<!-- ========== To Add or Remove Additional Views of a File ================ -->
+
+<sect2 id="ghex-add-remove-views">
+<title>添加或删除文件的附加视图</title>
+<para lang="en">To add another view of the current file to your <application>GHex</application> window, choose <menuchoice><guimenu>View</guimenu><guimenuitem>Add View</guimenuitem></menuchoice>. </para>
+<para>要删除当前文件的视图，请选择<menuchoice><guimenu>"视图"</guimenu><guimenuitem>"删除视图"</guimenuitem></menuchoice>。 如果您删除了最后一个打开的视图，应用程序将会退出。</para>
+</sect2>
+
+<!-- ========== To Change the Data Grouping ================ -->
+
+<sect2 id="ghex-data-group">
+<title>要更改数据组类型</title>
+<para lang="en">To change how <application>GHex</application> displays the hexadecimal content of a file in the <application>GHex</application> window, choose <menuchoice><guimenu>View</guimenu><guimenuitem>Group Data As</guimenuitem></menuchoice>, then select one of the following menu items: </para>
+<itemizedlist>
+<listitem><para><guilabel>字节</guilabel> - 单个字节</para>
+</listitem>
+<listitem><para><guilabel>字</guilabel> - 两个字节的组。</para>
+</listitem>
+<listitem><para><guilabel>长字</guilabel> - 四个字节的组。</para>
+</listitem>
+</itemizedlist>
+</sect2>
+
+<!-- ============= To Export the GHex Display to HTML =================== -->
+
+<sect2 id="ghex-export-to-html">
+<title>将 GHex 显示导出为 HTML</title>
+<para lang="en">To export the data contained in the <application>GHex</application> window to HTML, choose <menuchoice><guimenu>File</guimenu><guimenuitem>Save As HTML</guimenuitem></menuchoice>. Choose a directory and specify a filename for the HTML file, then click <guibutton>OK</guibutton>. <application>GHex</application> implements the following actions: <itemizedlist>
+<listitem><para lang="en">Creates a separate HTML file for each page of data that is displayed in the <application>GHex</application> window.</para>
+</listitem>
+<listitem><para lang="en">Uses the HTML filename that you specify as the basis for the filename. </para>
+</listitem>
+<listitem><para lang="en">Appends a page number to the filename to differentiate the files.</para>
+</listitem>
+</itemizedlist> For example, if you specify the filename <filename>log.html</filename>, <application>GHex</application> creates a series of HTML files named <filename>log00000000.html</filename>, <filename>log00000001.html</filename>, <filename>log00000002.html</filename>, and so on.</para>
+</sect2>
+
+<!-- ============= To View a Character Table ================ -->
+
+<sect2 id="ghex-view-character-table">
+<title>查看字符表</title>
+<para>要查看包含值 0 到 255 的 ASCII、十六进制、十进制、八进制和二进制表示的表，请选择<menuchoice><guimenu>"窗口"</guimenu><guimenuitem>"字符表"</guimenuitem></menuchoice>。</para>
+</sect2>
+
+<!-- ============= To View Data Conversions ===================== -->
+
+<sect2 id="ghex-view-data-conversions">
+<title>查看数据转换</title>
+<para>要显示二进制、十进制、十六进制和 ASCII 转换（最多四个字节的数据），可执行以下步骤：</para>
+<orderedlist>
+<listitem><para>选择<menuchoice><guimenu>"窗口"</guimenu><guimenuitem>"基本转换器"</guimenuitem></menuchoice>。</para>
+</listitem>
+<listitem><para>执行以下一种操作：</para>
+	<itemizedlist>
+	<listitem><para>在<guilabel>"基本转换器"</guilabel>对话框的其中一个字段中键入要转换的数据，然后按下<keycap>回车</keycap>键。</para> 
+	</listitem>
+	<listitem><para>要在当前文件的光标位置处显示该数据的转换值，请单击<guibutton>"获取光标值"</guibutton>按钮。</para>
+	</listitem>
+	</itemizedlist>
+	<para><application>GHex</application> 会更新其它字段的值，以显示数据转换的结果。</para>
+</listitem>
+<listitem><para>点击 <guibutton>关闭</guibutton> 关闭 <guilabel>进制转换</guilabel> 对话框。</para>
+</listitem>
+</orderedlist>
+</sect2>
+
+<!-- ============= To View the Type Conversion Dialog ================ -->
+
+<sect2 id="ghex-view-type-conversion">
+<title>要显示或隐藏类型转换对话框</title>
+<para lang="en">To show or hide the type conversion dialog, choose <menuchoice><guimenu>Windows</guimenu><guimenuitem>Type Conversion Dialog</guimenuitem></menuchoice>.</para>
+<para lang="en">The type conversion dialog displays the value of the selected character in the following representations: </para>
+<itemizedlist>
+<listitem>
+<para lang="en"><guilabel>Signed 8 bit</guilabel></para>
+</listitem>
+<listitem>
+<para lang="en"><guilabel>Unsigned 8 bit</guilabel></para>
+</listitem>
+<listitem>
+<para lang="en"><guilabel>Signed 16 bit</guilabel></para>
+</listitem>
+<listitem>
+<para lang="en"><guilabel>Unsigned 16 bit</guilabel></para>
+</listitem>
+<listitem>
+<para lang="en"><guilabel>Signed 32 bit</guilabel></para>
+</listitem>
+<listitem>
+<para lang="en"><guilabel>Unsigned 32 bit</guilabel></para>
+</listitem>
+<listitem>
+<para lang="en"><guilabel>32 bit float</guilabel></para>
+</listitem>
+<listitem>
+<para lang="en"><guilabel>64 bit float</guilabel></para>
+</listitem>
+<listitem>
+<para lang="en"><guilabel>Hexadecimal</guilabel></para>
+</listitem>
+<listitem>
+<para lang="en"><guilabel>Octal</guilabel></para>
+</listitem>
+<listitem>
+<para lang="en"><guilabel>Binary</guilabel></para>
+</listitem>
+<listitem>
+<para lang="en"><guilabel>Stream Length</guilabel></para>
+</listitem>
+</itemizedlist>
+<para>类型转换对话框包含如下选项：</para>
+<variablelist>
+<varlistentry>
+<term lang="en"><guilabel>Show little endian decoding</guilabel></term>
+<listitem>
+<para>选择此选项显示小端解码。</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term lang="en"><guilabel>Show unsigned and float as hexadecimal</guilabel></term>
+<listitem>
+<para lang="en">Select this option to show unsigned and float numbers as hexadecimal numbers.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</sect2>
+
+<!-- ============= To Print a File ===================== -->
+
+<sect2 id="ghex-print-file">
+<title>打印文件</title>
+<para>要打印文件，请选择<menuchoice><guimenu>"文件"</guimenu><guimenuitem>"打印"</guimenuitem></menuchoice>。在<guilabel>"打印"</guilabel>对话框中选择所需的打印选项，然后单击<guibutton>"确定"</guibutton>。</para>
+<para>要预览文件的打印副本，请选择<menuchoice><guimenu>"文件"</guimenu><guimenuitem>"打印预览"</guimenuitem></menuchoice>。</para>
+</sect2>
+
+</sect1>
+
+<!-- ============= Customization ============================== -->
+
+<sect1 id="ghex-prefs">
+<title>首选项</title>
+<para>要配置 <application>GHex</application>，请选择<menuchoice><guimenu>"编辑"</guimenu><guimenuitem>"首选项"</guimenuitem></menuchoice>。<guilabel>"首选项"</guilabel>对话框包含以下选项卡式部分：</para>
+<itemizedlist>
+<listitem><para><xref linkend="ghex-prefs-editing"/></para>
+</listitem>
+<listitem><para><xref linkend="ghex-prefs-display"/></para>
+</listitem>
+<listitem><para><xref linkend="ghex-prefs-printing"/></para>
+</listitem>
+</itemizedlist>
+
+<!-- ============= Editing Tabbed Section ============================== -->
+
+<sect2 id="ghex-prefs-editing">
+<title>编辑</title>
+<variablelist>
+<varlistentry>
+<term lang="en"><guilabel>Maximum number of undo levels</guilabel> </term>
+<listitem>
+<para lang="en">Use this spin box to specify the maximum number of edits that you can undo. </para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term lang="en"><guilabel>Show cursor offset in statusbar as</guilabel> </term>
+<listitem>
+<para lang="en">Use this drop-down list to select the format in which the cursor offset is displayed. The format can be decimal, hexadecimal, or a custom print style string that only contains the format specifiers x, o, and s. </para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term lang="en"><guilabel>Show offsets column</guilabel> </term>
+<listitem>
+<para>选择此选项会在 <application>GHex</application> 窗口的十六进制视图左侧的柱中显示光标偏移。</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</sect2>
+
+<!-- ============= Display Tabbed Section ======================== -->
+
+<sect2 id="ghex-prefs-display">
+<title>显示</title>
+<variablelist>
+<varlistentry>
+<term lang="en"><guilabel>Font</guilabel> </term>
+<listitem>
+<para lang="en">Use the font selector list boxes to edit the existing font information or type new font information. Specify a font type, style, and size to display the contents of files in <application>GHex</application>.  </para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term lang="en"><guilabel>Default Group Type</guilabel> </term>
+<listitem>
+<para lang="en">Select one of the following options to specify how <application>GHex</application> displays the hexadecimal content of a file in the <application>GHex</application> window: </para>
+<itemizedlist>
+<listitem><para><guilabel>字节</guilabel> - 单个字节</para>
+</listitem>
+<listitem><para><guilabel>字</guilabel> - 两个字节的组。</para>
+</listitem>
+<listitem><para><guilabel>长字</guilabel> - 四个字节的组。</para>
+</listitem>
+</itemizedlist>
+</listitem>
+</varlistentry>
+</variablelist>
+</sect2>
+
+<!-- ============= Printing Tabbed Section ============================== -->
+
+<sect2 id="ghex-prefs-printing">
+<title>打印</title>
+<variablelist>
+<varlistentry>
+<term lang="en"><guilabel>Data font</guilabel> </term>
+<listitem>
+<para>单击<guibutton>数据字体</guibutton> 按钮可以指定打印文件中包含的数据时所用的字体类型、风格和大小。</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term lang="en"><guilabel>Header font</guilabel> </term>
+<listitem>
+<para lang="en">Click on the <guibutton>Header font</guibutton> button to specify the font type, style, and size to use to print the header information that is contained in the file. </para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term lang="en"><guilabel>Print shaded box over</guilabel> </term>
+<listitem>
+<para lang="en">Use this spin box to specify the number of lines that <application>GHex</application> alternately prints with a surrounding shaded box. If the value of the spin box is 10, <application>GHex</application> prints the first 10 lines of the file without a shaded box, the next 10 lines with a shaded box, and so on. If the value of the spin box is 0, <application>GHex</application> does not print any shaded box.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</sect2>
+</sect1>
+
+</article>

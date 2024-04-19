@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-License-Identifier: CC-BY-SA-4.0
+SPDX-FileCopyrightText: Michael Terry
+-->
+<page xmlns="http://projectmallard.org/1.0/" xmlns:its="http://www.w3.org/2005/11/its" its:version="2.0" type="guide" style="2column task" id="index" xml:lang="deja-dup-zh-CN">
+<info>
+  <title type="link">Backups Help</title>
+  <title type="text">Backups Help</title>
+  <credit type="author" its:translate="no">
+    <name>Michael Terry</name>
+  </credit>
+  <license href="http://creativecommons.org/licenses/by-sa/4.0/"><p>Creative Commons Attribution-Share Alike 4.0 Unported License</p></license>
+
+    <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
+      <mal:name>Kyle Nitzsche</mal:name>
+      <mal:email>https://launchpad.net/~knitzsche</mal:email>
+      <mal:years/>
+    </mal:credit>
+  </info>
+
+<title>Backups Help</title>
+
+<section id="backup" style="2column">
+  <title>备份</title>
+</section>
+
+<section id="restore" style="2column">
+  <title>恢复文件</title>
+</section>
+
+<section id="about" style="2column">
+  <title>About <app>Backups</app></title>
+</section>
+
+</page>

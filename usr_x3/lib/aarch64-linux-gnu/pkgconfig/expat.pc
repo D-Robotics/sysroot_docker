@@ -4,8 +4,8 @@ libdir=${prefix}/lib/aarch64-linux-gnu
 includedir=${prefix}/include
 
 Name: expat
-Version: 2.2.9
+Version: 2.4.7
 Description: expat XML parser
-URL: http://www.libexpat.org
-Libs: -L${libdir} -lexpat
+URL: https://libexpat.github.io/
+Libs: -L${libdir} -lexpat -lm
 Cflags: -I${includedir}

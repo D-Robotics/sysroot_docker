@@ -1,0 +1,15 @@
+If you are using this package on a Debian kernel, then everything should be working as expected. See original bug report at:
+
+https://bugs.debian.org/868291
+
+So you should see:
+
+$ grep CONFIG_CRYPTO_USER /boot/config-$(uname -r)  
+CONFIG_CRYPTO_USER=m
+CONFIG_CRYPTO_USER_API=m
+CONFIG_CRYPTO_USER_API_HASH=m
+CONFIG_CRYPTO_USER_API_SKCIPHER=m
+CONFIG_CRYPTO_USER_API_RNG=m
+CONFIG_CRYPTO_USER_API_AEAD=m
+
+ -- Mathieu Malaterre <malat@debian.org>  Sun, 05 Nov 2017 11:41:03 +0100

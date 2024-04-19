@@ -26,6 +26,7 @@ use warnings;
 our $VERSION = '0.01';
 
 use Dpkg;
+use Dpkg::Arch;
 use Dpkg::Gettext;
 use Dpkg::ErrorHandling;
 use Dpkg::Control::Types;
@@ -36,11 +37,11 @@ use parent qw(Dpkg::Vendor::Default);
 
 =head1 NAME
 
-Dpkg::Vendor::Debian - Debian vendor object
+Dpkg::Vendor::Debian - Debian vendor class
 
 =head1 DESCRIPTION
 
-This vendor object customizes the behaviour of dpkg scripts for Debian
+This vendor class customizes the behaviour of dpkg scripts for Debian
 specific behavior and policies.
 
 =cut
@@ -50,10 +51,8 @@ sub run_hook {
 
     if ($hook eq 'package-keyrings') {
         return ('/usr/share/keyrings/debian-keyring.gpg',
+                '/usr/share/keyrings/debian-nonupload.gpg',
                 '/usr/share/keyrings/debian-maintainers.gpg');
-    } elsif ($hook eq 'keyrings') {
-        warnings::warnif('deprecated', 'deprecated keyrings vendor hook');
-        return $self->run_hook('package-keyrings', @params);
     } elsif ($hook eq 'archive-keyrings') {
         return ('/usr/share/keyrings/debian-archive-keyring.gpg');
     } elsif ($hook eq 'archive-keyrings-historic') {
@@ -83,9 +82,53 @@ sub run_hook {
         return qw(/build/);
     } elsif ($hook eq 'build-tainted-by') {
         return $self->_build_tainted_by();
+    } elsif ($hook eq 'sanitize-environment') {
+        # Reset umask to a sane default.
+        umask 0022;
+        # Reset locale to a sane default.
+        $ENV{LC_COLLATE} = 'C.UTF-8';
     } else {
         return $self->SUPER::run_hook($hook, @params);
     }
+}
+
+sub _lto_disabled {
+    my $fn = "/usr/share/lto-disabled-list/lto-disabled-list";
+    open(LIST, "<", $fn) or return;
+
+    # get source name
+    -r "debian/control" or return;
+    require Dpkg::Control::Info;
+    my $ctrl = Dpkg::Control::Info->new();
+    my $src_fields = $ctrl->get_source();
+    return unless defined $src_fields;
+
+    my $src = "";
+    foreach (keys %{$src_fields}) {
+	my $v = $src_fields->{$_};
+        if (m/^Source$/i) {
+	    $src = $v;
+	    last;
+	}
+    }
+    return unless $src ne "";
+    
+    my $arch = Dpkg::Arch::get_host_arch();
+
+    # read disabled-list
+    while (<LIST>) {
+        if (m/^$src\s/) {
+	    if (m/^$src\s.*(any|$arch)\s/) {
+		close(LIST);
+		return 1;
+	    } else {
+		close(LIST);
+		return;
+	    }
+	}
+    }
+    close(LIST);
+    return;
 }
 
 sub _add_build_flags {
@@ -102,8 +145,14 @@ sub _add_build_flags {
         },
         reproducible => {
             timeless => 1,
-            fixfilepath => 0,
+            fixfilepath => 1,
             fixdebugpath => 1,
+        },
+        optimize => {
+            lto => 0,
+        },
+        optimize => {
+            lto => 0,
         },
         sanitize => {
             address => 0,
@@ -124,6 +173,21 @@ sub _add_build_flags {
         },
     );
 
+    # no hook to set in Ubuntu.pm
+    require Dpkg::Arch;
+    my $arch = Dpkg::Arch::get_host_arch();
+
+    if (Dpkg::Arch::debarch_eq($arch, 'amd64')
+    	or Dpkg::Arch::debarch_eq($arch, 'arm64')
+    	or Dpkg::Arch::debarch_eq($arch, 'ppc64el')
+    	or Dpkg::Arch::debarch_eq($arch, 's390x'))
+    {
+    	$use_feature{optimize}{lto} = 1;
+    	if (_lto_disabled()) {
+    	    $use_feature{optimize}{lto} = 0;
+        }
+    }
+    
     my %builtin_feature = (
         hardening => {
             pie => 1,
@@ -143,9 +207,6 @@ sub _add_build_flags {
         $opts_maint->parse_features($area, $use_feature{$area});
     }
 
-    require Dpkg::Arch;
-
-    my $arch = Dpkg::Arch::get_host_arch();
     my ($abi, $libc, $os, $cpu) = Dpkg::Arch::debarch_to_debtuple($arch);
 
     unless (defined $abi and defined $libc and defined $os and defined $cpu) {
@@ -155,19 +216,27 @@ sub _add_build_flags {
 
     ## Global defaults
 
+    my @compile_flags = qw(
+        CFLAGS
+        CXXFLAGS
+        OBJCFLAGS
+        OBJCXXFLAGS
+        FFLAGS
+        FCFLAGS
+        GCJFLAGS
+    );
+
     my $default_flags;
+    my $default_d_flags;
     if ($opts_build->has('noopt')) {
         $default_flags = '-g -O0';
+        $default_d_flags = '-fdebug';
     } else {
         $default_flags = '-g -O2';
+        $default_d_flags = '-frelease';
     }
-    $flags->append('CFLAGS', $default_flags);
-    $flags->append('CXXFLAGS', $default_flags);
-    $flags->append('OBJCFLAGS', $default_flags);
-    $flags->append('OBJCXXFLAGS', $default_flags);
-    $flags->append('FFLAGS', $default_flags);
-    $flags->append('FCFLAGS', $default_flags);
-    $flags->append('GCJFLAGS', $default_flags);
+    $flags->append($_, $default_flags) foreach @compile_flags;
+    $flags->append('DFLAGS', $default_d_flags);
 
     ## Area: future
 
@@ -185,8 +254,21 @@ sub _add_build_flags {
 
     # Warnings that detect actual bugs.
     if ($use_feature{qa}{bug}) {
-        foreach my $warnflag (qw(array-bounds clobbered volatile-register-var
-                                 implicit-function-declaration)) {
+        # C flags
+        my @cflags = qw(
+            implicit-function-declaration
+        );
+        foreach my $warnflag (@cflags) {
+            $flags->append('CFLAGS', "-Werror=$warnflag");
+        }
+
+        # C/C++ flags
+        my @cfamilyflags = qw(
+            array-bounds
+            clobbered
+            volatile-register-var
+        );
+        foreach my $warnflag (@cfamilyflags) {
             $flags->append('CFLAGS', "-Werror=$warnflag");
             $flags->append('CXXFLAGS', "-Werror=$warnflag");
         }
@@ -241,13 +323,28 @@ sub _add_build_flags {
             $map = '-fdebug-prefix-map=' . $build_path . '=.';
         }
 
-        $flags->append('CFLAGS', $map);
-        $flags->append('CXXFLAGS', $map);
-        $flags->append('OBJCFLAGS', $map);
-        $flags->append('OBJCXXFLAGS', $map);
-        $flags->append('FFLAGS', $map);
-        $flags->append('FCFLAGS', $map);
-        $flags->append('GCJFLAGS', $map);
+        $flags->append($_, $map) foreach @compile_flags;
+    }
+
+    ## Area: optimize
+
+    if ($use_feature{optimize}{lto}) {
+        my $flag = '-flto=auto -ffat-lto-objects';
+        $flags->append($_, $flag) foreach (@compile_flags, 'LDFLAGS');
+    }
+
+    ## Area: optimize
+
+    if ($use_feature{optimize}{lto}) {
+        my $ltoflag = '-flto=auto -ffat-lto-objects';
+        $flags->append('CFLAGS', $ltoflag);
+        $flags->append('CXXFLAGS', $ltoflag);
+        $flags->append('OBJCFLAGS', $ltoflag);
+        $flags->append('OBJCXXFLAGS', $ltoflag);
+        $flags->append('FFLAGS', $ltoflag);
+        $flags->append('FCFLAGS', $ltoflag);
+	
+        $flags->append('LDFLAGS', '-flto=auto');
     }
 
     ## Area: sanitize
@@ -357,47 +454,23 @@ sub _add_build_flags {
         $use_feature{hardening}{pie} and
         not $builtin_feature{hardening}{pie}) {
 	my $flag = "-specs=$Dpkg::DATADIR/pie-compile.specs";
-	$flags->append('CFLAGS', $flag);
-	$flags->append('OBJCFLAGS',  $flag);
-	$flags->append('OBJCXXFLAGS', $flag);
-	$flags->append('FFLAGS', $flag);
-	$flags->append('FCFLAGS', $flag);
-	$flags->append('CXXFLAGS', $flag);
-	$flags->append('GCJFLAGS', $flag);
+        $flags->append($_, $flag) foreach @compile_flags;
 	$flags->append('LDFLAGS', "-specs=$Dpkg::DATADIR/pie-link.specs");
     } elsif (defined $use_feature{hardening}{pie} and
              not $use_feature{hardening}{pie} and
              $builtin_feature{hardening}{pie}) {
 	my $flag = "-specs=$Dpkg::DATADIR/no-pie-compile.specs";
-	$flags->append('CFLAGS', $flag);
-	$flags->append('OBJCFLAGS',  $flag);
-	$flags->append('OBJCXXFLAGS', $flag);
-	$flags->append('FFLAGS', $flag);
-	$flags->append('FCFLAGS', $flag);
-	$flags->append('CXXFLAGS', $flag);
-	$flags->append('GCJFLAGS', $flag);
+        $flags->append($_, $flag) foreach @compile_flags;
 	$flags->append('LDFLAGS', "-specs=$Dpkg::DATADIR/no-pie-link.specs");
     }
 
     # Stack protector
     if ($use_feature{hardening}{stackprotectorstrong}) {
 	my $flag = '-fstack-protector-strong';
-	$flags->append('CFLAGS', $flag);
-	$flags->append('OBJCFLAGS', $flag);
-	$flags->append('OBJCXXFLAGS', $flag);
-	$flags->append('FFLAGS', $flag);
-	$flags->append('FCFLAGS', $flag);
-	$flags->append('CXXFLAGS', $flag);
-	$flags->append('GCJFLAGS', $flag);
+        $flags->append($_, $flag) foreach @compile_flags;
     } elsif ($use_feature{hardening}{stackprotector}) {
 	my $flag = '-fstack-protector --param=ssp-buffer-size=4';
-	$flags->append('CFLAGS', $flag);
-	$flags->append('OBJCFLAGS', $flag);
-	$flags->append('OBJCXXFLAGS', $flag);
-	$flags->append('FFLAGS', $flag);
-	$flags->append('FCFLAGS', $flag);
-	$flags->append('CXXFLAGS', $flag);
-	$flags->append('GCJFLAGS', $flag);
+        $flags->append($_, $flag) foreach @compile_flags;
     }
 
     # Fortify Source
@@ -449,8 +522,8 @@ sub _build_tainted_by {
         next unless -l $pathname;
 
         my $linkname = readlink $pathname;
-        if ($linkname eq "usr$pathname") {
-            $tainted{'merged-usr-via-symlinks'} = 1;
+        if ($linkname eq "usr$pathname" or $linkname eq "/usr$pathname") {
+            $tainted{'merged-usr-via-aliased-dirs'} = 1;
             last;
         }
     }
@@ -466,7 +539,7 @@ sub _build_tainted_by {
         File::Find::find({
             wanted => sub { $tainted{"usr-local-has-$type"} = 1 if -f },
             no_chdir => 1,
-        }, map { "/usr/local/$_" } @{$usr_local_types{$type}});
+        }, grep { -d } map { "/usr/local/$_" } @{$usr_local_types{$type}});
     }
 
     my @tainted = sort keys %tainted;

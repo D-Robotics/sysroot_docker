@@ -13,13 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 prefix=/usr
-exec_prefix=${prefix}
+exec_prefix=/usr
 libdir=${prefix}/lib/aarch64-linux-gnu
 includedir=${prefix}/include
 
 Name: log4cxx
 Description: log4cxx C++ logging framework
-Version: 0.10.0
-Libs: -L${libdir} -llog4cxx
-Cflags: -I${includedir}
+Version: 0.12.1
+Libs: -L${prefix}/lib/aarch64-linux-gnu -llog4cxx
+Cflags: -I${prefix}/include
+Requires.private: apr-1 apr-util-1
 

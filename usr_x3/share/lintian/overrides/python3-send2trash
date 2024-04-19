@@ -1,0 +1,2 @@
+python3-send2trash binary: application-in-library-section python usr/bin/send2trash
+python3-send2trash binary: library-package-name-for-application usr/bin/send2trash

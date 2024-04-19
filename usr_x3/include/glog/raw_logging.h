@@ -173,7 +173,7 @@ GOOGLE_GLOG_DLL_DECL void RawLog__(LogSeverity severity,
                                    const char* file,
                                    int line,
                                    const char* format, ...)
-   __attribute__((__format__ (__printf__, 4, 5)));
+   ;
 
 }
 

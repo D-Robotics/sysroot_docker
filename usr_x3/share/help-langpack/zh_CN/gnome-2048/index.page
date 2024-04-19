@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<page xmlns="http://projectmallard.org/1.0/" xmlns:its="http://www.w3.org/2005/11/its" type="guide" style="task" id="index" xml:lang="gnome-2048-zh-CN">
+  <info>
+    <title type="link" role="trail"> <media type="image" src="media/gnome-204822.png" its:translate="no"/></title>
+    <title type="link">2048</title>
+    <title type="text">2048</title>
+    <revision pkgversion="3.5.5" version="0.1" date="2012-08-11" status="review"/>
+    <credit type="author copyright">
+      <name>Juan R. García Blanco</name>
+      <email>juanrgar@gmail.com</email>
+      <years>2014</years>
+    </credit>
+    <license>
+      <p>知识共享协议 相同方式共享许可 3.0</p>
+    </license>
+  
+    <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
+      <mal:name>Mandy Wang</mal:name>
+      <mal:email>wangmychn@gmail.com</mal:email>
+      <mal:years>2016</mal:years>
+    </mal:credit>
+  </info>
+<title><media type="image" src="media/gnome-2048.png" its:translate="no"><span its:translate="yes">GNOME 2048 logo</span></media> GNOME 2048</title>
+  <p><app>GNOME 2048</app> 是 Gabriele Cirulli 开发的 2048 的复刻版，是一款基于 Veewo Studios 的 1024 的益智游戏。</p>
+</page>

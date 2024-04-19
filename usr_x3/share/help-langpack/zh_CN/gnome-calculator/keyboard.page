@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<page xmlns="http://projectmallard.org/1.0/" type="guide" id="keyboard" xml:lang="gnome-calculator-zh-CN">
+
+    <info>
+        <link type="guide" xref="index#ui"/>
+        <revision pkgversion="3.38.0" date="2020-09-25" status="review"/>
+        <credit type="editor">
+          <name>Pranali Deshmukh</name>
+          <email>pranali21293@gmail.com</email>
+          <years>2020</years>
+        </credit>
+    </info>
+
+	<title>使用键盘</title>
+
+    <p>所有的表达式都可以用键盘输入。</p>
+    <p>下列组合键可以用于输入，可能在您的键盘上不可用的符号。</p>
+    <table>
+    <tr>
+    <td><p>×</p></td>
+    <td><p><key>*</key></p></td>
+    </tr>
+    <tr>
+    <td><p>÷</p></td>
+    <td><p><key>/</key></p></td>
+    </tr>
+    <tr>
+    <td><p>^</p></td>
+    <td><p><key>*</key> 两次</p></td>
+    </tr>
+    <tr>
+    <td><p>√</p></td>
+    <td><p><keyseq><key>Ctrl</key><key>R</key></keyseq></p></td>
+    </tr>
+    <tr>
+    <td><p>π</p></td>
+    <td><p><keyseq><key>Ctrl</key><key>P</key></keyseq></p></td>
+    </tr>
+    </table>
+    <p>
+    To enter <link xref="superscript">superscript numbers</link> use <keyseq><key>Ctrl</key>number</keyseq>, for <link xref="superscript">subscript numbers</link> use <keyseq><key>Alt</key>number</keyseq>.
+    </p>
+</page>

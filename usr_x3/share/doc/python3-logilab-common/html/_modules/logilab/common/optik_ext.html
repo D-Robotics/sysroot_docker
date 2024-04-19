@@ -1,0 +1,591 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>logilab.common.optik_ext &#8212; logilab common  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for logilab.common.optik_ext</h1><div class="highlight"><pre>
+<span></span><span class="c1"># copyright 2003-2011 LOGILAB S.A. (Paris, FRANCE), all rights reserved.</span>
+<span class="c1"># contact http://www.logilab.fr/ -- mailto:contact@logilab.fr</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of logilab-common.</span>
+<span class="c1">#</span>
+<span class="c1"># logilab-common is free software: you can redistribute it and/or modify it under</span>
+<span class="c1"># the terms of the GNU Lesser General Public License as published by the Free</span>
+<span class="c1"># Software Foundation, either version 2.1 of the License, or (at your option) any</span>
+<span class="c1"># later version.</span>
+<span class="c1">#</span>
+<span class="c1"># logilab-common is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1"># ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS</span>
+<span class="c1"># FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License along</span>
+<span class="c1"># with logilab-common.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="sd">&quot;&quot;&quot;Add an abstraction level to transparently import optik classes from optparse</span>
+<span class="sd">(python &gt;= 2.3) or the optik package.</span>
+
+<span class="sd">It also defines three new types for optik/optparse command line parser :</span>
+
+<span class="sd">  * regexp</span>
+<span class="sd">    argument of this type will be converted using re.compile</span>
+<span class="sd">  * csv</span>
+<span class="sd">    argument of this type will be converted using split(&#39;,&#39;)</span>
+<span class="sd">  * yn</span>
+<span class="sd">    argument of this type will be true if &#39;y&#39; or &#39;yes&#39;, false if &#39;n&#39; or &#39;no&#39;</span>
+<span class="sd">  * named</span>
+<span class="sd">    argument of this type are in the form &lt;NAME&gt;=&lt;VALUE&gt; or &lt;NAME&gt;:&lt;VALUE&gt;</span>
+<span class="sd">  * password</span>
+<span class="sd">    argument of this type wont be converted but this is used by other tools</span>
+<span class="sd">    such as interactive prompt for configuration to double check value and</span>
+<span class="sd">    use an invisible field</span>
+<span class="sd">  * multiple_choice</span>
+<span class="sd">    same as default &quot;choice&quot; type but multiple choices allowed</span>
+<span class="sd">  * file</span>
+<span class="sd">    argument of this type wont be converted but checked that the given file exists</span>
+<span class="sd">  * color</span>
+<span class="sd">    argument of this type wont be converted but checked its either a</span>
+<span class="sd">    named color or a color specified using hexadecimal notation (preceded by a #)</span>
+<span class="sd">  * time</span>
+<span class="sd">    argument of this type will be converted to a float value in seconds</span>
+<span class="sd">    according to time units (ms, s, min, h, d)</span>
+<span class="sd">  * bytes</span>
+<span class="sd">    argument of this type will be converted to a float value in bytes</span>
+<span class="sd">    according to byte units (b, kb, mb, gb, tb)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">__docformat__</span> <span class="o">=</span> <span class="s2">&quot;restructuredtext en&quot;</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">copy</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">exists</span>
+<span class="kn">from</span> <span class="nn">logilab.common</span> <span class="kn">import</span> <span class="n">attrdict</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span>
+<span class="kn">from</span> <span class="nn">_io</span> <span class="kn">import</span> <span class="n">StringIO</span>
+
+<span class="c1"># python &gt;= 2.3</span>
+<span class="kn">from</span> <span class="nn">optparse</span> <span class="kn">import</span> <span class="p">(</span>  <span class="c1"># noqa</span>
+    <span class="n">OptionParser</span> <span class="k">as</span> <span class="n">BaseParser</span><span class="p">,</span>
+    <span class="n">Option</span> <span class="k">as</span> <span class="n">BaseOption</span><span class="p">,</span>
+    <span class="n">OptionGroup</span><span class="p">,</span>
+    <span class="n">OptionContainer</span><span class="p">,</span>
+    <span class="n">OptionValueError</span><span class="p">,</span>
+    <span class="n">OptionError</span><span class="p">,</span>
+    <span class="n">Values</span><span class="p">,</span>
+    <span class="n">HelpFormatter</span><span class="p">,</span>
+    <span class="n">SUPPRESS_HELP</span><span class="p">,</span>
+    <span class="n">NO_DEFAULT</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">mx</span> <span class="kn">import</span> <span class="n">DateTime</span>
+
+    <span class="n">HAS_MX_DATETIME</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">HAS_MX_DATETIME</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="kn">from</span> <span class="nn">logilab.common.textutils</span> <span class="kn">import</span> <span class="n">splitstrip</span><span class="p">,</span> <span class="n">TIME_UNITS</span><span class="p">,</span> <span class="n">BYTE_UNITS</span><span class="p">,</span> <span class="n">apply_units</span>
+
+
+<span class="k">def</span> <span class="nf">check_regexp</span><span class="p">(</span><span class="n">option</span><span class="p">,</span> <span class="n">opt</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;check a regexp value by trying to compile it</span>
+<span class="sd">    return the compiled regexp</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;pattern&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">value</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">OptionValueError</span><span class="p">(</span><span class="s2">&quot;option </span><span class="si">%s</span><span class="s2">: invalid regexp value: </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">opt</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">check_csv</span><span class="p">(</span>
+    <span class="n">option</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Option&quot;</span><span class="p">],</span> <span class="n">opt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="o">...</span><span class="p">]]:</span>
+    <span class="sd">&quot;&quot;&quot;check a csv value by trying to split it</span>
+<span class="sd">    return the list of separated values</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">value</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">splitstrip</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">OptionValueError</span><span class="p">(</span><span class="s2">&quot;option </span><span class="si">%s</span><span class="s2">: invalid csv value: </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">opt</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">check_yn</span><span class="p">(</span><span class="n">option</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Option&quot;</span><span class="p">],</span> <span class="n">opt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;check a yn value</span>
+<span class="sd">    return true for yes and false for no</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;yes&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="n">value</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;n&quot;</span><span class="p">,</span> <span class="s2">&quot;no&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;option </span><span class="si">%s</span><span class="s2">: invalid yn value </span><span class="si">%r</span><span class="s2">, should be in (y, yes, n, no)&quot;</span>
+    <span class="k">raise</span> <span class="n">OptionValueError</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="p">(</span><span class="n">opt</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">check_named</span><span class="p">(</span>
+    <span class="n">option</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="n">opt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;check a named value</span>
+<span class="sd">    return a dictionary containing (name, value) associations</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">value</span>
+    <span class="n">values</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">check_csv</span><span class="p">(</span><span class="n">option</span><span class="p">,</span> <span class="n">opt</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="c1"># mypy: Argument 1 to &quot;append&quot; of &quot;list&quot; has incompatible type &quot;List[str]&quot;;</span>
+        <span class="c1"># mypy: expected &quot;Tuple[str, str]&quot;</span>
+        <span class="c1"># we know that the split will give a 2 items list</span>
+        <span class="k">if</span> <span class="n">value</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>  <span class="c1"># type: ignore</span>
+        <span class="k">elif</span> <span class="n">value</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">)</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="n">values</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>  <span class="c1"># type: ignore</span>
+    <span class="k">if</span> <span class="n">values</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;option </span><span class="si">%s</span><span class="s2">: invalid named value </span><span class="si">%r</span><span class="s2">, should be &lt;NAME&gt;=&lt;VALUE&gt; or </span><span class="se">\</span>
+<span class="s2">&lt;NAME&gt;:&lt;VALUE&gt;&quot;</span>
+    <span class="k">raise</span> <span class="n">OptionValueError</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="p">(</span><span class="n">opt</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">check_password</span><span class="p">(</span><span class="n">option</span><span class="p">,</span> <span class="n">opt</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;check a password value (can&#39;t be empty)&quot;&quot;&quot;</span>
+    <span class="c1"># no actual checking, monkey patch if you want more</span>
+    <span class="k">return</span> <span class="n">value</span>
+
+
+<span class="k">def</span> <span class="nf">check_file</span><span class="p">(</span><span class="n">option</span><span class="p">,</span> <span class="n">opt</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;check a file value</span>
+<span class="sd">    return the filepath</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">exists</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">value</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;option </span><span class="si">%s</span><span class="s2">: file </span><span class="si">%r</span><span class="s2"> does not exist&quot;</span>
+    <span class="k">raise</span> <span class="n">OptionValueError</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="p">(</span><span class="n">opt</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+
+
+<span class="c1"># XXX use python datetime</span>
+<span class="k">def</span> <span class="nf">check_date</span><span class="p">(</span><span class="n">option</span><span class="p">,</span> <span class="n">opt</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;check a file value</span>
+<span class="sd">    return the filepath</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">DateTime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;%Y/%m/</span><span class="si">%d</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="n">DateTime</span><span class="o">.</span><span class="n">Error</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">OptionValueError</span><span class="p">(</span><span class="s2">&quot;expected format of </span><span class="si">%s</span><span class="s2"> is yyyy/mm/dd&quot;</span> <span class="o">%</span> <span class="n">opt</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">check_color</span><span class="p">(</span><span class="n">option</span><span class="p">,</span> <span class="n">opt</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;check a color value and returns it</span>
+<span class="sd">    /!\\ does *not* check color labels (like &#39;red&#39;, &#39;green&#39;), only</span>
+<span class="sd">    checks hexadecimal forms</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Case (1) : color label, we trust the end-user</span>
+    <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;[a-z0-9 ]+$&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">value</span>
+    <span class="c1"># Case (2) : only accepts hexadecimal forms</span>
+    <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="s2">&quot;#[a-f0-9]</span><span class="si">{6}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">re</span><span class="o">.</span><span class="n">I</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">value</span>
+    <span class="c1"># Else : not a color label neither a valid hexadecimal form =&gt; error</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s2">&quot;option </span><span class="si">%s</span><span class="s2">: invalid color : </span><span class="si">%r</span><span class="s2">, should be either hexadecimal </span><span class="se">\</span>
+<span class="s2">    value or predefined color&quot;</span>
+    <span class="k">raise</span> <span class="n">OptionValueError</span><span class="p">(</span><span class="n">msg</span> <span class="o">%</span> <span class="p">(</span><span class="n">opt</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">check_time</span><span class="p">(</span><span class="n">option</span><span class="p">,</span> <span class="n">opt</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">value</span>
+    <span class="k">return</span> <span class="n">apply_units</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">TIME_UNITS</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">check_bytes</span><span class="p">(</span><span class="n">option</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="s2">&quot;Option&quot;</span><span class="p">],</span> <span class="n">opt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">&quot;__int__&quot;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">value</span>
+    <span class="c1"># mypy: Incompatible return value type (got &quot;Union[float, int]&quot;, expected &quot;int&quot;)</span>
+    <span class="c1"># we force &quot;int&quot; using &quot;final=int&quot;</span>
+    <span class="k">return</span> <span class="n">apply_units</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">BYTE_UNITS</span><span class="p">,</span> <span class="n">final</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+
+<div class="viewcode-block" id="Option"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.optik_ext.Option">[docs]</a><span class="k">class</span> <span class="nc">Option</span><span class="p">(</span><span class="n">BaseOption</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;override optik.Option to add some new option types&quot;&quot;&quot;</span>
+
+    <span class="n">TYPES</span> <span class="o">=</span> <span class="n">BaseOption</span><span class="o">.</span><span class="n">TYPES</span> <span class="o">+</span> <span class="p">(</span>
+        <span class="s2">&quot;regexp&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;csv&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;yn&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;named&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;password&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;multiple_choice&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;file&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;color&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;time&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;bytes&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">ATTRS</span> <span class="o">=</span> <span class="n">BaseOption</span><span class="o">.</span><span class="n">ATTRS</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;hide&quot;</span><span class="p">,</span> <span class="s2">&quot;level&quot;</span><span class="p">]</span>
+    <span class="n">TYPE_CHECKER</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">BaseOption</span><span class="o">.</span><span class="n">TYPE_CHECKER</span><span class="p">)</span>
+    <span class="n">TYPE_CHECKER</span><span class="p">[</span><span class="s2">&quot;regexp&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">check_regexp</span>
+    <span class="n">TYPE_CHECKER</span><span class="p">[</span><span class="s2">&quot;csv&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">check_csv</span>
+    <span class="n">TYPE_CHECKER</span><span class="p">[</span><span class="s2">&quot;yn&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">check_yn</span>
+    <span class="n">TYPE_CHECKER</span><span class="p">[</span><span class="s2">&quot;named&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">check_named</span>
+    <span class="n">TYPE_CHECKER</span><span class="p">[</span><span class="s2">&quot;multiple_choice&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">check_csv</span>
+    <span class="n">TYPE_CHECKER</span><span class="p">[</span><span class="s2">&quot;file&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">check_file</span>
+    <span class="n">TYPE_CHECKER</span><span class="p">[</span><span class="s2">&quot;color&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">check_color</span>
+    <span class="n">TYPE_CHECKER</span><span class="p">[</span><span class="s2">&quot;password&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">check_password</span>
+    <span class="n">TYPE_CHECKER</span><span class="p">[</span><span class="s2">&quot;time&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">check_time</span>
+    <span class="n">TYPE_CHECKER</span><span class="p">[</span><span class="s2">&quot;bytes&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">check_bytes</span>
+    <span class="k">if</span> <span class="n">HAS_MX_DATETIME</span><span class="p">:</span>
+        <span class="n">TYPES</span> <span class="o">+=</span> <span class="p">(</span><span class="s2">&quot;date&quot;</span><span class="p">,)</span>
+        <span class="n">TYPE_CHECKER</span><span class="p">[</span><span class="s2">&quot;date&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">check_date</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">opts</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">attrs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">BaseOption</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">opts</span><span class="p">,</span> <span class="o">**</span><span class="n">attrs</span><span class="p">)</span>
+        <span class="c1"># mypy: &quot;Option&quot; has no attribute &quot;hide&quot;</span>
+        <span class="c1"># we test that in the if</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;hide&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">hide</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">help</span> <span class="o">=</span> <span class="n">SUPPRESS_HELP</span>
+
+    <span class="k">def</span> <span class="nf">_check_choice</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;FIXME: need to override this due to optik misdesign&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;choice&quot;</span><span class="p">,</span> <span class="s2">&quot;multiple_choice&quot;</span><span class="p">):</span>
+            <span class="c1"># mypy: &quot;Option&quot; has no attribute &quot;choices&quot;</span>
+            <span class="c1"># we know that option of this type has this attribute</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">choices</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+                <span class="k">raise</span> <span class="n">OptionError</span><span class="p">(</span><span class="s2">&quot;must supply a list of choices for type &#39;choice&#39;&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">choices</span><span class="p">,</span> <span class="p">(</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">list</span><span class="p">)):</span>  <span class="c1"># type: ignore</span>
+                <span class="k">raise</span> <span class="n">OptionError</span><span class="p">(</span>
+                    <span class="s2">&quot;choices must be a list of strings (&#39;</span><span class="si">%s</span><span class="s2">&#39; supplied)&quot;</span>
+                    <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">choices</span><span class="p">))</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">)[</span><span class="mi">1</span><span class="p">],</span>  <span class="c1"># type: ignore</span>
+                    <span class="bp">self</span><span class="p">,</span>
+                <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">choices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+            <span class="k">raise</span> <span class="n">OptionError</span><span class="p">(</span><span class="s2">&quot;must not supply choices for type </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+
+    <span class="c1"># mypy: Unsupported target for indexed assignment</span>
+    <span class="c1"># black magic?</span>
+    <span class="n">BaseOption</span><span class="o">.</span><span class="n">CHECK_METHODS</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">_check_choice</span>  <span class="c1"># type: ignore</span>
+
+<div class="viewcode-block" id="Option.process"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.optik_ext.Option.process">[docs]</a>    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">opt</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">values</span><span class="p">:</span> <span class="n">Values</span><span class="p">,</span> <span class="n">parser</span><span class="p">:</span> <span class="n">BaseParser</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="c1"># First, convert the value(s) to the right type.  Howl if any</span>
+        <span class="c1"># value(s) are bogus.</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">convert_value</span><span class="p">(</span><span class="n">opt</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;named&quot;</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+            <span class="n">existant</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">existant</span><span class="p">:</span>
+                <span class="n">existant</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="n">existant</span>
+        <span class="c1"># And then take whatever action is expected of us.</span>
+        <span class="c1"># This is a separate method to make life easier for</span>
+        <span class="c1"># subclasses to add new actions.</span>
+        <span class="c1"># mypy: Argument 2 to &quot;take_action&quot; of &quot;Option&quot; has incompatible type &quot;Optional[str]&quot;;</span>
+        <span class="c1"># mypy: expected &quot;str&quot;</span>
+        <span class="c1"># is it ok?</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">take_action</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="p">,</span> <span class="n">opt</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">parser</span><span class="p">)</span>  <span class="c1"># type: ignore</span></div></div>
+
+
+<div class="viewcode-block" id="OptionParser"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.optik_ext.OptionParser">[docs]</a><span class="k">class</span> <span class="nc">OptionParser</span><span class="p">(</span><span class="n">BaseParser</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;override optik.OptionParser to use our Option class&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">option_class</span><span class="p">:</span> <span class="nb">type</span> <span class="o">=</span> <span class="n">Option</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># mypy: Argument &quot;option_class&quot; to &quot;__init__&quot; of &quot;OptionParser&quot; has incompatible type</span>
+        <span class="c1"># mypy: &quot;type&quot;; expected &quot;Option&quot;</span>
+        <span class="c1"># mypy is doing really weird things with *args/**kwargs and looks buggy</span>
+        <span class="n">BaseParser</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">option_class</span><span class="o">=</span><span class="n">option_class</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+
+<div class="viewcode-block" id="OptionParser.format_option_help"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.optik_ext.OptionParser.format_option_help">[docs]</a>    <span class="k">def</span> <span class="nf">format_option_help</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">formatter</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">HelpFormatter</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">formatter</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">formatter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">formatter</span>
+        <span class="n">outputlevel</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">formatter</span><span class="p">,</span> <span class="s2">&quot;output_level&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">formatter</span><span class="o">.</span><span class="n">store_option_strings</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">formatter</span><span class="o">.</span><span class="n">format_heading</span><span class="p">(</span><span class="s2">&quot;Options&quot;</span><span class="p">))</span>
+        <span class="n">formatter</span><span class="o">.</span><span class="n">indent</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">option_list</span><span class="p">:</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">OptionContainer</span><span class="o">.</span><span class="n">format_option_help</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">formatter</span><span class="p">))</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">option_groups</span><span class="p">:</span>
+            <span class="c1"># mypy: &quot;OptionParser&quot; has no attribute &quot;level&quot;</span>
+            <span class="c1"># but it has one no?</span>
+            <span class="k">if</span> <span class="n">group</span><span class="o">.</span><span class="n">level</span> <span class="o">&lt;=</span> <span class="n">outputlevel</span> <span class="ow">and</span> <span class="p">(</span>  <span class="c1"># type: ignore</span>
+                <span class="n">group</span><span class="o">.</span><span class="n">description</span> <span class="ow">or</span> <span class="n">level_options</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="n">outputlevel</span><span class="p">)</span>
+            <span class="p">):</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">group</span><span class="o">.</span><span class="n">format_help</span><span class="p">(</span><span class="n">formatter</span><span class="p">))</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">formatter</span><span class="o">.</span><span class="n">dedent</span><span class="p">()</span>
+        <span class="c1"># Drop the last &quot;\n&quot;, or the header if no options or option groups:</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">result</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span></div></div>
+
+
+<span class="c1"># mypy error: error: &quot;Type[OptionGroup]&quot; has no attribute &quot;level&quot;</span>
+<span class="c1"># monkeypatching</span>
+<span class="n">OptionGroup</span><span class="o">.</span><span class="n">level</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># type: ignore</span>
+
+
+<span class="k">def</span> <span class="nf">level_options</span><span class="p">(</span><span class="n">group</span><span class="p">:</span> <span class="n">BaseParser</span><span class="p">,</span> <span class="n">outputlevel</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">BaseOption</span><span class="p">]:</span>
+    <span class="c1"># mypy: &quot;Option&quot; has no attribute &quot;help&quot;</span>
+    <span class="c1"># but it does</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="n">option</span>
+        <span class="k">for</span> <span class="n">option</span> <span class="ow">in</span> <span class="n">group</span><span class="o">.</span><span class="n">option_list</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">option</span><span class="p">,</span> <span class="s2">&quot;level&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">0</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">outputlevel</span> <span class="ow">and</span> <span class="n">option</span><span class="o">.</span><span class="n">help</span> <span class="ow">is</span> <span class="ow">not</span> <span class="n">SUPPRESS_HELP</span>  <span class="c1"># type: ignore  # noqa</span>
+    <span class="p">]</span>
+
+
+<span class="k">def</span> <span class="nf">format_option_help</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">formatter</span><span class="p">):</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">outputlevel</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">formatter</span><span class="p">,</span> <span class="s2">&quot;output_level&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">option</span> <span class="ow">in</span> <span class="n">level_options</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outputlevel</span><span class="p">):</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">formatter</span><span class="o">.</span><span class="n">format_option</span><span class="p">(</span><span class="n">option</span><span class="p">))</span>
+    <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+
+<span class="c1"># mypy error: Cannot assign to a method</span>
+<span class="c1"># but we still do it because magic</span>
+<span class="n">OptionContainer</span><span class="o">.</span><span class="n">format_option_help</span> <span class="o">=</span> <span class="n">format_option_help</span>  <span class="c1"># type: ignore</span>
+
+
+<span class="k">class</span> <span class="nc">ManHelpFormatter</span><span class="p">(</span><span class="n">HelpFormatter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Format help using man pages ROFF format&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">indent_increment</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">max_help_position</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">24</span><span class="p">,</span>
+        <span class="n">width</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">79</span><span class="p">,</span>
+        <span class="n">short_first</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">HelpFormatter</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indent_increment</span><span class="p">,</span> <span class="n">max_help_position</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">short_first</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">format_heading</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">heading</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;.SH </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">heading</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">format_description</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">description</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">description</span>
+
+    <span class="k">def</span> <span class="nf">format_option</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">option</span><span class="p">:</span> <span class="n">BaseParser</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># mypy: &quot;Option&quot; has no attribute &quot;option_strings&quot;</span>
+            <span class="c1"># we handle if it doesn&#39;t</span>
+            <span class="n">optstring</span> <span class="o">=</span> <span class="n">option</span><span class="o">.</span><span class="n">option_strings</span>  <span class="c1"># type: ignore</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">optstring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_option_strings</span><span class="p">(</span><span class="n">option</span><span class="p">)</span>
+        <span class="c1"># mypy: &quot;OptionParser&quot; has no attribute &quot;help&quot;</span>
+        <span class="c1"># it does</span>
+        <span class="k">if</span> <span class="n">option</span><span class="o">.</span><span class="n">help</span><span class="p">:</span>  <span class="c1"># type: ignore</span>
+            <span class="c1"># mypy: Argument 1 to &quot;expand_default&quot; of &quot;HelpFormatter&quot; has incompatible type</span>
+            <span class="c1"># mypy: &quot;OptionParser&quot;; expected &quot;Option&quot;</span>
+            <span class="c1"># it still works?</span>
+            <span class="n">help_text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">expand_default</span><span class="p">(</span><span class="n">option</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="n">help</span> <span class="o">=</span> <span class="s2">&quot; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">help_text</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">help</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;&quot;.IP &quot;</span><span class="si">%s</span><span class="s2">&quot;</span>
+<span class="si">%s</span><span class="s2"></span>
+<span class="s2">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">optstring</span><span class="p">,</span>
+            <span class="n">help</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">format_head</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">optparser</span><span class="p">:</span> <span class="n">OptionParser</span><span class="p">,</span> <span class="n">pkginfo</span><span class="p">:</span> <span class="n">attrdict</span><span class="p">,</span> <span class="n">section</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">long_desc</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">pgm</span> <span class="o">=</span> <span class="n">optparser</span><span class="o">.</span><span class="n">get_prog_name</span><span class="p">()</span>
+        <span class="n">short_desc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_short_description</span><span class="p">(</span><span class="n">pgm</span><span class="p">,</span> <span class="n">pkginfo</span><span class="o">.</span><span class="n">description</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pkginfo</span><span class="p">,</span> <span class="s2">&quot;long_desc&quot;</span><span class="p">):</span>
+            <span class="n">long_desc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">format_long_description</span><span class="p">(</span><span class="n">pgm</span><span class="p">,</span> <span class="n">pkginfo</span><span class="o">.</span><span class="n">long_desc</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">format_title</span><span class="p">(</span><span class="n">pgm</span><span class="p">,</span> <span class="n">section</span><span class="p">),</span>
+            <span class="n">short_desc</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">format_synopsis</span><span class="p">(</span><span class="n">pgm</span><span class="p">),</span>
+            <span class="n">long_desc</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">format_title</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pgm</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">section</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">date</span> <span class="o">=</span> <span class="s2">&quot;-&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">num</span><span class="p">)</span> <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="n">time</span><span class="o">.</span><span class="n">localtime</span><span class="p">()[:</span><span class="mi">3</span><span class="p">]])</span>
+        <span class="k">return</span> <span class="s1">&#39;.TH </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1"> &quot;</span><span class="si">%s</span><span class="s1">&quot; </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pgm</span><span class="p">,</span> <span class="n">section</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="n">pgm</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">format_short_description</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pgm</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">short_desc</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="sa">r</span><span class="s2">&quot;&quot;&quot;.SH NAME</span>
+<span class="s2">.B </span><span class="si">%s</span><span class="s2"></span>
+<span class="s2">\- </span><span class="si">%s</span><span class="s2"></span>
+<span class="s2">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">pgm</span><span class="p">,</span>
+            <span class="n">short_desc</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">format_synopsis</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pgm</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="sd">&quot;&quot;&quot;.SH SYNOPSIS</span>
+<span class="sd">.B  %s</span>
+<span class="sd">[</span>
+<span class="sd">.I OPTIONS</span>
+<span class="sd">] [</span>
+<span class="sd">.I &lt;arguments&gt;</span>
+<span class="sd">]</span>
+<span class="sd">&quot;&quot;&quot;</span>
+            <span class="o">%</span> <span class="n">pgm</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">format_long_description</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pgm</span><span class="p">,</span> <span class="n">long_desc</span><span class="p">):</span>
+        <span class="n">long_desc</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">line</span><span class="o">.</span><span class="n">lstrip</span><span class="p">()</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">long_desc</span><span class="o">.</span><span class="n">splitlines</span><span class="p">()])</span>
+        <span class="n">long_desc</span> <span class="o">=</span> <span class="n">long_desc</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">long_desc</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">pgm</span><span class="p">):</span>
+            <span class="n">long_desc</span> <span class="o">=</span> <span class="n">long_desc</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">pgm</span><span class="p">)</span> <span class="p">:]</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;&quot;.SH DESCRIPTION</span>
+<span class="s2">.B </span><span class="si">%s</span><span class="s2"></span>
+<span class="si">%s</span><span class="s2"></span>
+<span class="s2">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">pgm</span><span class="p">,</span>
+            <span class="n">long_desc</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">format_tail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pkginfo</span><span class="p">:</span> <span class="n">attrdict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">tail</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;.SH SEE ALSO</span>
+<span class="s2">/usr/share/doc/pythonX.Y-</span><span class="si">%s</span><span class="s2">/</span>
+
+<span class="s2">.SH BUGS</span>
+<span class="s2">Please report bugs on the project</span><span class="se">\&#39;</span><span class="s2">s mailing list:</span>
+<span class="si">%s</span><span class="s2"></span>
+
+<span class="s2">.SH AUTHOR</span>
+<span class="si">%s</span><span class="s2"> &lt;</span><span class="si">%s</span><span class="s2">&gt;</span>
+<span class="s2">&quot;&quot;&quot;</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="nb">getattr</span><span class="p">(</span><span class="n">pkginfo</span><span class="p">,</span> <span class="s2">&quot;debian_name&quot;</span><span class="p">,</span> <span class="n">pkginfo</span><span class="o">.</span><span class="n">modname</span><span class="p">),</span>
+            <span class="n">pkginfo</span><span class="o">.</span><span class="n">mailinglist</span><span class="p">,</span>
+            <span class="n">pkginfo</span><span class="o">.</span><span class="n">author</span><span class="p">,</span>
+            <span class="n">pkginfo</span><span class="o">.</span><span class="n">author_email</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">pkginfo</span><span class="p">,</span> <span class="s2">&quot;copyright&quot;</span><span class="p">):</span>
+            <span class="n">tail</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">.SH COPYRIGHT</span>
+<span class="sd">%s</span>
+<span class="sd">&quot;&quot;&quot;</span>
+                <span class="o">%</span> <span class="n">pkginfo</span><span class="o">.</span><span class="n">copyright</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">tail</span>
+
+
+<span class="k">def</span> <span class="nf">generate_manpage</span><span class="p">(</span>
+    <span class="n">optparser</span><span class="p">:</span> <span class="n">OptionParser</span><span class="p">,</span>
+    <span class="n">pkginfo</span><span class="p">:</span> <span class="n">attrdict</span><span class="p">,</span>
+    <span class="n">section</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+    <span class="n">stream</span><span class="p">:</span> <span class="n">StringIO</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span>
+    <span class="n">level</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;generate a man page from an optik parser&quot;&quot;&quot;</span>
+    <span class="n">formatter</span> <span class="o">=</span> <span class="n">ManHelpFormatter</span><span class="p">()</span>
+    <span class="c1"># mypy: &quot;ManHelpFormatter&quot; has no attribute &quot;output_level&quot;</span>
+    <span class="c1"># dynamic attribute?</span>
+    <span class="n">formatter</span><span class="o">.</span><span class="n">output_level</span> <span class="o">=</span> <span class="n">level</span>  <span class="c1"># type: ignore</span>
+    <span class="n">formatter</span><span class="o">.</span><span class="n">parser</span> <span class="o">=</span> <span class="n">optparser</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">formatter</span><span class="o">.</span><span class="n">format_head</span><span class="p">(</span><span class="n">optparser</span><span class="p">,</span> <span class="n">pkginfo</span><span class="p">,</span> <span class="n">section</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">stream</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">optparser</span><span class="o">.</span><span class="n">format_option_help</span><span class="p">(</span><span class="n">formatter</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">stream</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">formatter</span><span class="o">.</span><span class="n">format_tail</span><span class="p">(</span><span class="n">pkginfo</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">stream</span><span class="p">)</span>
+
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;OptionParser&quot;</span><span class="p">,</span> <span class="s2">&quot;Option&quot;</span><span class="p">,</span> <span class="s2">&quot;OptionGroup&quot;</span><span class="p">,</span> <span class="s2">&quot;OptionValueError&quot;</span><span class="p">,</span> <span class="s2">&quot;Values&quot;</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">logilab common</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../logilab.common.html">logilab.common package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../logilab.common.ureports.html">logilab.common.ureports package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  <li><a href="../common.html">logilab.common</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Logilab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

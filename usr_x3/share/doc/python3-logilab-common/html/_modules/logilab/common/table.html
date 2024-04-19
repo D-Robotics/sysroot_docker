@@ -1,0 +1,1026 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>logilab.common.table &#8212; logilab common  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for logilab.common.table</h1><div class="highlight"><pre>
+<span></span><span class="c1"># copyright 2003-2012 LOGILAB S.A. (Paris, FRANCE), all rights reserved.</span>
+<span class="c1"># contact http://www.logilab.fr/ -- mailto:contact@logilab.fr</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of logilab-common.</span>
+<span class="c1">#</span>
+<span class="c1"># logilab-common is free software: you can redistribute it and/or modify it under</span>
+<span class="c1"># the terms of the GNU Lesser General Public License as published by the Free</span>
+<span class="c1"># Software Foundation, either version 2.1 of the License, or (at your option) any</span>
+<span class="c1"># later version.</span>
+<span class="c1">#</span>
+<span class="c1"># logilab-common is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1"># ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS</span>
+<span class="c1"># FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License along</span>
+<span class="c1"># with logilab-common.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="sd">&quot;&quot;&quot;Table management module.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">CodeType</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Iterator</span>
+<span class="kn">from</span> <span class="nn">_io</span> <span class="kn">import</span> <span class="n">StringIO</span>
+
+<span class="kn">import</span> <span class="nn">re</span>
+
+<span class="n">__docformat__</span> <span class="o">=</span> <span class="s2">&quot;restructuredtext en&quot;</span>
+
+
+<div class="viewcode-block" id="Table"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table">[docs]</a><span class="k">class</span> <span class="nc">Table</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Table defines a data table with column and row names.</span>
+<span class="sd">    inv::</span>
+
+<span class="sd">        len(self.data) &lt;= len(self.row_names)</span>
+<span class="sd">        forall(self.data, lambda x: len(x) &lt;= len(self.col_names))</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">default_value</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">col_names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">row_names</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">col_names</span><span class="p">:</span> <span class="n">List</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">row_names</span><span class="p">:</span> <span class="n">List</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span> <span class="n">List</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_value</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="n">default_value</span>
+        <span class="k">if</span> <span class="n">col_names</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">create_columns</span><span class="p">(</span><span class="n">col_names</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">row_names</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">create_rows</span><span class="p">(</span><span class="n">row_names</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_next_row_name</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;row</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">row_names</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Iterator</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="c1"># def __eq__(self, other: Union[List[List[int]], List[Tuple[str, str, str, float]]]) -&gt; bool:</span>
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="nb">object</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">def</span> <span class="nf">is_iterable</span><span class="p">(</span><span class="n">variable</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">iter</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="n">other</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="n">is_iterable</span><span class="p">(</span><span class="n">other</span><span class="p">):</span>
+            <span class="c1"># mypy: No overload variant of &quot;list&quot; matches argument type &quot;object&quot;</span>
+            <span class="c1"># checked before</span>
+            <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="nb">list</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="fm">__hash__</span> <span class="o">=</span> <span class="nb">object</span><span class="o">.</span><span class="fm">__hash__</span>
+
+    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span> <span class="o">==</span> <span class="n">other</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">row_names</span><span class="p">)</span>
+
+    <span class="c1"># Rows / Columns creation #################################################</span>
+<div class="viewcode-block" id="Table.create_rows"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.create_rows">[docs]</a>    <span class="k">def</span> <span class="nf">create_rows</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Appends row_names to the list of existing rows&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">row_names</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">row_names</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">row_name</span> <span class="ow">in</span> <span class="n">row_names</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">default_value</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">col_names</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Table.create_columns"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.create_columns">[docs]</a>    <span class="k">def</span> <span class="nf">create_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Appends col_names to the list of existing columns&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">col_name</span> <span class="ow">in</span> <span class="n">col_names</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">create_column</span><span class="p">(</span><span class="n">col_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Table.create_row"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.create_row">[docs]</a>    <span class="k">def</span> <span class="nf">create_row</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Creates a rowname to the row_names list&quot;&quot;&quot;</span>
+        <span class="n">row_name</span> <span class="o">=</span> <span class="n">row_name</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_next_row_name</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">row_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">default_value</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">col_names</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Table.create_column"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.create_column">[docs]</a>    <span class="k">def</span> <span class="nf">create_column</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Creates a colname to the col_names list&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">col_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">col_name</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="n">row</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">default_value</span><span class="p">)</span></div>
+
+    <span class="c1"># Sort by column ##########################################################</span>
+<div class="viewcode-block" id="Table.sort_by_column_id"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.sort_by_column_id">[docs]</a>    <span class="k">def</span> <span class="nf">sort_by_column_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;asc&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Sorts the table (in-place) according to data stored in col_id&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">col_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">col_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">col_id</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sort_by_column_index</span><span class="p">(</span><span class="n">col_index</span><span class="p">,</span> <span class="n">method</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Col (</span><span class="si">%s</span><span class="s2">) not found in table&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">col_id</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Table.sort_by_column_index"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.sort_by_column_index">[docs]</a>    <span class="k">def</span> <span class="nf">sort_by_column_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">method</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;asc&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Sorts the table &#39;in-place&#39; according to data stored in col_index</span>
+
+<span class="sd">        method should be in (&#39;asc&#39;, &#39;desc&#39;)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">sort_list</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span>
+            <span class="p">[(</span><span class="n">row</span><span class="p">[</span><span class="n">col_index</span><span class="p">],</span> <span class="n">row</span><span class="p">,</span> <span class="n">row_name</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span><span class="p">,</span> <span class="n">row_name</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_names</span><span class="p">)]</span>
+        <span class="p">)</span>
+        <span class="c1"># Sorting sort_list will sort according to col_index</span>
+        <span class="c1"># If we want reverse sort, then reverse list</span>
+        <span class="k">if</span> <span class="n">method</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;desc&quot;</span><span class="p">:</span>
+            <span class="n">sort_list</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+
+        <span class="c1"># Rebuild data / row names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">row_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">val</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">row_name</span> <span class="ow">in</span> <span class="n">sort_list</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">row_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Table.groupby"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.groupby">[docs]</a>    <span class="k">def</span> <span class="nf">groupby</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">colname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">others</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;Table&quot;</span><span class="p">]],</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="s2">&quot;Table&quot;</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;builds indexes of data</span>
+<span class="sd">        :returns: nested dictionaries pointing to actual rows</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">groups</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">colnames</span> <span class="o">=</span> <span class="p">(</span><span class="n">colname</span><span class="p">,)</span> <span class="o">+</span> <span class="n">others</span>
+        <span class="n">col_indexes</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">col_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">col_id</span><span class="p">)</span> <span class="k">for</span> <span class="n">col_id</span> <span class="ow">in</span> <span class="n">colnames</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="n">ptr</span> <span class="o">=</span> <span class="n">groups</span>
+            <span class="k">for</span> <span class="n">col_index</span> <span class="ow">in</span> <span class="n">col_indexes</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">ptr</span> <span class="o">=</span> <span class="n">ptr</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">col_index</span><span class="p">],</span> <span class="p">{})</span>
+            <span class="n">table</span> <span class="o">=</span> <span class="n">ptr</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
+                <span class="n">row</span><span class="p">[</span><span class="n">col_indexes</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]],</span>
+                <span class="n">Table</span><span class="p">(</span><span class="n">default_value</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">default_value</span><span class="p">,</span> <span class="n">col_names</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">col_names</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="n">table</span><span class="o">.</span><span class="n">append_row</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">row</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">groups</span></div>
+
+<div class="viewcode-block" id="Table.select"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.select">[docs]</a>    <span class="k">def</span> <span class="nf">select</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">colname</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Table&quot;</span><span class="p">:</span>
+        <span class="n">grouped</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="n">colname</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># mypy: Incompatible return value type (got &quot;Union[Dict[str, Table], Table]&quot;,</span>
+            <span class="c1"># mypy: expected &quot;Table&quot;)</span>
+            <span class="c1"># I guess we are sure we&#39;ll get a Table here?</span>
+            <span class="k">return</span> <span class="n">grouped</span><span class="p">[</span><span class="n">value</span><span class="p">]</span>  <span class="c1"># type: ignore</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Table</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Table.remove"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.remove">[docs]</a>    <span class="k">def</span> <span class="nf">remove</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">colname</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="n">col_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">col_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">colname</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[:]:</span>
+            <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="n">col_index</span><span class="p">]</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">row</span><span class="p">)</span></div>
+
+    <span class="c1"># The &#39;setter&#39; part #######################################################</span>
+<div class="viewcode-block" id="Table.set_cell"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.set_cell">[docs]</a>    <span class="k">def</span> <span class="nf">set_cell</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">col_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;sets value of cell &#39;row_indew&#39;, &#39;col_index&#39; to data&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">row_index</span><span class="p">][</span><span class="n">col_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span></div>
+
+<div class="viewcode-block" id="Table.set_cell_by_ids"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.set_cell_by_ids">[docs]</a>    <span class="k">def</span> <span class="nf">set_cell_by_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">col_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;sets value of cell mapped by row_id and col_id to data</span>
+<span class="sd">        Raises a KeyError if row_id or col_id are not found in the table</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">row_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">row_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Row (</span><span class="si">%s</span><span class="s2">) not found in table&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">row_id</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">col_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">col_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">col_id</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">row_index</span><span class="p">][</span><span class="n">col_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Column (</span><span class="si">%s</span><span class="s2">) not found in table&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">col_id</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Table.set_row"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.set_row">[docs]</a>    <span class="k">def</span> <span class="nf">set_row</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">row_data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;sets the &#39;row_index&#39; row</span>
+<span class="sd">        pre::</span>
+
+<span class="sd">            type(row_data) == types.ListType</span>
+<span class="sd">            len(row_data) == len(self.col_names)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">row_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">row_data</span></div>
+
+<div class="viewcode-block" id="Table.set_row_by_id"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.set_row_by_id">[docs]</a>    <span class="k">def</span> <span class="nf">set_row_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">row_data</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;sets the &#39;row_id&#39; column</span>
+<span class="sd">        pre::</span>
+
+<span class="sd">            type(row_data) == types.ListType</span>
+<span class="sd">            len(row_data) == len(self.row_names)</span>
+
+<span class="sd">        Raises a KeyError if row_id is not found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">row_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">row_id</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_row</span><span class="p">(</span><span class="n">row_index</span><span class="p">,</span> <span class="n">row_data</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Row (</span><span class="si">%s</span><span class="s2">) not found in table&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">row_id</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Table.append_row"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.append_row">[docs]</a>    <span class="k">def</span> <span class="nf">append_row</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">row_data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]],</span> <span class="n">row_name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Appends a row to the table</span>
+<span class="sd">        pre::</span>
+
+<span class="sd">            type(row_data) == types.ListType</span>
+<span class="sd">            len(row_data) == len(self.col_names)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">row_name</span> <span class="o">=</span> <span class="n">row_name</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_next_row_name</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">row_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row_data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span></div>
+
+<div class="viewcode-block" id="Table.insert_row"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.insert_row">[docs]</a>    <span class="k">def</span> <span class="nf">insert_row</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">row_data</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">row_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Appends row_data before &#39;index&#39; in the table. To make &#39;insert&#39;</span>
+<span class="sd">        behave like &#39;list.insert&#39;, inserting in an out of range index will</span>
+<span class="sd">        insert row_data to the end of the list</span>
+<span class="sd">        pre::</span>
+
+<span class="sd">            type(row_data) == types.ListType</span>
+<span class="sd">            len(row_data) == len(self.col_names)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">row_name</span> <span class="o">=</span> <span class="n">row_name</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_next_row_name</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">row_names</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">row_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">row_data</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Table.delete_row"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.delete_row">[docs]</a>    <span class="k">def</span> <span class="nf">delete_row</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Deletes the &#39;index&#39; row in the table, and returns it.</span>
+<span class="sd">        Raises an IndexError if index is out of range</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">row_names</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">index</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Table.delete_row_by_id"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.delete_row_by_id">[docs]</a>    <span class="k">def</span> <span class="nf">delete_row_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Deletes the &#39;row_id&#39; row in the table.</span>
+<span class="sd">        Raises a KeyError if row_id was not found.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">row_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">row_id</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">delete_row</span><span class="p">(</span><span class="n">row_index</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Row (</span><span class="si">%s</span><span class="s2">) not found in table&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">row_id</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Table.set_column"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.set_column">[docs]</a>    <span class="k">def</span> <span class="nf">set_column</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">col_data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="nb">range</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;sets the &#39;col_index&#39; column</span>
+<span class="sd">        pre::</span>
+
+<span class="sd">            type(col_data) == types.ListType</span>
+<span class="sd">            len(col_data) == len(self.row_names)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">row_index</span><span class="p">,</span> <span class="n">cell_data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">col_data</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">row_index</span><span class="p">][</span><span class="n">col_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">cell_data</span></div>
+
+<div class="viewcode-block" id="Table.set_column_by_id"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.set_column_by_id">[docs]</a>    <span class="k">def</span> <span class="nf">set_column_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">col_data</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="nb">range</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;sets the &#39;col_id&#39; column</span>
+<span class="sd">        pre::</span>
+
+<span class="sd">            type(col_data) == types.ListType</span>
+<span class="sd">            len(col_data) == len(self.col_names)</span>
+
+<span class="sd">        Raises a KeyError if col_id is not found</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">col_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">col_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">col_id</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_column</span><span class="p">(</span><span class="n">col_index</span><span class="p">,</span> <span class="n">col_data</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Column (</span><span class="si">%s</span><span class="s2">) not found in table&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">col_id</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Table.append_column"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.append_column">[docs]</a>    <span class="k">def</span> <span class="nf">append_column</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_data</span><span class="p">:</span> <span class="nb">range</span><span class="p">,</span> <span class="n">col_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Appends the &#39;col_index&#39; column</span>
+<span class="sd">        pre::</span>
+
+<span class="sd">            type(col_data) == types.ListType</span>
+<span class="sd">            len(col_data) == len(self.row_names)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">col_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">col_name</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">row_index</span><span class="p">,</span> <span class="n">cell_data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">col_data</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">row_index</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cell_data</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Table.insert_column"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.insert_column">[docs]</a>    <span class="k">def</span> <span class="nf">insert_column</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">col_data</span><span class="p">:</span> <span class="nb">range</span><span class="p">,</span> <span class="n">col_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Appends col_data before &#39;index&#39; in the table. To make &#39;insert&#39;</span>
+<span class="sd">        behave like &#39;list.insert&#39;, inserting in an out of range index will</span>
+<span class="sd">        insert col_data to the end of the list</span>
+<span class="sd">        pre::</span>
+
+<span class="sd">            type(col_data) == types.ListType</span>
+<span class="sd">            len(col_data) == len(self.row_names)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">col_names</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">col_name</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">row_index</span><span class="p">,</span> <span class="n">cell_data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">col_data</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">row_index</span><span class="p">]</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">cell_data</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Table.delete_column"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.delete_column">[docs]</a>    <span class="k">def</span> <span class="nf">delete_column</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Deletes the &#39;index&#39; column in the table, and returns it.</span>
+<span class="sd">        Raises an IndexError if index is out of range</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">col_names</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">row</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">index</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Table.delete_column_by_id"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.delete_column_by_id">[docs]</a>    <span class="k">def</span> <span class="nf">delete_column_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Deletes the &#39;col_id&#39; col in the table.</span>
+<span class="sd">        Raises a KeyError if col_id was not found.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">col_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">col_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">col_id</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">delete_column</span><span class="p">(</span><span class="n">col_index</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Column (</span><span class="si">%s</span><span class="s2">) not found in table&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">col_id</span><span class="p">))</span></div>
+
+    <span class="c1"># The &#39;getter&#39; part #######################################################</span>
+
+<div class="viewcode-block" id="Table.get_shape"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.get_shape">[docs]</a>    <span class="k">def</span> <span class="nf">get_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Returns a tuple which represents the table&#39;s shape&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">row_names</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">col_names</span><span class="p">)</span></div>
+
+    <span class="n">shape</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">get_shape</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">slice</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">slice</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;provided for convenience&quot;&quot;&quot;</span>
+        <span class="n">multirows</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">multicols</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="n">rows</span><span class="p">:</span> <span class="nb">slice</span>
+        <span class="n">cols</span><span class="p">:</span> <span class="nb">slice</span>
+
+        <span class="n">rows_indice</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">slice</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span>
+        <span class="n">cols_indice</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="n">rows_indice</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">cols_indice</span> <span class="o">=</span> <span class="n">indices</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rows_indice</span> <span class="o">=</span> <span class="n">indices</span>
+
+        <span class="c1"># define row slice</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rows_indice</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">rows_indice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">rows_indice</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Row (</span><span class="si">%s</span><span class="s2">) not found in table&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">rows_indice</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">rows_indice</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">rows</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">rows_indice</span><span class="p">,</span> <span class="n">rows_indice</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">multirows</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rows</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+            <span class="n">multirows</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="c1"># define col slice</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cols_indice</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">cols_indice</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">col_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">cols_indice</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Column (</span><span class="si">%s</span><span class="s2">) not found in table&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cols_indice</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">cols_indice</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">cols</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="n">cols_indice</span><span class="p">,</span> <span class="n">cols_indice</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">multicols</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cols</span> <span class="o">=</span> <span class="nb">slice</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+            <span class="n">multicols</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="c1"># get sub-table</span>
+        <span class="n">tab</span> <span class="o">=</span> <span class="n">Table</span><span class="p">()</span>
+        <span class="n">tab</span><span class="o">.</span><span class="n">default_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_value</span>
+
+        <span class="n">tab</span><span class="o">.</span><span class="n">create_rows</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">row_names</span><span class="p">[</span><span class="n">rows</span><span class="p">])</span>
+        <span class="n">tab</span><span class="o">.</span><span class="n">create_columns</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">col_names</span><span class="p">[</span><span class="n">cols</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">rows</span><span class="p">]):</span>
+            <span class="n">tab</span><span class="o">.</span><span class="n">set_row</span><span class="p">(</span><span class="n">idx</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="n">cols</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">multirows</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">multicols</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">tab</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">[</span><span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">tab</span><span class="o">.</span><span class="n">data</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">multicols</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">tab</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">tab</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+<div class="viewcode-block" id="Table.get_cell_by_ids"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.get_cell_by_ids">[docs]</a>    <span class="k">def</span> <span class="nf">get_cell_by_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row_id</span><span class="p">,</span> <span class="n">col_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the element at [row_id][col_id]&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">row_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">row_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Row (</span><span class="si">%s</span><span class="s2">) not found in table&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">row_id</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">col_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">col_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">col_id</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Column (</span><span class="si">%s</span><span class="s2">) not found in table&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">col_id</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">row_index</span><span class="p">][</span><span class="n">col_index</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Table.get_row_by_id"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.get_row_by_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_row_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">row_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the &#39;row_id&#39; row&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">row_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">row_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Row (</span><span class="si">%s</span><span class="s2">) not found in table&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">row_id</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">row_index</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Table.get_column_by_id"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.get_column_by_id">[docs]</a>    <span class="k">def</span> <span class="nf">get_column_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_id</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Returns the &#39;col_id&#39; col&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">col_index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">col_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">col_id</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="s2">&quot;Column (</span><span class="si">%s</span><span class="s2">) not found in table&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">col_id</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="n">col_index</span><span class="p">,</span> <span class="n">distinct</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Table.get_columns"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.get_columns">[docs]</a>    <span class="k">def</span> <span class="nf">get_columns</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;Returns all the columns in the table&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="p">[:,</span> <span class="n">index</span><span class="p">]</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">col_names</span><span class="p">))]</span></div>
+
+<div class="viewcode-block" id="Table.get_column"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.get_column">[docs]</a>    <span class="k">def</span> <span class="nf">get_column</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_index</span><span class="p">,</span> <span class="n">distinct</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;get a column by index&quot;&quot;&quot;</span>
+        <span class="n">col</span> <span class="o">=</span> <span class="p">[</span><span class="n">row</span><span class="p">[</span><span class="n">col_index</span><span class="p">]</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">distinct</span><span class="p">:</span>
+            <span class="n">col</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">col</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">col</span></div>
+
+<div class="viewcode-block" id="Table.apply_stylesheet"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.apply_stylesheet">[docs]</a>    <span class="k">def</span> <span class="nf">apply_stylesheet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stylesheet</span><span class="p">:</span> <span class="s2">&quot;TableStyleSheet&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Applies the stylesheet to this table&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">instruction</span> <span class="ow">in</span> <span class="n">stylesheet</span><span class="o">.</span><span class="n">instructions</span><span class="p">:</span>
+            <span class="nb">eval</span><span class="p">(</span><span class="n">instruction</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Table.transpose"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.transpose">[docs]</a>    <span class="k">def</span> <span class="nf">transpose</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">&quot;Table&quot;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Keeps the self object intact, and returns the transposed (rotated)</span>
+<span class="sd">        table.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">transposed</span> <span class="o">=</span> <span class="n">Table</span><span class="p">()</span>
+        <span class="n">transposed</span><span class="o">.</span><span class="n">create_rows</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">col_names</span><span class="p">)</span>
+        <span class="n">transposed</span><span class="o">.</span><span class="n">create_columns</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">row_names</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">col_index</span><span class="p">,</span> <span class="n">column</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_columns</span><span class="p">()):</span>
+            <span class="n">transposed</span><span class="o">.</span><span class="n">set_row</span><span class="p">(</span><span class="n">col_index</span><span class="p">,</span> <span class="n">column</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">transposed</span></div>
+
+<div class="viewcode-block" id="Table.pprint"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.pprint">[docs]</a>    <span class="k">def</span> <span class="nf">pprint</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;returns a string representing the table in a pretty</span>
+<span class="sd">        printed &#39;text&#39; format.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># The maximum row name (to know the start_index of the first col)</span>
+        <span class="n">max_row_name</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">row_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_names</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">row_name</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_row_name</span><span class="p">:</span>
+                <span class="n">max_row_name</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">row_name</span><span class="p">)</span>
+        <span class="n">col_start</span> <span class="o">=</span> <span class="n">max_row_name</span> <span class="o">+</span> <span class="mi">5</span>
+
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># Build the &#39;first&#39; line &lt;=&gt; the col_names one</span>
+        <span class="c1"># The first cell &lt;=&gt; an empty one</span>
+        <span class="n">col_names_line</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="n">col_start</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">col_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">col_names</span><span class="p">:</span>
+            <span class="n">col_names_line</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">col_name</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;|&quot;</span> <span class="o">+</span> <span class="s2">&quot;|&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">col_names_line</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;|&quot;</span><span class="p">)</span>
+        <span class="n">max_line_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="c1"># Build the table</span>
+        <span class="k">for</span> <span class="n">row_index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="c1"># First, build the row_name&#39;s cell</span>
+            <span class="n">row_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_names</span><span class="p">[</span><span class="n">row_index</span><span class="p">]</span>
+            <span class="n">line</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row_name</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="p">(</span><span class="n">col_start</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">row_name</span><span class="p">)))</span>
+
+            <span class="c1"># Then, build all the table&#39;s cell for this line.</span>
+            <span class="k">for</span> <span class="n">col_index</span><span class="p">,</span> <span class="n">cell</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+                <span class="n">col_name_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">col_names</span><span class="p">[</span><span class="n">col_index</span><span class="p">])</span> <span class="o">+</span> <span class="mi">5</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span>
+                <span class="n">line</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">data</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">*</span> <span class="p">(</span><span class="n">col_name_length</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)))</span>
+            <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;|&quot;</span> <span class="o">+</span> <span class="s2">&quot;|&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;|&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">&gt;</span> <span class="n">max_line_length</span><span class="p">:</span>
+                <span class="n">max_line_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lines</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="c1"># Wrap the table with &#39;-&#39; to make a frame</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="n">max_line_length</span><span class="p">)</span>
+        <span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;-&quot;</span> <span class="o">*</span> <span class="n">max_line_length</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Table.as_text"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.Table.as_text">[docs]</a>    <span class="k">def</span> <span class="nf">as_text</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># We must convert cells into strings before joining them</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">cell</span><span class="p">)</span> <span class="k">for</span> <span class="n">cell</span> <span class="ow">in</span> <span class="n">row</span><span class="p">])</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">data</span><span class="p">]</span>
+        <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TableStyle"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableStyle">[docs]</a><span class="k">class</span> <span class="nc">TableStyle</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Defines a table&#39;s style&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">table</span><span class="p">:</span> <span class="n">Table</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_table</span> <span class="o">=</span> <span class="n">table</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">col_name</span><span class="p">,</span> <span class="s2">&quot;1*&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">col_name</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">col_names</span><span class="p">])</span>
+        <span class="c1"># __row_column__ is a special key to define the first column which</span>
+        <span class="c1"># actually has no name (&lt;=&gt; left most column &lt;=&gt; row names column)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="s2">&quot;__row_column__&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;1*&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alignment</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">col_name</span><span class="p">,</span> <span class="s2">&quot;right&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">col_name</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">col_names</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alignment</span><span class="p">[</span><span class="s2">&quot;__row_column__&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;right&quot;</span>
+
+        <span class="c1"># We shouldn&#39;t have to create an entry for</span>
+        <span class="c1"># the 1st col (the row_column one)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">([(</span><span class="n">col_name</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">col_name</span> <span class="ow">in</span> <span class="n">table</span><span class="o">.</span><span class="n">col_names</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">[</span><span class="s2">&quot;__row_column__&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="c1"># XXX FIXME : params order should be reversed for all set() methods</span>
+<div class="viewcode-block" id="TableStyle.set_size"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableStyle.set_size">[docs]</a>    <span class="k">def</span> <span class="nf">set_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">col_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;sets the size of the specified col_id to value&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="n">col_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="TableStyle.set_size_by_index"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableStyle.set_size_by_index">[docs]</a>    <span class="k">def</span> <span class="nf">set_size_by_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">col_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Allows to set the size according to the column index rather than</span>
+<span class="sd">        using the column&#39;s id.</span>
+<span class="sd">        BE CAREFUL : the &#39;0&#39; column is the &#39;__row_column__&#39; one !</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">col_index</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">col_id</span> <span class="o">=</span> <span class="s2">&quot;__row_column__&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">col_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_table</span><span class="o">.</span><span class="n">col_names</span><span class="p">[</span><span class="n">col_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="n">col_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="TableStyle.set_alignment"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableStyle.set_alignment">[docs]</a>    <span class="k">def</span> <span class="nf">set_alignment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">col_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;sets the alignment of the specified col_id to value&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alignment</span><span class="p">[</span><span class="n">col_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="TableStyle.set_alignment_by_index"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableStyle.set_alignment_by_index">[docs]</a>    <span class="k">def</span> <span class="nf">set_alignment_by_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">col_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Allows to set the alignment according to the column index rather than</span>
+<span class="sd">        using the column&#39;s id.</span>
+<span class="sd">        BE CAREFUL : the &#39;0&#39; column is the &#39;__row_column__&#39; one !</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">col_index</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">col_id</span> <span class="o">=</span> <span class="s2">&quot;__row_column__&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">col_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_table</span><span class="o">.</span><span class="n">col_names</span><span class="p">[</span><span class="n">col_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">alignment</span><span class="p">[</span><span class="n">col_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="TableStyle.set_unit"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableStyle.set_unit">[docs]</a>    <span class="k">def</span> <span class="nf">set_unit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">col_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;sets the unit of the specified col_id to value&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">[</span><span class="n">col_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="TableStyle.set_unit_by_index"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableStyle.set_unit_by_index">[docs]</a>    <span class="k">def</span> <span class="nf">set_unit_by_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">col_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Allows to set the unit according to the column index rather than</span>
+<span class="sd">        using the column&#39;s id.</span>
+<span class="sd">        BE CAREFUL :  the &#39;0&#39; column is the &#39;__row_column__&#39; one !</span>
+<span class="sd">        (Note that in the &#39;unit&#39; case, you shouldn&#39;t have to set a unit</span>
+<span class="sd">        for the 1st column (the __row__column__ one))</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">col_index</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">col_id</span> <span class="o">=</span> <span class="s2">&quot;__row_column__&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">col_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_table</span><span class="o">.</span><span class="n">col_names</span><span class="p">[</span><span class="n">col_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">[</span><span class="n">col_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="TableStyle.get_size"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableStyle.get_size">[docs]</a>    <span class="k">def</span> <span class="nf">get_size</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns the size of the specified col_id&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="n">col_id</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="TableStyle.get_size_by_index"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableStyle.get_size_by_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_size_by_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Allows to get the size  according to the column index rather than</span>
+<span class="sd">        using the column&#39;s id.</span>
+<span class="sd">        BE CAREFUL : the &#39;0&#39; column is the &#39;__row_column__&#39; one !</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">col_index</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">col_id</span> <span class="o">=</span> <span class="s2">&quot;__row_column__&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">col_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_table</span><span class="o">.</span><span class="n">col_names</span><span class="p">[</span><span class="n">col_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="n">col_id</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="TableStyle.get_alignment"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableStyle.get_alignment">[docs]</a>    <span class="k">def</span> <span class="nf">get_alignment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns the alignment of the specified col_id&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">alignment</span><span class="p">[</span><span class="n">col_id</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="TableStyle.get_alignment_by_index"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableStyle.get_alignment_by_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_alignment_by_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Allors to get the alignment according to the column index rather than</span>
+<span class="sd">        using the column&#39;s id.</span>
+<span class="sd">        BE CAREFUL : the &#39;0&#39; column is the &#39;__row_column__&#39; one !</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">col_index</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">col_id</span> <span class="o">=</span> <span class="s2">&quot;__row_column__&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">col_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_table</span><span class="o">.</span><span class="n">col_names</span><span class="p">[</span><span class="n">col_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">alignment</span><span class="p">[</span><span class="n">col_id</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="TableStyle.get_unit"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableStyle.get_unit">[docs]</a>    <span class="k">def</span> <span class="nf">get_unit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Returns the unit of the specified col_id&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">[</span><span class="n">col_id</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="TableStyle.get_unit_by_index"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableStyle.get_unit_by_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_unit_by_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Allors to get the unit according to the column index rather than</span>
+<span class="sd">        using the column&#39;s id.</span>
+<span class="sd">        BE CAREFUL : the &#39;0&#39; column is the &#39;__row_column__&#39; one !</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">col_index</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">col_id</span> <span class="o">=</span> <span class="s2">&quot;__row_column__&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">col_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_table</span><span class="o">.</span><span class="n">col_names</span><span class="p">[</span><span class="n">col_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">[</span><span class="n">col_id</span><span class="p">]</span></div></div>
+
+
+<span class="n">CELL_PROG</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;([0-9]+)_([0-9]+)&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="TableStyleSheet"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableStyleSheet">[docs]</a><span class="k">class</span> <span class="nc">TableStyleSheet</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;A simple Table stylesheet</span>
+<span class="sd">    Rules are expressions where cells are defined by the row_index</span>
+<span class="sd">    and col_index separated by an underscore (&#39;_&#39;).</span>
+<span class="sd">    For example, suppose you want to say that the (2,5) cell must be</span>
+<span class="sd">    the sum of its two preceding cells in the row, you would create</span>
+<span class="sd">    the following rule ::</span>
+
+<span class="sd">        2_5 = 2_3 + 2_4</span>
+
+<span class="sd">    You can also use all the math.* operations you want. For example::</span>
+
+<span class="sd">        2_5 = sqrt(2_3**2 + 2_4**2)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rules</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rules</span> <span class="o">=</span> <span class="n">rules</span> <span class="ow">or</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">CodeType</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">rule</span> <span class="ow">in</span> <span class="n">rules</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_rule</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TableStyleSheet.add_rule"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableStyleSheet.add_rule">[docs]</a>    <span class="k">def</span> <span class="nf">add_rule</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rule</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Adds a rule to the stylesheet rules&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">source_code</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;from math import *&quot;</span><span class="p">]</span>
+            <span class="n">source_code</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CELL_PROG</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;self.data[\1][\2]&quot;</span><span class="p">,</span> <span class="n">rule</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">instructions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">compile</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">source_code</span><span class="p">),</span> <span class="s2">&quot;table.py&quot;</span><span class="p">,</span> <span class="s2">&quot;exec&quot;</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rules</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">SyntaxError</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Bad Stylesheet Rule : </span><span class="si">%s</span><span class="s2"> [skipped]&quot;</span> <span class="o">%</span> <span class="n">rule</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TableStyleSheet.add_rowsum_rule"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableStyleSheet.add_rowsum_rule">[docs]</a>    <span class="k">def</span> <span class="nf">add_rowsum_rule</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">dest_cell</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">row_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">start_col</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">end_col</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Creates and adds a rule to sum over the row at row_index from</span>
+<span class="sd">        start_col to end_col.</span>
+<span class="sd">        dest_cell is a tuple of two elements (x,y) of the destination cell</span>
+<span class="sd">        No check is done for indexes ranges.</span>
+<span class="sd">        pre::</span>
+
+<span class="sd">            start_col &gt;= 0</span>
+<span class="sd">            end_col &gt; start_col</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cell_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">_</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">row_index</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start_col</span><span class="p">,</span> <span class="n">end_col</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+        <span class="n">rule</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%d</span><span class="s2">_</span><span class="si">%d</span><span class="s2">=&quot;</span> <span class="o">%</span> <span class="n">dest_cell</span> <span class="o">+</span> <span class="s2">&quot;+&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cell_list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_rule</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TableStyleSheet.add_rowavg_rule"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableStyleSheet.add_rowavg_rule">[docs]</a>    <span class="k">def</span> <span class="nf">add_rowavg_rule</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">dest_cell</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">row_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">start_col</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">end_col</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Creates and adds a rule to make the row average (from start_col</span>
+<span class="sd">        to end_col)</span>
+<span class="sd">        dest_cell is a tuple of two elements (x,y) of the destination cell</span>
+<span class="sd">        No check is done for indexes ranges.</span>
+<span class="sd">        pre::</span>
+
+<span class="sd">            start_col &gt;= 0</span>
+<span class="sd">            end_col &gt; start_col</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cell_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">_</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">row_index</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start_col</span><span class="p">,</span> <span class="n">end_col</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+        <span class="n">num</span> <span class="o">=</span> <span class="n">end_col</span> <span class="o">-</span> <span class="n">start_col</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">rule</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%d</span><span class="s2">_</span><span class="si">%d</span><span class="s2">=&quot;</span> <span class="o">%</span> <span class="n">dest_cell</span> <span class="o">+</span> <span class="s2">&quot;(&quot;</span> <span class="o">+</span> <span class="s2">&quot;+&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cell_list</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;)/</span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">num</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_rule</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TableStyleSheet.add_colsum_rule"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableStyleSheet.add_colsum_rule">[docs]</a>    <span class="k">def</span> <span class="nf">add_colsum_rule</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">dest_cell</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">col_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">start_row</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">end_row</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Creates and adds a rule to sum over the col at col_index from</span>
+<span class="sd">        start_row to end_row.</span>
+<span class="sd">        dest_cell is a tuple of two elements (x,y) of the destination cell</span>
+<span class="sd">        No check is done for indexes ranges.</span>
+<span class="sd">        pre::</span>
+
+<span class="sd">            start_row &gt;= 0</span>
+<span class="sd">            end_row &gt; start_row</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cell_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">_</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">col_index</span><span class="p">)</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start_row</span><span class="p">,</span> <span class="n">end_row</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+        <span class="n">rule</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%d</span><span class="s2">_</span><span class="si">%d</span><span class="s2">=&quot;</span> <span class="o">%</span> <span class="n">dest_cell</span> <span class="o">+</span> <span class="s2">&quot;+&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cell_list</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_rule</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TableStyleSheet.add_colavg_rule"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableStyleSheet.add_colavg_rule">[docs]</a>    <span class="k">def</span> <span class="nf">add_colavg_rule</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">dest_cell</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">col_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">start_row</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">end_row</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Creates and adds a rule to make the col average (from start_row</span>
+<span class="sd">        to end_row)</span>
+<span class="sd">        dest_cell is a tuple of two elements (x,y) of the destination cell</span>
+<span class="sd">        No check is done for indexes ranges.</span>
+<span class="sd">        pre::</span>
+
+<span class="sd">            start_row &gt;= 0</span>
+<span class="sd">            end_row &gt; start_row</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cell_list</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">_</span><span class="si">%d</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">col_index</span><span class="p">)</span> <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">start_row</span><span class="p">,</span> <span class="n">end_row</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+        <span class="n">num</span> <span class="o">=</span> <span class="n">end_row</span> <span class="o">-</span> <span class="n">start_row</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">rule</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%d</span><span class="s2">_</span><span class="si">%d</span><span class="s2">=&quot;</span> <span class="o">%</span> <span class="n">dest_cell</span> <span class="o">+</span> <span class="s2">&quot;(&quot;</span> <span class="o">+</span> <span class="s2">&quot;+&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">cell_list</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;)/</span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">num</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_rule</span><span class="p">(</span><span class="n">rule</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TableCellRenderer"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableCellRenderer">[docs]</a><span class="k">class</span> <span class="nc">TableCellRenderer</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Defines a simple text renderer&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">properties</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;keywords should be properties with an associated boolean as value.</span>
+<span class="sd">        For example :</span>
+<span class="sd">            renderer = TableCellRenderer(units = True, alignment = False)</span>
+<span class="sd">        An unspecified property will have a &#39;False&#39; value by default.</span>
+<span class="sd">        Possible properties are :</span>
+<span class="sd">            alignment, unit</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">properties</span> <span class="o">=</span> <span class="n">properties</span>
+
+<div class="viewcode-block" id="TableCellRenderer.render_cell"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableCellRenderer.render_cell">[docs]</a>    <span class="k">def</span> <span class="nf">render_cell</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">cell_coord</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">table</span><span class="p">:</span> <span class="n">Table</span><span class="p">,</span> <span class="n">table_style</span><span class="p">:</span> <span class="n">TableStyle</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Renders the cell at &#39;cell_coord&#39; in the table, using table_style&quot;&quot;&quot;</span>
+        <span class="n">row_index</span><span class="p">,</span> <span class="n">col_index</span> <span class="o">=</span> <span class="n">cell_coord</span>
+        <span class="n">cell_value</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">row_index</span><span class="p">][</span><span class="n">col_index</span><span class="p">]</span>
+        <span class="n">final_content</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_cell_content</span><span class="p">(</span><span class="n">cell_value</span><span class="p">,</span> <span class="n">table_style</span><span class="p">,</span> <span class="n">col_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_cell_content</span><span class="p">(</span><span class="n">final_content</span><span class="p">,</span> <span class="n">table_style</span><span class="p">,</span> <span class="n">col_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TableCellRenderer.render_row_cell"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableCellRenderer.render_row_cell">[docs]</a>    <span class="k">def</span> <span class="nf">render_row_cell</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">row_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">table</span><span class="p">:</span> <span class="n">Table</span><span class="p">,</span> <span class="n">table_style</span><span class="p">:</span> <span class="n">TableStyle</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Renders the cell for &#39;row_id&#39; row&quot;&quot;&quot;</span>
+        <span class="n">cell_value</span> <span class="o">=</span> <span class="n">row_name</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_cell_content</span><span class="p">(</span><span class="n">cell_value</span><span class="p">,</span> <span class="n">table_style</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TableCellRenderer.render_col_cell"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableCellRenderer.render_col_cell">[docs]</a>    <span class="k">def</span> <span class="nf">render_col_cell</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">col_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">table</span><span class="p">:</span> <span class="n">Table</span><span class="p">,</span> <span class="n">table_style</span><span class="p">:</span> <span class="n">TableStyle</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Renders the cell for &#39;col_id&#39; row&quot;&quot;&quot;</span>
+        <span class="n">cell_value</span> <span class="o">=</span> <span class="n">col_name</span>
+        <span class="n">col_index</span> <span class="o">=</span> <span class="n">table</span><span class="o">.</span><span class="n">col_names</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">col_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_render_cell_content</span><span class="p">(</span><span class="n">cell_value</span><span class="p">,</span> <span class="n">table_style</span><span class="p">,</span> <span class="n">col_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_render_cell_content</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="n">table_style</span><span class="p">:</span> <span class="n">TableStyle</span><span class="p">,</span> <span class="n">col_index</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Makes the appropriate rendering for this cell content.</span>
+<span class="sd">        Rendering properties will be searched using the</span>
+<span class="sd">        *table_style.get_xxx_by_index(col_index)&#39; methods</span>
+
+<span class="sd">        **This method should be overridden in the derived renderer classes.**</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">content</span>
+
+    <span class="k">def</span> <span class="nf">_make_cell_content</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">cell_content</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">table_style</span><span class="p">:</span> <span class="n">TableStyle</span><span class="p">,</span> <span class="n">col_index</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Makes the cell content (adds decoration data, like units for</span>
+<span class="sd">        example)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">final_content</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">cell_content</span>
+
+        <span class="k">if</span> <span class="s2">&quot;skip_zero&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="p">:</span>
+            <span class="n">replacement_char</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="s2">&quot;skip_zero&quot;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">replacement_char</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">replacement_char</span> <span class="ow">and</span> <span class="n">final_content</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">replacement_char</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">units_on</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="s2">&quot;units&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">units_on</span><span class="p">:</span>
+                <span class="n">final_content</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_unit</span><span class="p">(</span><span class="n">cell_content</span><span class="p">,</span> <span class="n">table_style</span><span class="p">,</span> <span class="n">col_index</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="k">return</span> <span class="n">final_content</span>
+
+    <span class="k">def</span> <span class="nf">_add_unit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cell_content</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">table_style</span><span class="p">:</span> <span class="n">TableStyle</span><span class="p">,</span> <span class="n">col_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Adds unit to the cell_content if needed&quot;&quot;&quot;</span>
+        <span class="n">unit</span> <span class="o">=</span> <span class="n">table_style</span><span class="o">.</span><span class="n">get_unit_by_index</span><span class="p">(</span><span class="n">col_index</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">cell_content</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; &quot;</span> <span class="o">+</span> <span class="n">unit</span></div>
+
+
+<div class="viewcode-block" id="DocbookRenderer"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.DocbookRenderer">[docs]</a><span class="k">class</span> <span class="nc">DocbookRenderer</span><span class="p">(</span><span class="n">TableCellRenderer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Defines how to render a cell for a docboook table&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="DocbookRenderer.define_col_header"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.DocbookRenderer.define_col_header">[docs]</a>    <span class="k">def</span> <span class="nf">define_col_header</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">col_index</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">table_style</span><span class="p">:</span> <span class="n">TableStyle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Computes the colspec element according to the style&quot;&quot;&quot;</span>
+        <span class="n">size</span> <span class="o">=</span> <span class="n">table_style</span><span class="o">.</span><span class="n">get_size_by_index</span><span class="p">(</span><span class="n">col_index</span><span class="p">)</span>
+        <span class="k">return</span> <span class="s1">&#39;&lt;colspec colname=&quot;c</span><span class="si">%d</span><span class="s1">&quot; colwidth=&quot;</span><span class="si">%s</span><span class="s1">&quot;/&gt;</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">col_index</span><span class="p">,</span> <span class="n">size</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_render_cell_content</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">cell_content</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">table_style</span><span class="p">:</span> <span class="n">TableStyle</span><span class="p">,</span> <span class="n">col_index</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Makes the appropriate rendering for this cell content.</span>
+<span class="sd">        Rendering properties will be searched using the</span>
+<span class="sd">        table_style.get_xxx_by_index(col_index)&#39; methods.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">align_on</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="p">[</span><span class="s2">&quot;alignment&quot;</span><span class="p">]</span>
+            <span class="n">alignment</span> <span class="o">=</span> <span class="n">table_style</span><span class="o">.</span><span class="n">get_alignment_by_index</span><span class="p">(</span><span class="n">col_index</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">align_on</span><span class="p">:</span>
+                <span class="k">return</span> <span class="s2">&quot;&lt;entry align=&#39;</span><span class="si">%s</span><span class="s2">&#39;&gt;</span><span class="si">%s</span><span class="s2">&lt;/entry&gt;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">alignment</span><span class="p">,</span> <span class="n">cell_content</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="c1"># KeyError &lt;=&gt; Default alignment</span>
+            <span class="k">return</span> <span class="s2">&quot;&lt;entry&gt;</span><span class="si">%s</span><span class="s2">&lt;/entry&gt;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">cell_content</span>
+
+        <span class="c1"># XXX really?</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="TableWriter"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableWriter">[docs]</a><span class="k">class</span> <span class="nc">TableWriter</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;A class to write tables&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">stream</span><span class="p">:</span> <span class="n">StringIO</span><span class="p">,</span> <span class="n">table</span><span class="p">:</span> <span class="n">Table</span><span class="p">,</span> <span class="n">style</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span> <span class="o">**</span><span class="n">properties</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stream</span> <span class="o">=</span> <span class="n">stream</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">style</span> <span class="o">=</span> <span class="n">style</span> <span class="ow">or</span> <span class="n">TableStyle</span><span class="p">(</span><span class="n">table</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_table</span> <span class="o">=</span> <span class="n">table</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">properties</span> <span class="o">=</span> <span class="n">properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">renderer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">DocbookRenderer</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="TableWriter.set_style"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableWriter.set_style">[docs]</a>    <span class="k">def</span> <span class="nf">set_style</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">style</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;sets the table&#39;s associated style&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">style</span> <span class="o">=</span> <span class="n">style</span></div>
+
+<div class="viewcode-block" id="TableWriter.set_renderer"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableWriter.set_renderer">[docs]</a>    <span class="k">def</span> <span class="nf">set_renderer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">renderer</span><span class="p">:</span> <span class="n">DocbookRenderer</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;sets the way to render cell&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">renderer</span> <span class="o">=</span> <span class="n">renderer</span></div>
+
+<div class="viewcode-block" id="TableWriter.update_properties"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableWriter.update_properties">[docs]</a>    <span class="k">def</span> <span class="nf">update_properties</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">properties</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Updates writer&#39;s properties (for cell rendering)&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">properties</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="TableWriter.write_table"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.TableWriter.write_table">[docs]</a>    <span class="k">def</span> <span class="nf">write_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Writes the table&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;write_table must be implemented !&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="DocbookTableWriter"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.DocbookTableWriter">[docs]</a><span class="k">class</span> <span class="nc">DocbookTableWriter</span><span class="p">(</span><span class="n">TableWriter</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Defines an implementation of TableWriter to write a table in Docbook&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_write_headers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Writes col headers&quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">renderer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="c1"># Define col_headers (colstpec elements)</span>
+        <span class="k">for</span> <span class="n">col_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_table</span><span class="o">.</span><span class="n">col_names</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">renderer</span><span class="o">.</span><span class="n">define_col_header</span><span class="p">(</span><span class="n">col_index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;&lt;thead&gt;</span><span class="se">\n</span><span class="s2">&lt;row&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="c1"># XXX FIXME : write an empty entry &lt;=&gt; the first (__row_column) column</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;&lt;entry&gt;&lt;/entry&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">col_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_table</span><span class="o">.</span><span class="n">col_names</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">renderer</span><span class="o">.</span><span class="n">render_col_cell</span><span class="p">(</span><span class="n">col_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_table</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;&lt;/row&gt;</span><span class="se">\n</span><span class="s2">&lt;/thead&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_write_body</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Writes the table body&quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">renderer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;&lt;tbody&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">row_index</span><span class="p">,</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_table</span><span class="o">.</span><span class="n">data</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;&lt;row&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">row_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_table</span><span class="o">.</span><span class="n">row_names</span><span class="p">[</span><span class="n">row_index</span><span class="p">]</span>
+            <span class="c1"># Write the first entry (row_name)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">renderer</span><span class="o">.</span><span class="n">render_row_cell</span><span class="p">(</span><span class="n">row_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_table</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="p">))</span>
+
+            <span class="k">for</span> <span class="n">col_index</span><span class="p">,</span> <span class="n">cell</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">renderer</span><span class="o">.</span><span class="n">render_cell</span><span class="p">((</span><span class="n">row_index</span><span class="p">,</span> <span class="n">col_index</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_table</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">style</span><span class="p">)</span>
+                <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;&lt;/row&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;&lt;/tbody&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DocbookTableWriter.write_table"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.table.DocbookTableWriter.write_table">[docs]</a>    <span class="k">def</span> <span class="nf">write_table</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">title</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Writes the table&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;&lt;table&gt;</span><span class="se">\n</span><span class="s2">&lt;title&gt;</span><span class="si">%s</span><span class="s2">&gt;&lt;/title&gt;</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">title</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+            <span class="s1">&#39;&lt;tgroup cols=&quot;</span><span class="si">%d</span><span class="s1">&quot; align=&quot;left&quot; colsep=&quot;1&quot; rowsep=&quot;1&quot;&gt;</span><span class="se">\n</span><span class="s1">&#39;</span>
+            <span class="o">%</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_table</span><span class="o">.</span><span class="n">col_names</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_write_headers</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_write_body</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;&lt;/tgroup&gt;</span><span class="se">\n</span><span class="s2">&lt;/table&gt;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">logilab common</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../logilab.common.html">logilab.common package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../logilab.common.ureports.html">logilab.common.ureports package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  <li><a href="../common.html">logilab.common</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Logilab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

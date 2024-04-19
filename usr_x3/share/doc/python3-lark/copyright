@@ -1,0 +1,73 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: lark
+Upstream-Contact: Erez Shinan <erezshin@gmail.com>
+Source: https://github.com/lark-parser/lark
+
+Files: *
+Copyright: 2017-2021, Erez Shinan <erezshin@gmail.com>
+License: MIT
+
+Files: debian/*
+Copyright: 2019-2022, Peter Wienemann <fossdev@posteo.de>
+ 2019-2021, Andrius Merkys <merkys@debian.org>
+License: MIT
+
+Files:
+ lark/tools/standalone.py
+Copyright: 2018-2021, Erez Shinan <erezshin@gmail.com>
+License: MPL-2.0
+
+Files: lark/__pyinstaller/hook-lark.py
+Copyright: 2017-2021, PyInstaller Development Team
+License: GPL-2+-with-bootloader-exception
+
+License: MIT
+ Permission is hereby granted, free of charge, to any person obtaining a
+ copy of this software and associated documentation files (the "Software"),
+ to deal in the Software without restriction, including without limitation
+ the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ and/or sell copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following conditions:
+ .
+ The above copyright notice and this permission notice shall be included
+ in all copies or substantial portions of the Software.
+ .
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, 
+ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+License: MPL-2.0
+ On Debian systems, the complete text of the Mozilla Public License 2.0
+ can be found in "/usr/share/common-licenses/MPL-2.0".
+
+License: GPL-2+-with-bootloader-exception
+ Distributed under the terms of the GNU General Public License (version 2
+ or later) with exception for distributing the bootloader.
+ .
+ On Debian systems, the complete text of the GNU General Public License
+ can be found in "/usr/share/common-licenses/GPL-2".
+ .
+ Bootloader Exception
+ --------------------
+ .
+ In addition to the permissions in the GNU General Public License, the
+ authors give you unlimited permission to link or embed compiled bootloader
+ and related files into combinations with other programs, and to distribute
+ those combinations without any restriction coming from the use of those
+ files. (The General Public License restrictions do apply in other respects;
+ for example, they cover modification of the files, and distribution when
+ not linked into a combined executable.)
+ .
+ Bootloader and Related Files
+ ----------------------------
+ .
+ Bootloader and related files are files which are embedded within the
+ final executable. This includes files in directories:
+ .
+ ./bootloader/
+ ./PyInstaller/loader
+ ./PyInstaller/hooks/rthooks

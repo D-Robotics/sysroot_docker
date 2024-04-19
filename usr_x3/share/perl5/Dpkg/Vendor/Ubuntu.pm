@@ -34,11 +34,11 @@ use parent qw(Dpkg::Vendor::Debian);
 
 =head1 NAME
 
-Dpkg::Vendor::Ubuntu - Ubuntu vendor object
+Dpkg::Vendor::Ubuntu - Ubuntu vendor class
 
 =head1 DESCRIPTION
 
-This vendor object customizes the behaviour of dpkg scripts for Ubuntu
+This vendor class customizes the behaviour of dpkg scripts for Ubuntu
 specific behavior and policies.
 
 =cut
@@ -65,9 +65,6 @@ sub run_hook {
                warning(g_('Version number suggests Ubuntu changes, but there is no XSBC-Original-Maintainer field'));
            }
         }
-
-    } elsif ($hook eq 'keyrings') {
-        return $self->run_hook('package-keyrings', @params);
     } elsif ($hook eq 'package-keyrings') {
         return ($self->SUPER::run_hook($hook),
                 '/usr/share/keyrings/ubuntu-archive-keyring.gpg');
@@ -95,6 +92,14 @@ sub run_hook {
             $fields->{'Launchpad-Bugs-Fixed'} = join(' ', @$bugs);
         }
 
+    } elsif ($hook eq 'update-buildopts') {
+	my $build_opts = shift @params;
+	require Dpkg::Arch;
+	my $arch = Dpkg::Arch::get_host_arch();
+	if (Dpkg::Arch::debarch_eq($arch, 'riscv64')) {
+	    $build_opts->set('nocheck', 1, 'riscv64');
+	}
+
     } elsif ($hook eq 'update-buildflags') {
 	my $flags = shift @params;
 
@@ -120,6 +125,14 @@ sub run_hook {
 	}
 	# Per https://wiki.ubuntu.com/DistCompilerFlags
         $flags->prepend('LDFLAGS', '-Wl,-Bsymbolic-functions');
+    } elsif ($hook eq 'update-buildprofiles') {
+        my $build_profiles_ref = shift @params;
+        unless(grep $_ =~ /^!?noudeb$/, @$build_profiles_ref) {
+            unshift(@$build_profiles_ref, 'noudeb');
+        } else {
+            # Strip otherwise invalid profile name
+            @$build_profiles_ref = grep { $_ ne "!noudeb" } @$build_profiles_ref;
+        }
     } else {
         return $self->SUPER::run_hook($hook, @params);
     }

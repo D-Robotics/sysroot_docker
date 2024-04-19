@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
 /*
- * Copyright (C) 2005-2020 Junjiro R. Okajima
+ * Copyright (C) 2005-2021 Junjiro R. Okajima
  *
  * This program, aufs is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 #include <sys/types.h>
 #include <limits.h>
 
-#define AUFS_VERSION	"5.4.3-20200302"
+#define AUFS_VERSION	"5.15.5-20211129"
 
 /* todo? move this to linux-2.6.19/include/magic.h */
 #define AUFS_SUPER_MAGIC	('a' << 24 | 'u' << 16 | 'f' << 8 | 's')
@@ -228,7 +228,7 @@ struct au_rdu_ent {
 	uint8_t		type;
 	uint8_t		nlen;
 	uint8_t		wh;
-	char		name[0];
+	char		name[];
 } __aligned(8);
 
 static __inline__ int au_rdu_len(int nlen)
@@ -279,7 +279,7 @@ struct au_drinfo {
 		uint8_t oldnamelen;
 		uint64_t _padding;
 	};
-	uint8_t oldname[0];
+	uint8_t oldname[];
 } __aligned(8);
 
 struct au_drinfo_fdata {
@@ -373,7 +373,7 @@ union aufs_brinfo {
 	struct {
 		int16_t	id;
 		int	perm;
-		char	path[0];
+		char	path[];
 	};
 } __aligned(8);
 

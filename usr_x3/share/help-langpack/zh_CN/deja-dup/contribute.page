@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+SPDX-License-Identifier: CC-BY-SA-4.0
+SPDX-FileCopyrightText: Michael Terry
+-->
+<page xmlns="http://projectmallard.org/1.0/" xmlns:its="http://www.w3.org/2005/11/its" its:version="2.0" type="topic" style="task" id="contribute" xml:lang="deja-dup-zh-CN">
+<info>
+  <desc>Help make <app>Déjà Dup</app> better</desc>
+  <link type="guide" xref="index#about"/>
+  <credit type="author" its:translate="no">
+    <name>Michael Terry</name>
+  </credit>
+  <license href="http://creativecommons.org/licenses/by-sa/4.0/"><p>Creative Commons Attribution-Share Alike 4.0 Unported License</p></license>
+
+    <mal:credit xmlns:mal="http://projectmallard.org/1.0/" type="translator copyright">
+      <mal:name>Kyle Nitzsche</mal:name>
+      <mal:email>https://launchpad.net/~knitzsche</mal:email>
+      <mal:years/>
+    </mal:credit>
+  </info>
+<title>Getting Involved</title>
+
+<p>So you want to help make <app>Déjà Dup</app> even better? Excellent! Here are some suggestions.</p>
+
+<section id="report">
+<title>Report Issues</title>
+
+<p>Did you see a flaw? Do you have an idea for a new feature? Simply <link href="https://gitlab.gnome.org/World/deja-dup/-/issues/new">report it as an issue</link>. Be patient for a reply.</p>
+
+<p>Note that bug reports should be in English only.</p>
+</section>
+
+<section id="talk">
+<title>Talk to Us</title>
+
+<p>We don’t bite. Start a discussion with us on the <link href="https://discourse.gnome.org/tags/c/applications/7/deja-dup">forums</link>.</p>
+</section>
+
+<section id="translate">
+<title>Translating</title>
+
+<p>Do you speak both English and another language? Great! You can help translate <link href="https://l10n.gnome.org/module/deja-dup/"><app>Déjà Dup</app></link> through <link href="https://wiki.gnome.org/TranslationProject/JoiningTranslation">the GNOME translation project</link>. It’s really quite easy and is very appreciated.</p>
+</section>
+
+<section id="support">
+<title>Support</title>
+
+<p>Do you like helping people? Subscribe to <link href="https://gitlab.gnome.org/World/deja-dup/-/labels">the <var>support</var> issue label</link> and help answer requests for help.</p>
+
+<p>This is another great way for non-English speakers to get involved, as you can answer questions posted in your language.</p>
+</section>
+
+<section id="code">
+<title>Coding</title>
+
+<p>There are always more bugs to fix. If you want to find out what needs doing, talk to us on the forums as described above.</p>
+</section>
+
+</page>

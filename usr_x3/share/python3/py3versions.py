@@ -36,6 +36,10 @@ def read_default(name=None):
     return None
 
 
+def version_to_tuple(version):
+    return tuple(int(part) for part in version.split('.'))
+
+
 def parse_versions(vstring):
     if len(vstring.split(',')) > 2:
         raise ValueError('too many arguments provided for X-Python3-Version: min and max only.')
@@ -54,7 +58,7 @@ def parse_versions(vstring):
         if field in ('current', 'current_ext'):
             continue
         vinfo.setdefault('versions', set())
-        ve = re.compile(r'(>=|<=|<<|=)? *(\d\.\d)$')
+        ve = re.compile(r'(>=|<=|<<|=)? *(\d\.\d+)$')
         m = ve.match(field)
         try:
             if not m:
@@ -68,7 +72,8 @@ def parse_versions(vstring):
             else:
                 relop_seen = True
                 filtop = operators[op]
-                version_range = [av for av in version_range if filtop(av, v)]
+                version_range = [av for av in version_range if filtop(
+                    version_to_tuple(av), version_to_tuple(v))]
         except Exception:
             raise ValueError('error parsing Python3-Version attribute')
     if 'versions' in vinfo:
@@ -187,7 +192,7 @@ def installed_versions(version_only=False):
     import glob
     supported = supported_versions()
     versions = [os.path.basename(s)
-                for s in glob.glob('/usr/bin/python3.[0-9]')
+                for s in glob.glob('/usr/bin/python3.[0-9]') + glob.glob('/usr/bin/python3.[0-9][0-9]')
                 if os.path.basename(s) in supported]
     versions.sort()
     if version_only:

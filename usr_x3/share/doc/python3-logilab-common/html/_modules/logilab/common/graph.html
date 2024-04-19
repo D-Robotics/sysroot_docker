@@ -1,0 +1,452 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>logilab.common.graph &#8212; logilab common  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/alabaster.css" />
+    <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for logilab.common.graph</h1><div class="highlight"><pre>
+<span></span><span class="c1"># copyright 2003-2011 LOGILAB S.A. (Paris, FRANCE), all rights reserved.</span>
+<span class="c1"># contact http://www.logilab.fr/ -- mailto:contact@logilab.fr</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of logilab-common.</span>
+<span class="c1">#</span>
+<span class="c1"># logilab-common is free software: you can redistribute it and/or modify it under</span>
+<span class="c1"># the terms of the GNU Lesser General Public License as published by the Free</span>
+<span class="c1"># Software Foundation, either version 2.1 of the License, or (at your option) any</span>
+<span class="c1"># later version.</span>
+<span class="c1">#</span>
+<span class="c1"># logilab-common is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1"># ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS</span>
+<span class="c1"># FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more</span>
+<span class="c1"># details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU Lesser General Public License along</span>
+<span class="c1"># with logilab-common.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="sd">&quot;&quot;&quot;Graph manipulation utilities.</span>
+
+<span class="sd">(dot generation adapted from pypy/translator/tool/make_dot.py)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">__docformat__</span> <span class="o">=</span> <span class="s2">&quot;restructuredtext en&quot;</span>
+
+<span class="n">__metaclass__</span> <span class="o">=</span> <span class="nb">type</span>
+
+<span class="kn">import</span> <span class="nn">os.path</span> <span class="k">as</span> <span class="nn">osp</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">codecs</span>
+<span class="kn">import</span> <span class="nn">errno</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Set</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Iterable</span>
+
+
+<div class="viewcode-block" id="escape"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.graph.escape">[docs]</a><span class="k">def</span> <span class="nf">escape</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Make &lt;value&gt; usable in a dot file.&quot;&quot;&quot;</span>
+    <span class="n">lines</span> <span class="o">=</span> <span class="p">[</span><span class="n">line</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&quot;&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">value</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)]</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">l&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s2">&quot;</span><span class="se">\\</span><span class="s2">n&quot;</span> <span class="o">+</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="target_info_from_filename"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.graph.target_info_from_filename">[docs]</a><span class="k">def</span> <span class="nf">target_info_from_filename</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Transforms /some/path/foo.png into (&#39;/some/path&#39;, &#39;foo.png&#39;, &#39;png&#39;).&quot;&quot;&quot;</span>
+    <span class="n">basename</span> <span class="o">=</span> <span class="n">osp</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="n">storedir</span> <span class="o">=</span> <span class="n">osp</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">osp</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">storedir</span><span class="p">,</span> <span class="n">basename</span><span class="p">,</span> <span class="n">target</span></div>
+
+
+<div class="viewcode-block" id="DotBackend"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.graph.DotBackend">[docs]</a><span class="k">class</span> <span class="nc">DotBackend</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Dot File backend.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">graphname</span><span class="p">,</span>
+        <span class="n">rankdir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">ratio</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">charset</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span>
+        <span class="n">renderer</span><span class="o">=</span><span class="s2">&quot;dot&quot;</span><span class="p">,</span>
+        <span class="n">additionnal_param</span><span class="o">=</span><span class="p">{},</span>
+    <span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">graphname</span> <span class="o">=</span> <span class="n">graphname</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">renderer</span> <span class="o">=</span> <span class="n">renderer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lines</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_source</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="s2">&quot;digraph </span><span class="si">%s</span><span class="s2"> {&quot;</span> <span class="o">%</span> <span class="n">normalize_node_id</span><span class="p">(</span><span class="n">graphname</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">rankdir</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="s2">&quot;rankdir=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">rankdir</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ratio</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="s2">&quot;ratio=</span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">ratio</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">size</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="s1">&#39;size=&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="n">size</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">charset</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">charset</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">,</span> <span class="s2">&quot;iso-8859-1&quot;</span><span class="p">,</span> <span class="s2">&quot;latin1&quot;</span><span class="p">),</span> <span class="p">(</span>
+                <span class="s2">&quot;unsupported charset </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">charset</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="s1">&#39;charset=&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="n">charset</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">param</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">additionnal_param</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">param</span><span class="p">))</span>
+
+<div class="viewcode-block" id="DotBackend.get_source"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.graph.DotBackend.get_source">[docs]</a>    <span class="k">def</span> <span class="nf">get_source</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;returns self._source&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="s2">&quot;}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_source</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lines</span><span class="p">)</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">lines</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_source</span></div>
+
+    <span class="n">source</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">get_source</span><span class="p">)</span>
+
+<div class="viewcode-block" id="DotBackend.generate"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.graph.DotBackend.generate">[docs]</a>    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">outputfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dotfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mapfile</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generates a graph file.</span>
+
+<span class="sd">        :param outputfile: filename and path [defaults to graphname.png]</span>
+<span class="sd">        :param dotfile: filename and path [defaults to graphname.dot]</span>
+
+<span class="sd">        :rtype: str</span>
+<span class="sd">        :return: a path to the generated file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="kn">import</span> <span class="nn">subprocess</span>  <span class="c1"># introduced in py 2.4</span>
+
+        <span class="n">name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">graphname</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">dotfile</span><span class="p">:</span>
+            <span class="c1"># if &#39;outputfile&#39; is a dot file use it as &#39;dotfile&#39;</span>
+            <span class="k">if</span> <span class="n">outputfile</span> <span class="ow">and</span> <span class="n">outputfile</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.dot&quot;</span><span class="p">):</span>
+                <span class="n">dotfile</span> <span class="o">=</span> <span class="n">outputfile</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">dotfile</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.dot&quot;</span> <span class="o">%</span> <span class="n">name</span>
+        <span class="k">if</span> <span class="n">outputfile</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">storedir</span><span class="p">,</span> <span class="n">basename</span><span class="p">,</span> <span class="n">target</span> <span class="o">=</span> <span class="n">target_info_from_filename</span><span class="p">(</span><span class="n">outputfile</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">target</span> <span class="o">!=</span> <span class="s2">&quot;dot&quot;</span><span class="p">:</span>
+                <span class="n">pdot</span><span class="p">,</span> <span class="n">dot_sourcepath</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">(</span><span class="s2">&quot;.dot&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">pdot</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">dot_sourcepath</span> <span class="o">=</span> <span class="n">osp</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">storedir</span><span class="p">,</span> <span class="n">dotfile</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;png&quot;</span>
+            <span class="n">pdot</span><span class="p">,</span> <span class="n">dot_sourcepath</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">(</span><span class="s2">&quot;.dot&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+            <span class="n">ppng</span><span class="p">,</span> <span class="n">outputfile</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">(</span><span class="s2">&quot;.png&quot;</span><span class="p">,</span> <span class="n">name</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">pdot</span><span class="p">)</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">ppng</span><span class="p">)</span>
+        <span class="n">pdot</span> <span class="o">=</span> <span class="n">codecs</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">dot_sourcepath</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf8&quot;</span><span class="p">)</span>
+        <span class="n">pdot</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source</span><span class="p">)</span>
+        <span class="n">pdot</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">target</span> <span class="o">!=</span> <span class="s2">&quot;dot&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;win32&quot;</span><span class="p">:</span>
+                <span class="n">use_shell</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">use_shell</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">mapfile</span><span class="p">:</span>
+                    <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span>
+                        <span class="p">[</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">renderer</span><span class="p">,</span>
+                            <span class="s2">&quot;-Tcmapx&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;-o&quot;</span><span class="p">,</span>
+                            <span class="n">mapfile</span><span class="p">,</span>
+                            <span class="s2">&quot;-T&quot;</span><span class="p">,</span>
+                            <span class="n">target</span><span class="p">,</span>
+                            <span class="n">dot_sourcepath</span><span class="p">,</span>
+                            <span class="s2">&quot;-o&quot;</span><span class="p">,</span>
+                            <span class="n">outputfile</span><span class="p">,</span>
+                        <span class="p">],</span>
+                        <span class="n">shell</span><span class="o">=</span><span class="n">use_shell</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span>
+                        <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">renderer</span><span class="p">,</span> <span class="s2">&quot;-T&quot;</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">dot_sourcepath</span><span class="p">,</span> <span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="n">outputfile</span><span class="p">],</span>
+                        <span class="n">shell</span><span class="o">=</span><span class="n">use_shell</span><span class="p">,</span>
+                    <span class="p">)</span>
+            <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">e</span><span class="o">.</span><span class="n">errno</span> <span class="o">==</span> <span class="n">errno</span><span class="o">.</span><span class="n">ENOENT</span><span class="p">:</span>
+                    <span class="n">e</span><span class="o">.</span><span class="n">strerror</span> <span class="o">=</span> <span class="s2">&quot;File not found: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">renderer</span><span class="p">)</span>
+                    <span class="k">raise</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">dot_sourcepath</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">outputfile</span></div>
+
+<div class="viewcode-block" id="DotBackend.emit"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.graph.DotBackend.emit">[docs]</a>    <span class="k">def</span> <span class="nf">emit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Adds &lt;line&gt; to final output.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lines</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DotBackend.emit_edge"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.graph.DotBackend.emit_edge">[docs]</a>    <span class="k">def</span> <span class="nf">emit_edge</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name1</span><span class="p">,</span> <span class="n">name2</span><span class="p">,</span> <span class="o">**</span><span class="n">props</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;emit an edge from &lt;name1&gt; to &lt;name2&gt;.</span>
+<span class="sd">        edge properties: see http://www.graphviz.org/doc/info/attrs.html</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">=&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prop</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">prop</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">props</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+        <span class="n">n_from</span><span class="p">,</span> <span class="n">n_to</span> <span class="o">=</span> <span class="n">normalize_node_id</span><span class="p">(</span><span class="n">name1</span><span class="p">),</span> <span class="n">normalize_node_id</span><span class="p">(</span><span class="n">name2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> -&gt; </span><span class="si">%s</span><span class="s2"> [</span><span class="si">%s</span><span class="s2">];&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">n_from</span><span class="p">,</span> <span class="n">n_to</span><span class="p">,</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">attrs</span><span class="p">))))</span></div>
+
+<div class="viewcode-block" id="DotBackend.emit_node"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.graph.DotBackend.emit_node">[docs]</a>    <span class="k">def</span> <span class="nf">emit_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">props</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;emit a node with given properties.</span>
+<span class="sd">        node properties: see http://www.graphviz.org/doc/info/attrs.html</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">attrs</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">=&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">prop</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">prop</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">props</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> [</span><span class="si">%s</span><span class="s2">];&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">normalize_node_id</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">attrs</span><span class="p">))))</span></div></div>
+
+
+<div class="viewcode-block" id="normalize_node_id"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.graph.normalize_node_id">[docs]</a><span class="k">def</span> <span class="nf">normalize_node_id</span><span class="p">(</span><span class="n">nid</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns a suitable DOT node id for `nid`.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="s1">&#39;&quot;</span><span class="si">%s</span><span class="s1">&quot;&#39;</span> <span class="o">%</span> <span class="n">nid</span></div>
+
+
+<div class="viewcode-block" id="GraphGenerator"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.graph.GraphGenerator">[docs]</a><span class="k">class</span> <span class="nc">GraphGenerator</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">backend</span><span class="p">):</span>
+        <span class="c1"># the backend is responsible to output the graph in a particular format</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">backend</span> <span class="o">=</span> <span class="n">backend</span>
+
+    <span class="c1"># XXX doesn&#39;t like space in outpufile / mapfile</span>
+<div class="viewcode-block" id="GraphGenerator.generate"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.graph.GraphGenerator.generate">[docs]</a>    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">visitor</span><span class="p">,</span> <span class="n">propshdlr</span><span class="p">,</span> <span class="n">outputfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mapfile</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># the visitor</span>
+        <span class="c1"># the property handler is used to get node and edge properties</span>
+        <span class="c1"># according to the graph and to the backend</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">propshdlr</span> <span class="o">=</span> <span class="n">propshdlr</span>
+        <span class="k">for</span> <span class="n">nodeid</span><span class="p">,</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">visitor</span><span class="o">.</span><span class="n">nodes</span><span class="p">():</span>
+            <span class="n">props</span> <span class="o">=</span> <span class="n">propshdlr</span><span class="o">.</span><span class="n">node_properties</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">emit_node</span><span class="p">(</span><span class="n">nodeid</span><span class="p">,</span> <span class="o">**</span><span class="n">props</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">subjnode</span><span class="p">,</span> <span class="n">objnode</span><span class="p">,</span> <span class="n">edge</span> <span class="ow">in</span> <span class="n">visitor</span><span class="o">.</span><span class="n">edges</span><span class="p">():</span>
+            <span class="n">props</span> <span class="o">=</span> <span class="n">propshdlr</span><span class="o">.</span><span class="n">edge_properties</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">subjnode</span><span class="p">,</span> <span class="n">objnode</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">emit_edge</span><span class="p">(</span><span class="n">subjnode</span><span class="p">,</span> <span class="n">objnode</span><span class="p">,</span> <span class="o">**</span><span class="n">props</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">outputfile</span><span class="o">=</span><span class="n">outputfile</span><span class="p">,</span> <span class="n">mapfile</span><span class="o">=</span><span class="n">mapfile</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="UnorderableGraph"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.graph.UnorderableGraph">[docs]</a><span class="k">class</span> <span class="nc">UnorderableGraph</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+<span class="n">V</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;V&quot;</span><span class="p">)</span>
+<span class="n">_Graph</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">[</span><span class="n">V</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">V</span><span class="p">]]</span>
+
+
+<div class="viewcode-block" id="ordered_nodes"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.graph.ordered_nodes">[docs]</a><span class="k">def</span> <span class="nf">ordered_nodes</span><span class="p">(</span><span class="n">graph</span><span class="p">:</span> <span class="n">_Graph</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">V</span><span class="p">,</span> <span class="o">...</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;takes a dependency graph dict as arguments and return an ordered tuple of</span>
+<span class="sd">    nodes starting with nodes without dependencies and up to the outermost node.</span>
+
+<span class="sd">    If there is some cycle in the graph, :exc:`UnorderableGraph` will be raised.</span>
+
+<span class="sd">    Also the given graph dict will be emptied.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># check graph consistency</span>
+    <span class="n">cycles</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">V</span><span class="p">]]</span> <span class="o">=</span> <span class="n">get_cycles</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">cycles</span><span class="p">:</span>
+        <span class="n">bad_cycles</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot; -&gt; &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">cycle</span><span class="p">))</span> <span class="k">for</span> <span class="n">cycle</span> <span class="ow">in</span> <span class="n">cycles</span><span class="p">])</span>
+        <span class="k">raise</span> <span class="n">UnorderableGraph</span><span class="p">(</span><span class="s2">&quot;cycles in graph: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">bad_cycles</span><span class="p">)</span>
+
+    <span class="n">vertices</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+    <span class="n">to_vertices</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">edges</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+        <span class="n">to_vertices</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">(</span><span class="n">edges</span><span class="p">)</span>
+
+    <span class="n">missing_vertices</span> <span class="o">=</span> <span class="n">to_vertices</span> <span class="o">-</span> <span class="n">vertices</span>
+    <span class="k">if</span> <span class="n">missing_vertices</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">UnorderableGraph</span><span class="p">(</span><span class="s2">&quot;missing vertices: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">missing_vertices</span><span class="p">))</span>
+
+    <span class="c1"># order vertices</span>
+    <span class="n">order</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">order_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="n">old_len</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">while</span> <span class="n">graph</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">old_len</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">graph</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="n">UnorderableGraph</span><span class="p">(</span><span class="s2">&quot;unknown problem with </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">graph</span><span class="p">)</span>
+
+        <span class="n">old_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">graph</span><span class="p">)</span>
+        <span class="n">deps_ok</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">node_deps</span> <span class="ow">in</span> <span class="n">graph</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">dep</span> <span class="ow">in</span> <span class="n">node_deps</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">dep</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">order_set</span><span class="p">:</span>
+                    <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">deps_ok</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+
+        <span class="n">order</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">deps_ok</span><span class="p">)</span>
+        <span class="n">order_set</span> <span class="o">|=</span> <span class="nb">set</span><span class="p">(</span><span class="n">deps_ok</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">deps_ok</span><span class="p">:</span>
+            <span class="k">del</span> <span class="n">graph</span><span class="p">[</span><span class="n">node</span><span class="p">]</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">grp</span> <span class="ow">in</span> <span class="nb">reversed</span><span class="p">(</span><span class="n">order</span><span class="p">):</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">grp</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">result</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_cycles"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.graph.get_cycles">[docs]</a><span class="k">def</span> <span class="nf">get_cycles</span><span class="p">(</span><span class="n">graph_dict</span><span class="p">:</span> <span class="n">_Graph</span><span class="p">,</span> <span class="n">vertices</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Iterable</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">]:</span>
+    <span class="sd">&quot;&quot;&quot;given a dictionary representing an ordered graph (i.e. key are vertices</span>
+<span class="sd">    and values is a list of destination vertices representing edges), return a</span>
+<span class="sd">    list of detected cycles</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">graph_dict</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="n">result</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">vertices</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">vertices</span> <span class="o">=</span> <span class="n">graph_dict</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">vertice</span> <span class="ow">in</span> <span class="n">vertices</span><span class="p">:</span>
+        <span class="n">_get_cycles</span><span class="p">(</span><span class="n">graph_dict</span><span class="p">,</span> <span class="p">[],</span> <span class="nb">set</span><span class="p">(),</span> <span class="n">result</span><span class="p">,</span> <span class="n">vertice</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">result</span></div>
+
+
+<span class="k">def</span> <span class="nf">_get_cycles</span><span class="p">(</span>
+    <span class="n">graph_dict</span><span class="p">:</span> <span class="n">_Graph</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">List</span><span class="p">,</span> <span class="n">visited</span><span class="p">:</span> <span class="n">Set</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">List</span><span class="p">],</span> <span class="n">vertice</span><span class="p">:</span> <span class="n">V</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;recursive function doing the real work for get_cycles&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">vertice</span> <span class="ow">in</span> <span class="n">path</span><span class="p">:</span>
+        <span class="n">cycle</span> <span class="o">=</span> <span class="p">[</span><span class="n">vertice</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">path</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">node</span> <span class="o">==</span> <span class="n">vertice</span><span class="p">:</span>
+                <span class="k">break</span>
+
+            <span class="n">cycle</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
+
+        <span class="c1"># make a canonical representation</span>
+        <span class="c1"># mypy: error: Value of type variable &quot;_LT&quot; of &quot;min&quot; cannot be &quot;V&quot;</span>
+        <span class="c1"># XXX I have no idea what this exactly mean here... we probably need to</span>
+        <span class="c1"># XXX tell that &quot;V&quot; supports &quot;lower than&quot; type of comparison but how?</span>
+        <span class="n">start_from</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">cycle</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">cycle</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">start_from</span><span class="p">)</span>
+        <span class="n">cycle</span> <span class="o">=</span> <span class="n">cycle</span><span class="p">[</span><span class="n">index</span><span class="p">:]</span> <span class="o">+</span> <span class="n">cycle</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="n">index</span><span class="p">]</span>
+
+        <span class="c1"># append it to result if not already in</span>
+        <span class="k">if</span> <span class="n">cycle</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+            <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cycle</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vertice</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">graph_dict</span><span class="p">[</span><span class="n">vertice</span><span class="p">]:</span>
+            <span class="c1"># don&#39;t check already visited nodes again</span>
+            <span class="k">if</span> <span class="n">node</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">visited</span><span class="p">:</span>
+                <span class="n">_get_cycles</span><span class="p">(</span><span class="n">graph_dict</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">visited</span><span class="p">,</span> <span class="n">result</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
+                <span class="n">visited</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+
+    <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+    <span class="n">path</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="has_path"><a class="viewcode-back" href="../../../logilab.common.html#logilab.common.graph.has_path">[docs]</a><span class="k">def</span> <span class="nf">has_path</span><span class="p">(</span>
+    <span class="n">graph_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span> <span class="n">fromnode</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tonode</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+    <span class="sd">&quot;&quot;&quot;generic function taking a simple graph definition as a dictionary, with</span>
+<span class="sd">    node has key associated to a list of nodes directly reachable from it.</span>
+
+<span class="sd">    Return None if no path exists to go from `fromnode` to `tonode`, else the</span>
+<span class="sd">    first path found (as a list including the destination node at last)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">path</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">elif</span> <span class="n">fromnode</span> <span class="ow">in</span> <span class="n">path</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+    <span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">fromnode</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">destnode</span> <span class="ow">in</span> <span class="n">graph_dict</span><span class="p">[</span><span class="n">fromnode</span><span class="p">]:</span>
+        <span class="k">if</span> <span class="n">destnode</span> <span class="o">==</span> <span class="n">tonode</span> <span class="ow">or</span> <span class="n">has_path</span><span class="p">(</span><span class="n">graph_dict</span><span class="p">,</span> <span class="n">destnode</span><span class="p">,</span> <span class="n">tonode</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">path</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="p">[</span><span class="n">tonode</span><span class="p">]</span>
+    <span class="n">path</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">logilab common</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../logilab.common.html">logilab.common package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../logilab.common.ureports.html">logilab.common.ureports package</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  <li><a href="../common.html">logilab.common</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2021, Logilab.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.3.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
