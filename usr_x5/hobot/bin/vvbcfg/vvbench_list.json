@@ -1,0 +1,12 @@
+{
+
+"config": {
+	"caseLoop": 1,
+	"caseInterval": 1,
+	"alignMask": 4096
+},
+"caseLists": [
+    "sensor_case/vvb_100_sensor0_sc1330t_1280_960_mp_linear_preview_dom.json"
+]
+
+}

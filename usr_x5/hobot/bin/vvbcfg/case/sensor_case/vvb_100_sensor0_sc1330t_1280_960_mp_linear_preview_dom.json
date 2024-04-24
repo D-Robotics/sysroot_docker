@@ -1,0 +1,38 @@
+{
+	"totalInstance": 1,
+	"instanceCfg": [
+	{
+		"hpId": 0,
+		"instanceEnable": 1,
+		"bufferType": "userptr",
+		"inputType": "Sensor",      "//": "Invalid, Sensor, Image, Tpg, Max",
+		"workMode": 1,       "//": "1:Stream_mode  2:Mcm_mode  3:Rdma_mode",
+		"modeInfo":
+		{
+			"portId": 1,     "//": "1: CAMDEV_PORT_0, ..., 4: CAMDEV_PORT_3"
+		},
+		"streamDuration": 30, "//": "Second",
+		"generalJsonPath" : "ISP8000_V2308_1705655498904.json",
+
+		"pathCfg":[
+		{
+			"pathName": "MP",
+			"pathEnable": 1,
+			"bufferNumber": 6,
+			"format": "YUV420SP"
+		}
+		],
+
+		"sensorInfo":
+		{
+			"sensorName": "sc1330t",
+			"calibrationName": "SC1330T_1280_960.xml",
+			"modeIndex": 0,
+			"resolutionWidth": 1280,
+			"resolutionHeight": 960,
+			"illumType": "D50",
+			"fps": 10,	"//": "0: Default"
+		}
+	}
+	]
+}

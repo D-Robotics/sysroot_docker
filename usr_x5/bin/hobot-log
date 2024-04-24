@@ -1,0 +1,496 @@
+#!/bin/bash
+#Copyright: Horizon Robotic
+#Function: Pack kernel/usersapce/mcu/bl31/dsp/pstore/coredump/reset log
+
+#How change the log directory ?
+#1. change usr/bin/hobot-log
+
+#How change the ROTATEGENS and ROTATESIZE ?
+#1. change usr/bin/hobot-log
+
+ROTATESIZE=2048 #KB
+ROTATEGENS_KER=100
+ROTATEGENS_USR=100
+ROTATEGENS_REMOTE=50
+ROTATEGENS_CHIP=50
+ROTATEGENS_ALL=$((${ROTATEGENS_REMOTE} + ${ROTATEGENS_KER} + ${ROTATEGENS_USR} + ${ROTATEGENS_CHIP}))
+ROTATESIZE_BYTES=$((${ROTATESIZE} * 1024))
+conf_path=/tmp/hb_log.conf
+
+#soc platform
+SOC=X5
+#log dir
+SOURCE_DIR=/userdata/log
+LOG_SOURCE_DIR=${SOURCE_DIR}
+LOG_FILE_NAME=message
+LOG_DIR=archive
+#kernel log information
+KER_ORI_LOG_DIR=${LOG_SOURCE_DIR}/kernel
+KER_SAVE_LOG_DIR=${KER_ORI_LOG_DIR}
+#usersapce log information
+USR_ORI_LOG_DIR=${LOG_SOURCE_DIR}/usr
+USR_SAVE_LOG_DIR=${USR_ORI_LOG_DIR}
+#DSP log information
+DSP0_ORI_LOG_DIR=${LOG_SOURCE_DIR}/dsp
+DSP0_SAVE_LOG_DIR=${DSP0_ORI_LOG_DIR}
+#BL31 log information
+BL31_ORI_LOG_DIR=${LOG_SOURCE_DIR}/bl31
+BL31_SAVE_LOG_DIR=${BL31_ORI_LOG_DIR}
+#chip log information
+CHIP_ORI_LOG_DIR=${LOG_SOURCE_DIR}/chip
+CHIP_SAVE_LOG_DIR=${CHIP_ORI_LOG_DIR}
+#uboot log information
+UBOOT_FS="/proc/bootloader_log"
+UBOOT_LOG=${LOG_SOURCE_DIR}/uboot
+UBOOT_LOGMAX=100
+#pstore log information
+PSTORE_FS=$(cat /proc/mounts |grep "^pstore" |awk '{print $2}')
+PSTORE_LOG=${LOG_SOURCE_DIR}/pstore
+PSTORE_LOGMAX=100
+#reset log information
+RESET_LOG_DIR=${LOG_SOURCE_DIR}
+RESET_COUNT_MAX=9999
+RESET_COUNT=""
+RESET_COUNT_LAST=""
+RESET_COUNT_NOW=""
+#timestamp information for timesync failed
+LATEST_LOG_TS=""
+TS_COUNT=""
+#coredump log information
+CORE_DUMP_LOG_DIR=${LOG_SOURCE_DIR}/coredump
+CORE_DUMP_LOG_DIR_SIZE=102400 #KB
+#reset reason
+RESET_REASON_MAX=$((1024 * 1024)) #1M
+LOG_EXE_FLAG=0
+
+
+function output()
+{
+	echo "hobot-log: $1"
+	echo "hobot-log: $1" > /dev/kmsg
+}
+
+#Determine the number of logs based on the size of the file system
+function calculate_rotate_num()
+{
+	local log_part_size=$(df -P | grep -w "/userdata" | awk '{print $2}')
+	if [ ! -d "${SOURCE_DIR}" ];then
+		output "ERR: ${SOURCE_DIR} not found"
+		mkdir -p ${SOURCE_DIR}
+		output "WARN: mkdir ${SOURCE_DIR}"
+	fi
+
+	#check if system_log_size is greater than the partition size
+	expr ${log_part_size} / 1 &> /dev/null
+	if [ $? -eq 0 ]; then
+		local system_log_size=$((${ROTATESIZE} * ${ROTATEGENS_ALL}))
+		if [ "${log_part_size}" -le "${system_log_size}" ]; then
+			output "WARN: ${SOURCE_DIR} part size is less then all log size"
+		fi
+	fi
+
+	echo "ROTATESIZE=${ROTATESIZE}" > ${conf_path}
+	echo "ROTATEGENS_KER=${ROTATEGENS_KER}" >> ${conf_path}
+	echo "ROTATEGENS_USR=${ROTATEGENS_USR}" >> ${conf_path}
+	echo "ROTATEGENS_REMOTE=${ROTATEGENS_REMOTE}" >> ${conf_path}
+	echo "ROTATEGENS_CHIP=${ROTATEGENS_CHIP}" >> ${conf_path}
+	echo "LOG_FILE_NAME=${LOG_FILE_NAME}" >> ${conf_path}
+	echo "KER_ORI_LOG_DIR=${KER_ORI_LOG_DIR}" >> ${conf_path}
+	echo "USR_ORI_LOG_DIR=${USR_ORI_LOG_DIR}" >> ${conf_path}
+	echo "DSP0_ORI_LOG_DIR=${DSP0_ORI_LOG_DIR}" >> ${conf_path}
+	echo "BL31_ORI_LOG_DIR=${BL31_ORI_LOG_DIR}" >> ${conf_path}
+	echo "CHIP_ORI_LOG_DIR=${CHIP_ORI_LOG_DIR}" >> ${conf_path}
+}
+
+#If the timesync failed, change the file time
+#$1 the file path
+function change_file_time()
+{
+	if [ -z "${LATEST_LOG_TS}" ]; then
+		return 0
+	fi
+
+	local year=$(date +%Y)
+	local year_limit="2022"
+	if [ "${year}" -ge "${year_limit}" ]; then
+		return 0
+	fi
+
+	local file=$1
+	local now_ts=$(echo "${TS_COUNT}" | awk '{printf "%d\n", $1+'"${LATEST_LOG_TS}"'}')
+	touch -d "$(date '+%F %T' -d @${now_ts})" ${file}
+	TS_COUNT=$((${TS_COUNT}+1))
+}
+
+#$1 file name with path
+function date2ymdhms()
+{
+	time_type=""
+	if [ -f "$1" ]; then
+		time_type=$(ls -l --full-time $1 2> /dev/null | awk '{print $6"_"$7}' | awk -F '.' '{print $1}' | tr ':-' '_')
+	fi
+}
+
+#check log file count
+function check_log_cnt()
+{
+	local dir="$1"
+	local log_cnt_max="$2"
+
+	local log_cnt=$(ls -l ${dir} | grep "^-" | wc -l)
+	while [ ${log_cnt} -gt ${log_cnt_max} ]; do
+		delfile_name=$(ls -ltr ${dir} | grep "^-" | head -n 1 | awk '{print $9}')
+		rm ${dir}/${delfile_name}
+		log_cnt=$(ls -l ${dir} | grep "^-" | wc -l)
+	done
+}
+
+function check_log_cnt_with_keyword()
+{
+	local dir="$1"
+	local keyword="$2"
+	local log_cnt_max="$3"
+
+	local log_cnt=$(ls -l ${dir} | grep "^-" | grep ${keyword} | wc -l)
+	while [ ${log_cnt} -gt ${log_cnt_max} ]; do
+		delfile_name=$(ls -ltr ${dir} | grep "^-" | grep ${keyword} | head -n 1 | awk '{print $9}')
+		rm ${dir}/${delfile_name}
+		log_cnt=$(ls -l ${dir} | grep "^-" | grep ${keyword} | wc -l)
+	done
+}
+
+#check log dir size(MB)
+function check_log_dir_size()
+{
+	local dir="$1"
+	local log_dir_size_max="$2"
+
+	local log_dir_size=$(du -s ${dir} | awk '{print $1}')
+	while [ ${log_dir_size} -gt ${log_dir_size_max} ]; do
+		delfile_name=$(ls -ltr ${dir} | grep "^-" | head -n 1 | awk '{print $9}')
+		#there may be no files in the directory
+		if [ -z "${delfile_name}" ]; then
+			break
+		fi
+		rm ${dir}/${delfile_name}
+		log_dir_size=$(du -s ${dir} | awk '{print $1}')
+	done
+}
+
+function set_pstore()
+{
+	if [ -n "${PSTORE_FS}" ] && [ ! -e ${PSTORE_LOG}/disable ]; then
+		if [ "$(ls -A ${PSTORE_FS})" == "" ];then
+			return 0
+		fi
+
+		local UBOOTCMD=$(cat /proc/cmdline| sed 's/ /\n/g' | grep -i hobotboot.reason)
+		local BOOTREASON=$(echo ${UBOOTCMD#*=})
+		if [ "${BOOTREASON}" == "COLD_BOOT" ] || [ "${BOOTREASON}" == "UBOOT_RESET" ] || [ "${BOOTREASON}" == "WATCHDOG" ] || [ "${BOOTREASON}" == "REBOOT_CMD" ]; then
+			return 0
+		fi
+
+		local pstore_log_date=$(date +%Y_%m_%d_%H_%M_%S)
+		local pstore_log_dir="${PSTORE_LOG}/${SOC}_Pstore-${RESET_COUNT_NOW}-${pstore_log_date}"
+		mkdir -p ${pstore_log_dir}
+		output "pstore log to ${pstore_log_dir}"
+		cp ${PSTORE_FS}/* ${pstore_log_dir}/
+		/usr/hobot/bin/hrut_sched_log_parse ${PSTORE_FS}/sched-ramoops-0 > ${pstore_log_dir}/sched-ramoops-0
+		change_file_time ${pstore_log_dir}
+
+		local pstore_log_cnt=$(ls -l ${PSTORE_LOG} | grep "^d" | wc -l)
+		while [ ${pstore_log_cnt} -gt ${PSTORE_LOGMAX} ]; do
+			local deldir_name=$(ls -ltr ${PSTORE_LOG} | grep "^d" | head -n 1 | awk '{print $9}')
+			rm -rf ${PSTORE_LOG}/${deldir_name}
+			pstore_log_cnt=$(ls -l ${PSTORE_LOG} | grep "^d" | wc -l)
+		done
+		sync
+	fi
+}
+
+function set_uboot()
+{
+	if [ -e "${UBOOT_FS}" ]; then
+		local uboot_log_date=$(date +%Y_%m_%d_%H_%M_%S)
+		local uboot_log_dir="${UBOOT_LOG}/${LOG_DIR}"
+		mkdir -p ${uboot_log_dir}
+		cp ${UBOOT_FS} ${uboot_log_dir}/${SOC}_Uboot-${RESET_COUNT_NOW}-${uboot_log_date}.Log
+		change_file_time  ${uboot_log_dir}/${SOC}_Uboot-${RESET_COUNT_NOW}-${uboot_log_date}.Log
+		check_log_cnt ${uboot_log_dir} ${UBOOT_LOGMAX}
+		sync
+	fi
+}
+
+#$1 origin log dir
+#$2 save log dir
+#$3 filename prefix
+#$4 filename suffix
+#$5 maximum log count
+function check_first_log()
+{
+	local origin_dir="$1"
+	local save_dir="$2"
+	local prefix="$3"
+	local suffix="$4"
+	local log_cnt_max="$5"
+	local save_log_dir file_name time_type_name file_repeat file_inode
+
+	if [ ! -d ${origin_dir} ]; then
+		mkdir -p ${origin_dir}
+	fi
+	save_log_dir="${save_dir}/${LOG_DIR}"
+	if [ ! -d ${save_log_dir} ]; then
+		mkdir -p ${save_log_dir}
+	fi
+
+	for x in $(ls -ptr ${origin_dir} | grep -v / | grep "${LOG_FILE_NAME}"); do
+		file_name="${x}"
+		if [ -z "${file_name}" ]; then
+			continue
+		fi
+		date2ymdhms ${origin_dir}/${file_name}
+		if [ -z "${time_type}" ]; then
+			continue
+		fi
+		time_type_name=${prefix}${time_type}${suffix}
+
+		#Prevents multiple files from being generated in the same second
+		#When generate a new file, file(message.7) name replaced(message.6 -> message.7), file time don't match up, slove it
+		file_repeat=$(ls ${save_log_dir}/${time_type_name} 2> /dev/null)
+		if [ -n "${file_repeat}" ]; then
+			date2ymdhms ${file_repeat}
+			if [ -e "${save_log_dir}/${prefix}${time_type}${suffix}" ]; then
+				file_inode=$(ls -i ${save_log_dir}/${prefix}${time_type}${suffix} 2> /dev/null | awk '{print $1}')
+				mv ${file_repeat} ${save_log_dir}/${prefix}${time_type}-${file_inode}${suffix}
+			else
+				mv ${file_repeat} ${save_log_dir}/${prefix}${time_type}${suffix}
+			fi
+		fi
+
+		mv ${origin_dir}/${file_name} ${save_log_dir}/${time_type_name}
+		change_file_time ${save_log_dir}/${time_type_name}
+		check_log_cnt $2/${LOG_DIR} ${log_cnt_max}
+		if [ ${file_name} = "${LOG_FILE_NAME}" ]; then
+			touch $1/${LOG_FILE_NAME}
+		fi
+	done
+}
+
+#$1 origin log dir
+#$2 save log dir
+#$3 filename prefix
+#$4 filename suffix
+#$5 maximum log count
+function check_log()
+{
+	local origin_dir="$1"
+	local save_dir="$2"
+	local prefix="$3"
+	local suffix="$4"
+	local log_cnt_max="$5"
+	local save_log_dir max_file_size file_name time_type_name file_repeat file_inode
+
+	if [ ! -d ${origin_dir} ]; then
+		mkdir -p ${origin_dir}
+	fi
+	save_log_dir="${save_dir}/${LOG_DIR}"
+	if [ ! -d ${save_log_dir} ]; then
+		mkdir -p ${save_log_dir}
+	fi
+
+	while true; do
+		#old file name may change When generate a new file, slove archived failure
+		max_file_size=$(ls -lS ${origin_dir}/${LOG_FILE_NAME}.* 2> /dev/null | awk 'NR==1{print $5}')
+		if [ -z "${max_file_size}" ] || [ "${max_file_size}" -lt ${ROTATESIZE_BYTES} ]; then
+			break
+		fi
+
+		for x in $(ls -ptr ${origin_dir} | grep -v / | grep "${LOG_FILE_NAME}"); do
+			file_name="${x}"
+			if [ -z "${file_name}" ]  || [ ${file_name} = "${LOG_FILE_NAME}" ]; then
+				continue
+			fi
+			date2ymdhms ${origin_dir}/${file_name}
+			if [ -z "${time_type}" ]; then
+				continue
+			fi
+			time_type_name=${prefix}${time_type}${suffix}
+
+			#Prevents multiple files from being generated in the same second
+			#When generate a new file, file(message.7) name replaced(message.6 -> message.7), file time don't match up, slove it
+			file_repeat=$(ls ${save_log_dir}/${time_type_name} 2> /dev/null)
+			if [ -n "${file_repeat}" ]; then
+				date2ymdhms ${file_repeat}
+				if [ -e "${save_log_dir}/${prefix}${time_type}${suffix}" ]; then
+					file_inode=$(ls -i ${save_log_dir}/${prefix}${time_type}${suffix} 2> /dev/null | awk '{print $1}')
+					mv ${file_repeat} ${save_log_dir}/${prefix}${time_type}-${file_inode}${suffix}
+				else
+					mv ${file_repeat} ${save_log_dir}/${prefix}${time_type}${suffix}
+				fi
+			fi
+
+			mv ${origin_dir}/${file_name} ${save_log_dir}/${time_type_name}
+			change_file_time ${save_log_dir}/${time_type_name}
+			check_log_cnt $2/${LOG_DIR} ${log_cnt_max}
+		done
+	done
+}
+
+function record_reset_count()
+{
+	if [ ! -f "${RESET_LOG_DIR}/reset_count.txt" ] || [ -z "$(cat "${RESET_LOG_DIR}/reset_count.txt")" ]; then
+		RESET_COUNT_LAST="0"
+		RESET_COUNT_NOW="0"
+	else
+		RESET_COUNT_LAST=$(cat "${RESET_LOG_DIR}/reset_count.txt")
+		if [ ${RESET_COUNT_LAST} -eq ${RESET_COUNT_MAX} ]; then
+			RESET_COUNT_NOW="0"
+		else
+			RESET_COUNT_NOW=$(expr ${RESET_COUNT_LAST} + 1)
+		fi
+	fi
+
+	if [ "${LOG_EXE_FLAG}" != "1" ]; then
+	#if [ "${is_restart}" != "1" ]; then
+		echo "${RESET_COUNT_NOW}" > "${RESET_LOG_DIR}/reset_count.txt"
+		RESET_COUNT_LAST=$(echo ${RESET_COUNT_LAST} | awk '{printf "%04d\n", $1}')
+		RESET_COUNT_NOW=$(echo ${RESET_COUNT_NOW} | awk '{printf "%04d\n", $1}')
+		RESET_COUNT="${RESET_COUNT_LAST}"
+	else
+		RESET_COUNT_LAST=$(echo ${RESET_COUNT_LAST} | awk '{printf "%04d\n", $1}')
+		RESET_COUNT_NOW="${RESET_COUNT_LAST}"
+		RESET_COUNT="${RESET_COUNT_LAST}"
+	fi
+}
+
+#record reset reason, max is 1M
+function record_reset_reason()
+{
+	if [ -f ${RESET_LOG_DIR}/reset_reason.txt ]; then
+		local file_size=$(wc -c < ${RESET_LOG_DIR}/reset_reason.txt)
+		if [ ${file_size} -gt ${RESET_REASON_MAX} ]; then
+			tail -n 100 ${RESET_LOG_DIR}/reset_reason.txt > ${RESET_LOG_DIR}/reset_reason_tmp.txt
+			cat ${RESET_LOG_DIR}/reset_reason_tmp.txt > ${RESET_LOG_DIR}/reset_reason.txt
+			rm ${RESET_LOG_DIR}/reset_reason_tmp.txt
+		fi
+	fi
+
+	local FCHM_FAULT=$(cat /proc/cmdline| sed 's/ /\n/g' | awk -F '=' '/hobotboot.fchm_fault/{print $2}')
+	local BOOTREASON=$(cat /proc/cmdline| sed 's/ /\n/g' | awk -F '=' '/hobotboot.reason/{print $2}')
+	local VERSION=$(cat /etc/version)
+	echo -e "$(date +"%Y-%m-%d-%H-%M-%S"): ${BOOTREASON} \t${FCHM_FAULT} \t${VERSION} \t${RESET_COUNT_NOW}" >> "${RESET_LOG_DIR}/reset_reason.txt"
+}
+
+function make_log_dir()
+{
+	mkdir -p ${KER_ORI_LOG_DIR}  ${KER_SAVE_LOG_DIR}
+	mkdir -p ${USR_ORI_LOG_DIR}  ${USR_SAVE_LOG_DIR}
+	mkdir -p ${DSP0_ORI_LOG_DIR} ${DSP0_SAVE_LOG_DIR}
+	mkdir -p ${BL31_ORI_LOG_DIR} ${BL31_SAVE_LOG_DIR}
+	mkdir -p ${CHIP_ORI_LOG_DIR} ${CHIP_SAVE_LOG_DIR}
+
+	if [ ! -d ${RESET_LOG_DIR} ]; then
+		mkdir -p ${RESET_LOG_DIR}
+	fi
+
+	if [ ! -d ${CORE_DUMP_LOG_DIR} ]; then
+		mkdir -p ${CORE_DUMP_LOG_DIR}
+		chmod 777 ${CORE_DUMP_LOG_DIR}
+	fi
+}
+
+function wait_for_timesync()
+{
+	local year=$(date +%Y)
+	local year_limit="2022"
+	local loop=0
+	local loop_max=0
+
+	while [ "${year}" -lt "${year_limit}" ]; do
+		sleep 1
+		if [ "$((++loop))" -ge "${loop_max}" ]; then
+			break;
+		fi
+		year=$(date +%Y)
+	done
+
+	#Initializes the timestamp when timesync fails
+	if [ "${year}" -lt "${year_limit}" ]; then
+		local latest_log_file=$(ls -t $(find ${KER_SAVE_LOG_DIR} ${USR_SAVE_LOG_DIR} ${DSP0_SAVE_LOG_DIR} ${BL31_SAVE_LOG_DIR} ${CHIP_SAVE_LOG_DIR} ${UBOOT_LOG} ${PSTORE_LOG} -type f 2> /dev/null) | head -n 1)
+		LATEST_LOG_TS=$(date +%s -r "${latest_log_file}")
+		TS_COUNT=1
+		output "WARN: timesync abnormal, change the file time for keep the latest log"
+	fi
+}
+
+function bl31_timesync()
+{
+	local time=$(date +%s -ud "$(date '+%F %T')")
+	echo -n ${time} > /proc/bl31_debug/sync_time
+}
+
+function system_config()
+{
+	#config coredump
+	echo "${CORE_DUMP_LOG_DIR}/core-%e-%p-%t" > /proc/sys/kernel/core_pattern
+	echo 1 > /proc/sys/kernel/core_uses_pid
+
+	#load drivers
+	#modprobe alog &
+	#modprobe bootloader_log &
+	#wait
+}
+
+function log_config() {
+	if [ "${LOG_EXE_FLAG}" != "1" ]; then
+		calculate_rotate_num                                                               
+		make_log_dir                                                                       
+		record_reset_count  
+		system_config               
+		wait_for_timesync
+		record_reset_reason
+		set_pstore
+		set_uboot
+	else
+		output "WARN: progress restart"
+	fi
+}
+
+function first() {
+	log_config
+
+	check_first_log ${KER_ORI_LOG_DIR}   ${KER_SAVE_LOG_DIR}   "${SOC}_Kernel-${RESET_COUNT}-" ".Log" ${ROTATEGENS_KER}
+	check_first_log ${USR_ORI_LOG_DIR}   ${USR_SAVE_LOG_DIR}   "${SOC}_Usr-${RESET_COUNT}-"    ".Log" ${ROTATEGENS_USR}
+	check_first_log ${DSP0_ORI_LOG_DIR}  ${DSP0_SAVE_LOG_DIR}  "${SOC}_Dsp-${RESET_COUNT}-"   ".Log" ${ROTATEGENS_REMOTE}
+	check_first_log ${BL31_ORI_LOG_DIR}  ${BL31_SAVE_LOG_DIR}  "${SOC}_Bl31-${RESET_COUNT}-"   ".Log" ${ROTATEGENS_REMOTE}
+	check_first_log ${CHIP_ORI_LOG_DIR}  ${CHIP_SAVE_LOG_DIR}  "${SOC}_Chip-${RESET_COUNT}-"   ".Log" ${ROTATEGENS_CHIP}
+	RESET_COUNT="${RESET_COUNT_NOW}"
+}
+
+function start() {
+	LOG_EXE_FLAG=1
+	record_reset_count
+
+	while true; do
+		check_log ${KER_ORI_LOG_DIR}   ${KER_SAVE_LOG_DIR}   "${SOC}_Kernel-${RESET_COUNT}-" ".Log" ${ROTATEGENS_KER}
+		check_log ${USR_ORI_LOG_DIR}   ${USR_SAVE_LOG_DIR}   "${SOC}_Usr-${RESET_COUNT}-"    ".Log" ${ROTATEGENS_USR}
+		check_log ${DSP0_ORI_LOG_DIR}  ${DSP0_SAVE_LOG_DIR}  "${SOC}_Dsp-${RESET_COUNT}-"   ".Log" ${ROTATEGENS_REMOTE}
+		check_log ${BL31_ORI_LOG_DIR}  ${BL31_SAVE_LOG_DIR}  "${SOC}_Bl31-${RESET_COUNT}-"   ".Log" ${ROTATEGENS_REMOTE}
+		check_log ${CHIP_ORI_LOG_DIR}  ${CHIP_SAVE_LOG_DIR}  "${SOC}_Chip-${RESET_COUNT}-"   ".Log" ${ROTATEGENS_CHIP}
+		check_log_cnt_with_keyword ${CORE_DUMP_LOG_DIR} "adsp" 20
+		check_log_dir_size ${CORE_DUMP_LOG_DIR} ${CORE_DUMP_LOG_DIR_SIZE}
+
+		sleep 600
+	done
+}
+
+case "$1" in
+first)
+	first
+	;;
+start)
+	start
+	;;
+esac
+
+exit 1
