@@ -55,7 +55,7 @@ import threading
 from gettext import gettext as _
 from gettext import ngettext
 
-from .Core.utils import humanize_size, SoftwarePropertiesPage
+from .Core.utils import humanize_size
 from .Core.AlertWatcher import AlertWatcher
 from .Core.UpdateList import UpdateSystemGroup
 from .Dialogs import InternalDialog
@@ -74,8 +74,7 @@ from .UnitySupport import UnitySupport
 # - screen reader does not say "Downloaded" for downloaded updates
 
 # list constants
-(LIST_NAME, LIST_UPDATE_DATA, LIST_SIZE, LIST_TOGGLE_ACTIVE,
- LIST_SENSITIVE) = range(5)
+(LIST_NAME, LIST_UPDATE_DATA, LIST_SIZE, LIST_TOGGLE_ACTIVE) = range(4)
 
 # NetworkManager enums
 from .Core.roam import NetworkManagerHelper
@@ -250,24 +249,19 @@ class UpdatesAvailable(InternalDialog):
         self.add_settings_button()
         self.button_close = self.add_button(Gtk.STOCK_CANCEL,
                                             self.window_main.close)
-        self.button_pro = self.add_button(_("Enable Ubuntu Pro..."),
-                                          self.on_button_pro_clicked)
         self.button_install = self.add_button(_("Install Now"),
                                               self.on_button_install_clicked)
         self.focus_button = self.button_install
 
         # create text view
         self.textview_changes = ChangelogViewer()
-        self.textview_changes.set_wrap_mode(Gtk.WrapMode.WORD)
         self.textview_changes.show()
         self.scrolledwindow_changes.add(self.textview_changes)
         changes_buffer = self.textview_changes.get_buffer()
         changes_buffer.create_tag("versiontag", weight=Pango.Weight.BOLD)
-        changes_buffer.create_tag("changestag", weight=Pango.Weight.BOLD)
-        changes_buffer.create_tag("descriptiontag", weight=Pango.Weight.BOLD)
 
         # the treeview (move into it's own code!)
-        self.store = Gtk.TreeStore(str, GObject.TYPE_PYOBJECT, str, bool, bool)
+        self.store = Gtk.TreeStore(str, GObject.TYPE_PYOBJECT, str, bool)
         self.treeview_update.set_model(None)
 
         self.image_restart.set_from_gicon(self.get_restart_icon(),
@@ -299,8 +293,6 @@ class UpdatesAvailable(InternalDialog):
         pkg_column.pack_start(pkg_toggle_renderer, False)
         pkg_column.add_attribute(pkg_toggle_renderer,
                                  'active', LIST_TOGGLE_ACTIVE)
-        pkg_column.add_attribute(pkg_toggle_renderer,
-                                 'sensitive', LIST_SENSITIVE)
         pkg_column.set_cell_data_func(pkg_toggle_renderer,
                                       self.pkg_toggle_renderer_data_func)
 
@@ -327,8 +319,6 @@ class UpdatesAvailable(InternalDialog):
         size_column = Gtk.TreeViewColumn(_("Download"), size_renderer,
                                          text=LIST_SIZE)
         size_column.set_sizing(Gtk.TreeViewColumnSizing.AUTOSIZE)
-        size_column.add_attribute(size_renderer,
-                                  'sensitive', LIST_SENSITIVE)
         self.treeview_update.append_column(size_column)
 
         self.treeview_update.set_headers_visible(True)
@@ -352,6 +342,7 @@ class UpdatesAvailable(InternalDialog):
         self.expander_details.connect("activate", self.pre_activate_details)
         self.expander_details.connect("notify::expanded",
                                       self.activate_details)
+        self.expander_desc.connect("notify::expanded", self.activate_desc)
 
         # If auto-updates are on, change cancel label
         self.notifier_settings = Gio.Settings.new("com.ubuntu.update-notifier")
@@ -366,17 +357,6 @@ class UpdatesAvailable(InternalDialog):
         self.alert_watcher.connect("battery-alert", self._on_battery_alert)
         self.alert_watcher.connect("network-3g-alert",
                                    self._on_network_3g_alert)
-
-        try:
-            from uaclient.api.u.apt_news.current_news.v1 import current_news
-            apt_news = current_news().current_news
-        except ImportError:
-            apt_news = self._get_apt_news(
-                "/var/lib/ubuntu-advantage/messages/apt-news"
-            )
-        if apt_news:
-            self.news.get_buffer().set_text(apt_news)
-            self.expander_news.set_visible(True)
 
     def stop(self):
         InternalDialog.stop(self)
@@ -424,10 +404,7 @@ class UpdatesAvailable(InternalDialog):
     def restart_icon_renderer_data_func(self, cell_layout, renderer, model,
                                         iter, user_data):
         data = model.get_value(iter, LIST_UPDATE_DATA)
-        sensitive = model.get_value(iter, LIST_SENSITIVE)
         path = model.get_path(iter)
-
-        renderer.set_sensitive(sensitive)
 
         requires_restart = False
         if data.item and data.item.pkg:
@@ -456,7 +433,6 @@ class UpdatesAvailable(InternalDialog):
         if data.item:
             activatable = data.item.pkg.name not in self.list.held_back
             inconsistent = False
-            renderer.set_sensitive(data.item.sensitive)
         elif data.group:
             activatable = True
             inconsistent = data.group.selection_is_inconsistent()
@@ -509,10 +485,7 @@ class UpdatesAvailable(InternalDialog):
     def pkg_label_renderer_data_func(self, cell_layout, renderer, model,
                                      iter, user_data):
         data = model.get_value(iter, LIST_UPDATE_DATA)
-        sensitive = model.get_value(iter, LIST_SENSITIVE)
         name = GLib.markup_escape_text(model.get_value(iter, LIST_NAME))
-
-        renderer.set_sensitive(sensitive)
 
         if data.group:
             markup = name
@@ -523,18 +496,8 @@ class UpdatesAvailable(InternalDialog):
 
         renderer.set_property("markup", markup)
 
-    def set_changes_buffer(self, changes_buffer, long_desc, text, name,
-                           srcpkg):
-        changes_buffer.set_text("")  # Clear "downloading list of changes..."
-
-        # Write the technical description section
-        changes_buffer.insert_with_tags_by_name(changes_buffer.get_end_iter(),
-                                                "Technical description\n",
-                                                "descriptiontag")
-        changes_buffer.insert(changes_buffer.get_end_iter(),
-                              long_desc + "\n\n")
-
-        # Write the changes section
+    def set_changes_buffer(self, changes_buffer, text, name, srcpkg):
+        changes_buffer.set_text("")
         lines = text.split("\n")
         if len(lines) == 1:
             changes_buffer.set_text(text)
@@ -546,16 +509,12 @@ class UpdatesAvailable(InternalDialog):
                 r'^%s \((.*)\)(.*)\;.*$' % re.escape(srcpkg), line)
             #bullet_match = re.match("^.*[\*-]", line)
             author_match = re.match("^.*--.*<.*@.*>.*$", line)
-            changes_match = re.match(r'^Changes for [^ ]+ versions:$', line)
             if version_match:
                 version = version_match.group(1)
                 #upload_archive = version_match.group(2).strip()
                 version_text = _("Version %s: \n") % version
                 changes_buffer.insert_with_tags_by_name(end_iter, version_text,
                                                         "versiontag")
-            elif changes_match:
-                changes_buffer.insert_with_tags_by_name(end_iter, line + "\n",
-                                                        "changestag")
             elif (author_match):
                 pass
             else:
@@ -580,8 +539,12 @@ class UpdatesAvailable(InternalDialog):
                 or item.pkg.candidate.description is None):
             changes_buffer = self.textview_changes.get_buffer()
             changes_buffer.set_text("")
+            desc_buffer = self.textview_descr.get_buffer()
+            desc_buffer.set_text("")
+            self.notebook_details.set_sensitive(False)
             return
         long_desc = item.pkg.candidate.description
+        self.notebook_details.set_sensitive(True)
         # do some regular expression magic on the description
         # Add a newline before each bullet
         p = re.compile(r'^(\s|\t)*(\*|0|-)', re.MULTILINE)
@@ -595,6 +558,9 @@ class UpdatesAvailable(InternalDialog):
         long_desc = ("Package: %s\n%s" %
                      (item.pkg.name, long_desc))
 
+        desc_buffer = self.textview_descr.get_buffer()
+        desc_buffer.set_text(long_desc)
+
         # now do the changelog
         name = item.pkg.name
         if name is None:
@@ -607,8 +573,7 @@ class UpdatesAvailable(InternalDialog):
         if name in self.cache.all_changes:
             changes = self.cache.all_changes[name]
             srcpkg = self.cache[name].candidate.source_name
-            self.set_changes_buffer(changes_buffer, long_desc, changes, name,
-                                    srcpkg)
+            self.set_changes_buffer(changes_buffer, changes, name, srcpkg)
         # if not connected, do not even attempt to get the changes
         elif not self.connected:
             changes_buffer.set_text(
@@ -653,10 +618,8 @@ class UpdatesAvailable(InternalDialog):
             changes += self.cache.all_news[name]
         if name in self.cache.all_changes:
             changes += self.cache.all_changes[name]
-
-        if changes or long_desc:
-            self.set_changes_buffer(changes_buffer, long_desc, changes, name,
-                                    srcpkg)
+        if changes:
+            self.set_changes_buffer(changes_buffer, changes, name, srcpkg)
 
     def on_treeview_button_press(self, widget, event):
         """
@@ -682,11 +645,6 @@ class UpdatesAvailable(InternalDialog):
                 None, None, None, None, None, event.button, event.time)
             menu.show()
             return True
-
-    def _get_apt_news(self, apt_news_file):
-        if os.access(apt_news_file, os.R_OK):
-            with open(apt_news_file) as f:
-                return f.read()
 
     # we need this for select all/unselect all
     def _toggle_group_headers(self, new_selection_value):
@@ -786,7 +744,6 @@ class UpdatesAvailable(InternalDialog):
                 #    self.button_install.set_sensitive(True)
                 self.button_install.set_sensitive(True)
                 self.unity.set_install_menuitem_visible(True)
-                self.button_pro.destroy()
             else:
                 if inst_count > 0:
                     download_str = ngettext(
@@ -795,17 +752,10 @@ class UpdatesAvailable(InternalDialog):
                         inst_count)
                     self.button_install.set_sensitive(True)
                     self.unity.set_install_menuitem_visible(True)
-                    self.button_pro.destroy()
-                elif (self.list.ubuntu_pro_fake_groups
-                      and not self.list.ubuntu_pro_groups):
-                    download_str = _("You need to enable Ubuntu Pro to "
-                                     "install these updates.")
-                    self.button_install.destroy()
                 else:
                     download_str = _("There are no updates to install.")
                     self.button_install.set_sensitive(False)
                     self.unity.set_install_menuitem_visible(False)
-                    self.button_pro.destroy()
                 self.image_downsize.set_sensitive(False)
             self.label_downsize.set_text(download_str)
             self.hbox_downsize.show()
@@ -850,6 +800,7 @@ class UpdatesAvailable(InternalDialog):
                 text_desc = _("The computer also needs to restart "
                               "to finish installing previous updates.")
 
+        self.notebook_details.set_sensitive(True)
         self.treeview_update.set_sensitive(True)
         self.set_header(text_header)
         self.set_desc(text_desc)
@@ -870,10 +821,8 @@ class UpdatesAvailable(InternalDialog):
         self._restore_state()
 
     def activate_desc(self, expander, data):
-        return
-
-    def on_button_pro_clicked(self):
-        self.window_main.show_settings(SoftwarePropertiesPage.ubuntu_pro)
+        expanded = self.expander_desc.get_expanded()
+        self.expander_desc.set_vexpand(expanded)
 
     def on_button_install_clicked(self):
         self.unity.set_install_menuitem_visible(False)
@@ -1043,7 +992,7 @@ class UpdatesAvailable(InternalDialog):
             self.window_main.end_user_resizable()
         return False
 
-    def _add_header(self, name, groups, sensitive=True):
+    def _add_header(self, name, groups):
         total_size = 0
         for group in groups:
             total_size = total_size + group.get_total_size()
@@ -1051,8 +1000,7 @@ class UpdatesAvailable(InternalDialog):
             name,
             UpdateData(groups, None, None),
             humanize_size(total_size),
-            True,
-            sensitive
+            True
         ]
         return self.store.append(None, header_row)
 
@@ -1071,14 +1019,11 @@ class UpdatesAvailable(InternalDialog):
                     len(group.items) == 1:
                 group_is_item = group.items[0]
 
-            if group.name == "Ubuntu base":
-                group.name = "System components"
             group_row = [
                 group.name,
                 UpdateData(None, group, group_is_item),
                 humanize_size(group.get_total_size()),
-                True,
-                group.sensitive
+                True
             ]
             group_iter = self.store.append(None, group_row)
 
@@ -1089,8 +1034,7 @@ class UpdatesAvailable(InternalDialog):
                     item.name,
                     UpdateData(None, None, item),
                     humanize_size(getattr(item.pkg.candidate, "size", 0)),
-                    True,
-                    group.sensitive
+                    True
                 ]
                 self.store.append(group_iter, item_row)
 
@@ -1115,8 +1059,13 @@ class UpdatesAvailable(InternalDialog):
         if self.list.security_groups:
             self._add_header(_("Security updates"), self.list.security_groups)
             self._add_groups(self.list.security_groups)
-        if self.list.update_groups:
+        if ((self.list.security_groups or self.list.oem_groups)
+                and self.list.update_groups):
             self._add_header(_("Other updates"), self.list.update_groups)
+        elif self.list.update_groups and (self.list.kernel_autoremove_groups
+                                          or self.list.duplicate_groups):
+            self._add_header(_("Updates"), self.list.update_groups)
+        if self.list.update_groups:
             self._add_groups(self.list.update_groups)
         if self.list.kernel_autoremove_groups:
             self._add_header(
@@ -1128,27 +1077,10 @@ class UpdatesAvailable(InternalDialog):
                 _("Duplicate packages to be removed"),
                 self.list.duplicate_groups)
             self._add_groups(self.list.duplicate_groups)
-        if self.list.ubuntu_pro_groups:
-            self._add_header(
-                _("Ubuntu Pro security updates"),
-                self.list.ubuntu_pro_groups,
-                sensitive=True
-            )
-            self._add_groups(self.list.ubuntu_pro_groups)
-        if self.list.ubuntu_pro_fake_groups:
-            self._add_header(
-                _("Ubuntu Pro security updates (enable in Settings…)"),
-                self.list.ubuntu_pro_fake_groups,
-                sensitive=False
-            )
-            self._add_groups(self.list.ubuntu_pro_fake_groups)
 
         self.treeview_update.set_model(self.store)
         self.pkg_cell_area.indent_toplevel = (
-            bool(self.list.ubuntu_pro_fake_groups)
-            or bool(self.list.ubuntu_pro_groups)
-            or bool(self.list.update_groups)
-            or bool(self.list.security_groups)
+            bool(self.list.security_groups)
             or bool(self.list.kernel_autoremove_groups)
             or bool(self.list.duplicate_groups))
         self.update_close_button()

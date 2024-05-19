@@ -66,7 +66,7 @@ def fix_pro_pkg_holds(cfg: config.UAConfig):
 def refresh_contract(cfg: config.UAConfig):
     try:
         contract.refresh(cfg)
-    except exceptions.UrlError:
+    except exceptions.ConnectivityError:
         LOG.warning("Failed to refresh contract")
         raise
 
@@ -85,7 +85,7 @@ def main(cfg: config.UAConfig) -> int:
 
     LOG.debug("Running reboot commands...")
     try:
-        with lock.SpinLock(cfg=cfg, lock_holder="pro-reboot-cmds"):
+        with lock.RetryLock(cfg=cfg, lock_holder="pro-reboot-cmds"):
             fix_pro_pkg_holds(cfg)
             refresh_contract(cfg)
             upgrade_lts_contract.process_contract_delta_after_apt_lock(cfg)

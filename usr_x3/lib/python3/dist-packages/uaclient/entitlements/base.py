@@ -511,6 +511,16 @@ class UAEntitlement(metaclass=abc.ABCMeta):
 
         snap.run_snapd_wait_cmd()
 
+        try:
+            snap.refresh_snap("snapd")
+        except exceptions.ProcessExecutionError as e:
+            LOG.warning("Failed to refresh snapd snap", exc_info=e)
+            event.info(
+                messages.EXECUTING_COMMAND_FAILED.format(
+                    command="snap refresh snapd"
+                )
+            )
+
         http_proxy = http.validate_proxy(
             "http", self.cfg.http_proxy, http.PROXY_VALIDATION_SNAP_HTTP_URL
         )
@@ -549,6 +559,26 @@ class UAEntitlement(metaclass=abc.ABCMeta):
                 )
 
         return True
+
+    def are_required_packages_installed(self) -> bool:
+        """install packages necessary to enable a service."""
+        required_packages = (
+            self.entitlement_cfg.get("entitlement", {})
+            .get("directives", {})
+            .get("requiredPackages")
+        )
+
+        # If we don't have the directive, there is nothing
+        # to process here
+        if not required_packages:
+            return True
+
+        package_names = [package["name"] for package in required_packages]
+        installed_packages = apt.get_installed_packages_names()
+
+        return all(
+            [required in installed_packages for required in package_names]
+        )
 
     def handle_required_packages(self) -> bool:
         """install packages necessary to enable a service."""
@@ -594,6 +624,11 @@ class UAEntitlement(metaclass=abc.ABCMeta):
             for package in required_packages
             if package.get("removeOnDisable", False)
         ]
+        # If none of the packages have removeOnDisable, then there is nothing
+        # to process here
+        if len(package_names) == 0:
+            return True
+
         LOG.debug("Uninstalling packages %r", package_names)
         package_names_str = " ".join(package_names)
         event.info(
@@ -658,7 +693,10 @@ class UAEntitlement(metaclass=abc.ABCMeta):
         ret = []
         for service in self.incompatible_services:
             ent_status, _ = service.entitlement(self.cfg).application_status()
-            if ent_status == ApplicationStatus.ENABLED:
+            if ent_status in (
+                ApplicationStatus.ENABLED,
+                ApplicationStatus.WARNING,
+            ):
                 ret.append(service)
 
         return ret
@@ -795,6 +833,27 @@ class UAEntitlement(metaclass=abc.ABCMeta):
                 CanDisableFailure(
                     CanDisableFailureReason.ALREADY_DISABLED,
                     message=messages.ALREADY_DISABLED.format(title=self.title),
+                ),
+            )
+
+        applicability_status, _ = self.applicability_status()
+        # applicability_status() returns APPLICABLE if not self.entitlement_cfg
+        # but we want to be more strict and prevent disabling if
+        # not self.entitlement_cfg, so we check it explicitly here.
+        # This prevents e.g. landscape from being disabled on jammy when it
+        # doesn't exist for jammy yet but was manually configured separately
+        # from pro.
+        if (
+            not self.entitlement_cfg
+            or applicability_status == ApplicabilityStatus.INAPPLICABLE
+        ):
+            return (
+                False,
+                CanDisableFailure(
+                    CanDisableFailureReason.NOT_APPLICABLE,
+                    message=messages.CANNOT_DISABLE_NOT_APPLICABLE.format(
+                        title=self.title
+                    ),
                 ),
             )
 
@@ -1095,6 +1154,8 @@ class UAEntitlement(metaclass=abc.ABCMeta):
 
         if application_status == ApplicationStatus.DISABLED:
             return UserFacingStatus.INACTIVE, explanation
+        elif application_status == ApplicationStatus.WARNING:
+            return UserFacingStatus.WARNING, explanation
 
         warning, warn_msg = self.enabled_warning_status()
 
@@ -1271,5 +1332,5 @@ class UAEntitlement(metaclass=abc.ABCMeta):
         if self._is_sources_list_updated:
             return
         event.info(messages.APT_UPDATING_LIST.format(name="standard Ubuntu"))
-        apt.update_sources_list("/etc/apt/sources.list")
+        apt.update_sources_list(apt.get_system_sources_file())
         self._is_sources_list_updated = True

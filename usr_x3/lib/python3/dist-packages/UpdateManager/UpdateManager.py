@@ -36,7 +36,6 @@ warnings.filterwarnings("ignore", "Accessed deprecated property",
 
 import distro_info
 import fnmatch
-import json
 import os
 import subprocess
 import sys
@@ -65,7 +64,7 @@ from .Core.AlertWatcher import AlertWatcher
 from .Core.MyCache import MyCache
 from .Core.roam import NetworkManagerHelper
 from .Core.UpdateList import UpdateList
-from .Core.utils import get_arch, get_dist, SoftwarePropertiesPage
+from .Core.utils import get_arch, get_dist
 from .backend import (InstallBackend,
                       get_backend)
 
@@ -86,7 +85,6 @@ class UpdateManager(Gtk.Window):
         self.unity = UnitySupport()
         self.controller = None
         self.cache = None
-        self.ua_security_packages = []
         self.update_list = None
         self.meta_release = None
         self.hwe_replacement_packages = None
@@ -198,9 +196,9 @@ class UpdateManager(Gtk.Window):
         self._start_pane(None)
         sys.exit(0)
 
-    def show_settings(self, page_number=SoftwarePropertiesPage.updates):
+    def show_settings(self):
         cmd = ["/usr/bin/software-properties-gtk",
-               "--open-tab", str(page_number)]
+               "--open-tab", "2"]
 
         if "WAYLAND_DISPLAY" not in os.environ:
             cmd += ["--toplevel", "%s" % self.get_window().get_xid()]
@@ -270,54 +268,10 @@ class UpdateManager(Gtk.Window):
                and pkg.installed:
                 self.oem_metapackages.add(pkg)
 
-    def _get_ua_security_status(self):
-        self.ua_security_packages = []
-        try:
-            p = subprocess.Popen(['pro', 'security-status', '--format=json'],
-                                 stdout=subprocess.PIPE)
-        except OSError:
-            pass
-        else:
-            while p.poll() is None:
-                while Gtk.events_pending():
-                    Gtk.main_iteration()
-                time.sleep(0.05)
-            s = json.load(p.stdout)
-            for package in s.get('packages', []):
-                if package.get('service_name', '') == 'standard-security':
-                    continue
-                status = package.get('status', '')
-                if (
-                    status == 'pending_attach'
-                    or status == 'pending_enable'
-                    or status == 'upgrade_available'
-                ):
-                    name = package.get('package', '')
-                    version = package.get('version', '')
-                    size = package.get('download_size', 0)
-                    downloadable = status == 'upgrade_available'
-                    self.ua_security_packages.append(
-                        (name, version, size, downloadable)
-                    )
-            self.cache.create_pro_cache(self.ua_security_packages)
-
     def _make_available_pane(self, install_count, need_reboot=False,
                              cancelled_update=False, error_occurred=False):
         self._check_hwe_support_status()
-        if install_count != 0 or len(self.ua_security_packages) > 0:
-            header = None
-            desc = None
-            if error_occurred:
-                desc = _("Some software couldn’t be checked for updates.")
-            elif cancelled_update:
-                header = _("You stopped the check for updates.")
-                desc = _("Updated software is available from "
-                         "a previous check.")
-            # Display HWE updates first as an old HWE stack is vulnerable
-            elif self.hwe_replacement_packages:
-                return HWEUpgradeDialog(self)
-            return UpdatesAvailable(self, header, desc, need_reboot)
-        else:
+        if install_count == 0:
             # Need Restart > New Release > No Updates
             if need_reboot:
                 return NeedRestartDialog(self)
@@ -330,6 +284,19 @@ class UpdateManager(Gtk.Window):
                 return HWEUpgradeDialog(self)
             else:
                 return NoUpdatesDialog(self, error_occurred=error_occurred)
+        else:
+            header = None
+            desc = None
+            if error_occurred:
+                desc = _("Some software couldn’t be checked for updates.")
+            elif cancelled_update:
+                header = _("You stopped the check for updates.")
+                desc = _("Updated software is available from "
+                         "a previous check.")
+            # Display HWE updates first as an old HWE stack is vulnerable
+            elif self.hwe_replacement_packages:
+                return HWEUpgradeDialog(self)
+            return UpdatesAvailable(self, header, desc, need_reboot)
 
     def start_error(self, update_and_retry, header, desc):
         if update_and_retry:
@@ -456,8 +423,6 @@ class UpdateManager(Gtk.Window):
 
         self._check_oem_metapackages()
 
-        self._get_ua_security_status()
-
         for pkgname in self.oem_metapackages:
             try:
                 if not self.cache[pkgname].is_installed:
@@ -468,9 +433,7 @@ class UpdateManager(Gtk.Window):
         self.update_list = UpdateList(self)
         try:
             self.update_list.update(self.cache, eventloop_callback=iterate,
-                                    duplicate_packages=self.duplicate_packages,
-                                    ua_security_packages=self.
-                                    ua_security_packages)
+                                    duplicate_packages=self.duplicate_packages)
         except SystemError as e:
             header = _("Could not calculate the upgrade")
             desc = _("An unresolvable problem occurred while "

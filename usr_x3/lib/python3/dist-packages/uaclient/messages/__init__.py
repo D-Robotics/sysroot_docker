@@ -104,7 +104,7 @@ WARN_NEW_VERSION_AVAILABLE_CLI = (
         """\
  A new version is available: {version}
 Please run:
-    sudo apt-get install ubuntu-advantage-tools
+    sudo apt install ubuntu-pro-client
 to get the latest bug fixes and new features."""
     )
 )
@@ -161,12 +161,12 @@ CONTRACT_EXPIRED_WITH_PKGS = P(
     lambda n: t.ngettext(
         """\
 *Your Ubuntu Pro subscription has EXPIRED*
-{{pkg_num}} additional security update(s) require Ubuntu Pro with '{{service}}' enabled.
-Renew your service at {url}""",  # noqa: E501
+{{pkg_num}} additional security update require Ubuntu Pro with '{{service}}' enabled.
+Renew your subscription at {url}""",  # noqa: E501
         """\
 *Your Ubuntu Pro subscription has EXPIRED*
-{{pkg_num}} additional security update(s) require Ubuntu Pro with '{{service}}' enabled.
-Renew your service at {url}""",  # noqa: E501
+{{pkg_num}} additional security updates require Ubuntu Pro with '{{service}}' enabled.
+Renew your subscription at {url}""",  # noqa: E501
         n,
     ).format(url=urls.PRO_DASHBOARD)
 )
@@ -201,7 +201,7 @@ Your grace period will expire in {{remaining_days}} days.""",
 CONTRACT_EXPIRED = t.gettext(
     """\
 *Your Ubuntu Pro subscription has EXPIRED*
-Renew your service at {url}"""
+Renew your subscription at {url}"""
 ).format(url=urls.PRO_DASHBOARD)
 
 
@@ -270,7 +270,7 @@ Warning: Failed to migrate /etc/ubuntu-advantage/uaclient.conf
 # ATTACH
 AUTO_ATTACH_RUNNING = t.gettext(
     "Currently attempting to automatically attach this machine to "
-    "Ubuntu Pro services"
+    "an Ubuntu Pro subscription"
 )
 ATTACH_SUCCESS_TMPL = t.gettext(
     """\
@@ -384,15 +384,15 @@ working properly, *do not proceed*. You may end up with an unbootable system.
 # These are for the retry-auto-attach functionality
 AUTO_ATTACH_RETRY_NOTICE = t.gettext(
     """\
-Failed to automatically attach to Ubuntu Pro services {num_attempts} time(s).
+Failed to automatically attach to an Ubuntu Pro subscription {num_attempts} time(s).
 The failure was due to: {reason}.
 The next attempt is scheduled for {next_run_datestring}.
-You can try manually with `sudo pro auto-attach`."""
+You can try manually with `sudo pro auto-attach`."""  # noqa: E501
 )
 
 AUTO_ATTACH_RETRY_TOTAL_FAILURE_NOTICE = t.gettext(
     """\
-Failed to automatically attach to Ubuntu Pro services {num_attempts} time(s).
+Failed to automatically attach to an Ubuntu Pro subscription {num_attempts} time(s).
 The most recent failure was due to: {reason}.
 Try re-launching the instance or report this issue by running `ubuntu-bug ubuntu-advantage-tools`
 You can try manually with `sudo pro auto-attach`."""  # noqa: E501
@@ -596,7 +596,7 @@ SECURITY_CVE_STATUS_UNKNOWN = t.gettext(
 UNKNOWN: {status}"""
 )
 
-SECURITY_FOUND_CVES = t.gettext("Found CVEs:")
+SECURITY_FOUND_CVES = t.gettext("Associated CVEs:")
 SECURITY_FOUND_LAUNCHPAD_BUGS = t.gettext("Found Launchpad bugs:")
 SECURITY_FIXING_REQUESTED_USN = t.gettext(
     """\
@@ -682,7 +682,7 @@ for a list of available options."""
 SS_UPDATE_CALL = t.gettext(
     """\
  Make sure to run
-    sudo apt-get update
+    sudo apt update
 to get the latest package information from apt."""
 )
 SS_UPDATE_DAYS = (
@@ -898,7 +898,7 @@ CLI_COLLECT_LOGS_OUTPUT = t.gettext(
     "tarball where the logs will be stored. (Defaults to " "./ua_logs.tar.gz)"
 )
 
-CLI_CONFIG_SHOW_DESC = t.gettext("Show customisable configuration settings")
+CLI_CONFIG_SHOW_DESC = t.gettext("Show customizable configuration settings")
 CLI_CONFIG_SHOW_KEY = t.gettext(
     "Optional key or key(s) to show configuration settings."
 )
@@ -917,7 +917,7 @@ CLI_CONFIG_DESC = t.gettext("Manage Ubuntu Pro configuration")
 
 CLI_ATTACH_DESC = t.gettext(
     """\
-Attach this machine to Ubuntu Pro with a token obtained from:
+Attach this machine to an Ubuntu Pro subscription with a token obtained from:
 {url}
 
 When running this command without a token, it will generate a short code
@@ -993,13 +993,15 @@ Refresh three distinct Ubuntu Pro related artifacts in the system:
 * messages: Update APT and MOTD messages related to UA.
 
 You can individually target any of the three specific actions,
-by passing it's target to nome to the command.  If no `target`
+by passing the target name to the command.  If no `target`
 is specified, all targets are refreshed.
 """
 )
 CLI_REFRESH_TARGET = t.gettext("Target to refresh.")
 
-CLI_DETACH_DESC = t.gettext("Detach this machine from Ubuntu Pro services.")
+CLI_DETACH_DESC = t.gettext(
+    "Detach this machine from an Ubuntu Pro subscription."
+)
 
 CLI_HELP_DESC = t.gettext(
     "Provide detailed information about Ubuntu Pro services."
@@ -1198,7 +1200,7 @@ CIS_USG_POST_ENABLE = t.gettext("Visit {url} for the next steps").format(
 )
 CIS_IS_NOW_USG = t.gettext(
     """\
-From Ubuntu 20.04 and onwards 'pro enable cis' has been
+From Ubuntu 20.04 onward 'pro enable cis' has been
 replaced by 'pro enable usg'. See more information at:
 {url}"""
 ).format(url=urls.USG_DOCS)
@@ -1255,7 +1257,7 @@ Warning: FIPS kernel is not optimized for your specific cloud.
 To fix it, run the following commands:
 
     1. sudo pro disable fips
-    2. sudo apt-get remove ubuntu-fips
+    2. sudo apt remove ubuntu-fips
     3. sudo pro enable fips --assume-yes
     4. sudo reboot
 """
@@ -1367,6 +1369,13 @@ more. Find out more about Landscape at {home_url}"""
     install_url=urls.LANDSCAPE_DOCS_INSTALL,
     home_url=urls.LANDSCAPE_HOME_PAGE,
 )
+LANDSCAPE_CONFIG_REMAINS = t.gettext(
+    """\
+/etc/landscape/client.conf contains your landscape-client configuration.
+To re-enable Landscape with the same configuration, run:
+    sudo pro enable landscape --assume-yes
+"""
+)
 
 LIVEPATCH_TITLE = t.gettext("Livepatch")
 LIVEPATCH_DESCRIPTION = t.gettext("Canonical Livepatch service")
@@ -1416,6 +1425,10 @@ REALTIME_GENERIC_DESCRIPTION = t.gettext(
 REALTIME_NVIDIA_TITLE = t.gettext("Real-time NVIDIA Tegra Kernel")
 REALTIME_NVIDIA_DESCRIPTION = t.gettext(
     "RT kernel optimized for NVIDIA Tegra platform"
+)
+REALTIME_RASPI_TITLE = t.gettext("Raspberry Pi Real-time for Pi5/Pi4")
+REALTIME_RASPI_DESCRIPTION = t.gettext(
+    "24.04 Real-time kernel optimised for Raspberry Pi"
 )
 REALTIME_INTEL_TITLE = t.gettext("Real-time Intel IOTG Kernel")
 REALTIME_INTEL_DESCRIPTION = t.gettext(
@@ -1660,6 +1673,13 @@ ALREADY_DISABLED = FormattedNamedMessage(
 {title} is not currently enabled\nSee: sudo pro status"""
     ),
 )
+CANNOT_DISABLE_NOT_APPLICABLE = FormattedNamedMessage(
+    "cannot-disable-not-applicable",
+    t.gettext(
+        """\
+Disabling {title} with pro is not supported.\nSee: sudo pro status"""
+    ),
+)
 ALREADY_ENABLED = FormattedNamedMessage(
     "service-already-enabled",
     t.gettext(
@@ -1812,6 +1832,15 @@ LIVEPATCH_APPLICATION_STATUS_CLIENT_FAILURE = NamedMessage(
     t.gettext("canonical-livepatch status didn't finish successfully"),
 )
 
+LIVEPATCH_CLIENT_FAILURE_WARNING = FormattedNamedMessage(
+    "livepatch-client-failure-warning",
+    t.gettext(
+        """\
+Error running canonical-livepatch status:
+{livepatch_error}"""
+    ),
+)
+
 REALTIME_FIPS_INCOMPATIBLE = NamedMessage(
     "realtime-fips-incompatible",
     t.gettext(
@@ -1858,19 +1887,6 @@ UNATTENDED_UPGRADES_UNINSTALLED = NamedMessage(
     t.gettext("unattended-upgrades package is not installed"),
 )
 
-LANDSCAPE_CLIENT_NOT_INSTALLED = NamedMessage(
-    "landscape-client-not-installed",
-    t.gettext("lanscape-client is not installed"),
-)
-LANDSCAPE_NOT_CONFIGURED = NamedMessage(
-    "landscape-not-configured",
-    t.gettext(
-        """\
-Landscape is installed but not configured.
-Run `sudo landscape-config` to set it up, or run `sudo pro disable landscape`\
-"""
-    ),
-)
 LANDSCAPE_NOT_REGISTERED = NamedMessage(
     "landscape-not-registered",
     t.gettext(
@@ -1883,10 +1899,7 @@ Run `sudo landscape-config` to register, or run `sudo pro disable landscape`\
 LANDSCAPE_SERVICE_NOT_ACTIVE = NamedMessage(
     "landscape-service-not-active",
     t.gettext(
-        """\
-Landscape is installed and configured and registered but not running.
-Run `sudo landscape-config` to start it, or run `sudo pro disable landscape`\
-"""
+        "landscape-client is either not installed or installed but disabled."
     ),
 )
 LANDSCAPE_CONFIG_FAILED = NamedMessage(
@@ -2022,12 +2035,13 @@ E_PROXY_AUTH_FAIL = NamedMessage(
     "proxy-auth-fail", t.gettext("Proxy authentication failed")
 )
 
-E_CONNECTIVITY_ERROR = NamedMessage(
+E_CONNECTIVITY_ERROR = FormattedNamedMessage(
     "connectivity-error",
     t.gettext(
         """\
-Failed to connect to authentication server
-Check your Internet connection and try again."""
+Failed to connect to {url}
+{cause_error}
+"""
     ),
 )
 

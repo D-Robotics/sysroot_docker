@@ -17,16 +17,9 @@
 #  USA
 
 import dbus
-import os
-from gettext import gettext as _
-import gi
-gi.require_version("Gtk", "3.0")
-from gi.repository import GdkPixbuf, Gio, Gtk
-from softwareproperties.gtk.utils import current_distro, is_dark_theme
+from gi.repository import Gio
 
 from .DialogUaAttach import DialogUaAttach
-from .DialogUaDetach import DialogUaDetach
-from .DialogUaFipsEnable import DialogUaFipsEnable
 
 class UaService:
     def __init__(self, bus_object, name, entitled, status):
@@ -41,66 +34,39 @@ class UbuntuProPage(object):
     def __init__(self, parent):
         self._parent = parent
 
+        self.detaching = False
+
         self.stack_ua_attach = parent.stack_ua_attach
         self.box_ua_attached = parent.box_ua_attached
         self.box_ua_unattached = parent.box_ua_unattached
-        self.stack_ua_main = parent.stack_ua_main
-        self.box_ua_options = parent.box_ua_options
-        self.box_ua_fips_setup = parent.box_ua_fips_setup
-        self.switch_ua_esm_infra = parent.switch_ua_esm_infra
-        self.label_ua_esm_infra = parent.label_ua_esm_infra
-        self.label_ua_esm_infra_error = parent.label_ua_esm_infra_error
-        self.label_ua_esm_infra_error_messages = {
-            "enable": _("Could not enable ESM Infra. Please try again."),
-            "disable": _("Could not disable ESM Infra. Please try again."),
-        }
-        self.switch_ua_esm_apps = parent.switch_ua_esm_apps
-        self.label_ua_esm_apps = parent.label_ua_esm_apps
-        self.label_ua_esm_apps_error = parent.label_ua_esm_apps_error
-        self.label_ua_esm_apps_error_messages = {
-            "enable": _("Could not enable ESM Apps. Please try again."),
-            "disable": _("Could not disable ESM Apps. Please try again."),
-        }
+        self.box_ua_esm = parent.box_ua_esm
+        self.switch_ua_esm = parent.switch_ua_esm
+        self.label_ua_esm_error = parent.label_ua_esm_error
+        self.box_ua_livepatch = parent.box_ua_livepatch
         self.switch_ua_livepatch = parent.switch_ua_livepatch
         self.checkbutton_livepatch_topbar = parent.checkbutton_livepatch_topbar
-        self.label_ua_livepatch = parent.label_ua_livepatch
         self.label_ua_livepatch_error = parent.label_ua_livepatch_error
-        self.label_ua_livepatch_error_messages = {
-            "enable": _("Could not enable Livepatch. Please try again."),
-            "disable": _("Could not disable Livepatch. Please try again."),
-        }
-        self.button_ua_fips = parent.button_ua_fips
-        self.label_ua_fips_status = parent.label_ua_fips_status
-        self.label_ua_fips_description = parent.label_ua_fips_description
-        self.button_ua_usg = parent.button_ua_usg
-        self.label_ua_usg_button = parent.label_ua_usg_button
-        self.label_ua_usg_status = parent.label_ua_usg_status
-        self.label_ua_usg_description = parent.label_ua_usg_description
-
-        if is_dark_theme(self.stack_ua_attach):
-            ubuntu_pro_logo = GdkPixbuf.Pixbuf.new_from_file_at_scale(os.path.join(parent.datadir, 'ubuntu-pro-logo-dark.svg'), -1, 50, True)
-        else:
-            ubuntu_pro_logo = GdkPixbuf.Pixbuf.new_from_file_at_scale(os.path.join(parent.datadir, 'ubuntu-pro-logo.svg'), -1, 50, True)
-        parent.image_ubuntu_pro_logo.set_from_pixbuf(ubuntu_pro_logo)
+        self.box_ua_fips = parent.box_ua_fips
+        self.switch_ua_fips = parent.switch_ua_fips
+        self.label_ua_fips_error = parent.label_ua_fips_error
+        self.box_ua_fips_updates = parent.box_ua_fips_updates
+        self.switch_ua_fips_updates = parent.switch_ua_fips_updates
+        self.label_ua_fips_updates_error = parent.label_ua_fips_updates_error
+        self.box_ua_cc_eal = parent.box_ua_cc_eal
+        self.switch_ua_cc_eal = parent.switch_ua_cc_eal
+        self.label_ua_cc_eal_error = parent.label_ua_cc_eal_error
+        self.box_ua_cis_tools = parent.box_ua_cis_tools
+        self.switch_ua_cis_tools = parent.switch_ua_cis_tools
+        self.label_ua_cis_tools_error = parent.label_ua_cis_tools_error
 
         parent.button_ua_attach.connect('clicked', self.on_button_ua_attach_clicked)
         parent.button_ua_detach.connect('clicked', self.on_button_ua_detach_clicked)
-        self.on_ua_esm_infra_changed_handler = self.switch_ua_esm_infra.connect('notify::active', self.on_ua_esm_infra_changed)
-        self.on_ua_esm_apps_changed_handler = self.switch_ua_esm_apps.connect('notify::active', self.on_ua_esm_apps_changed)
+        self.on_ua_esm_changed_handler = self.switch_ua_esm.connect('notify::active', self.on_ua_esm_changed)
         self.on_ua_livepatch_changed_handler = self.switch_ua_livepatch.connect('notify::active', self.on_ua_livepatch_changed)
-        parent.button_ua_fips.connect('clicked', self.on_button_ua_fips_clicked)
-        parent.button_ua_usg.connect('clicked', self.on_button_ua_usg_clicked)
-        parent.expander_compliance_and_hardening.connect('notify::expanded', self.on_compliance_and_hardening_expand_changed)
-
-        # Set date dependent labels
-        distro = current_distro()
-        if distro.eol_esm is not None:
-            eol_year = distro.eol_esm.year
-            self.label_ua_esm_infra.set_markup(_('<b>ESM Infra</b> provides security updates for over 2,300 Ubuntu Main packages until %d.') % eol_year)
-            self.label_ua_esm_apps.set_markup(_('<b>ESM Apps</b>; provides security updates for over 23,000 Ubuntu Universe packages until %d.') % eol_year)
-        else:
-            self.label_ua_esm_infra.set_markup(_('<b>ESM Infra</b> provides security updates for over 2,300 Ubuntu Main packages.'))
-            self.label_ua_esm_apps.set_markup(_('<b>ESM Apps</b>; provides security updates for over 23,000 Ubuntu Universe packages.'))
+        self.on_ua_fips_changed_handler = self.switch_ua_fips.connect('notify::active', self.on_ua_fips_changed)
+        self.on_ua_fips_updates_changed_handler = self.switch_ua_fips_updates.connect('notify::active', self.on_ua_fips_updates_changed)
+        self.on_ua_cc_eal_changed_handler = self.switch_ua_cc_eal.connect('notify::active', self.on_ua_cc_eal_changed)
+        self.on_ua_cis_tools_changed_handler = self.switch_ua_cis_tools.connect('notify::active', self.on_ua_cis_tools_changed)
 
         self.update_notifier_settings = None
         source = Gio.SettingsSchemaSource.get_default()
@@ -162,69 +128,66 @@ class UbuntuProPage(object):
         return None
 
     def update_status(self):
+        self.stack_ua_attach.set_sensitive(not self.detaching)
         if self.attached:
             self.stack_ua_attach.set_visible_child(self.box_ua_attached)
         else:
             self.stack_ua_attach.set_visible_child(self.box_ua_unattached)
 
-        def entitled_to_service(service):
-            return service is not None and service.entitled == 'yes'
-        def service_request_in_progress(service):
-            return service is not None and service.request_in_progress
-        def service_is_enabled(service):
-            return service is not None and service.status == 'enabled'
+        def update_sensitive(box, service):
+            box.set_sensitive(service is not None and service.entitled == 'yes' and not service.request_in_progress)
 
         def update_switch(switch, service, handler):
             if service is not None and service.request_in_progress:
                 return
             switch.handler_block(handler)
-            switch.set_active(service_is_enabled(service))
+            switch.set_active(service is not None and service.status == 'enabled')
             switch.handler_unblock(handler)
 
         esm_infra_service = self.get_service('esm-infra')
-        for widget in [self.switch_ua_esm_infra, self.label_ua_esm_infra, self.label_ua_esm_infra_error]:
-            widget.set_sensitive(entitled_to_service(esm_infra_service) and not service_request_in_progress(esm_infra_service))
-        update_switch(self.switch_ua_esm_infra, esm_infra_service, self.on_ua_esm_infra_changed_handler)
-
-        esm_apps_service = self.get_service('esm-apps')
-        for widget in [self.switch_ua_esm_apps, self.label_ua_esm_apps, self.label_ua_esm_apps_error]:
-            widget.set_sensitive(entitled_to_service(esm_apps_service) and not service_request_in_progress(esm_apps_service))
-        update_switch(self.switch_ua_esm_apps, esm_apps_service, self.on_ua_esm_apps_changed_handler)
+        update_sensitive(self.box_ua_esm, esm_infra_service);
+        update_switch(self.switch_ua_esm, esm_infra_service, self.on_ua_esm_changed_handler)
 
         livepatch_service = self.get_service('livepatch')
-        for widget in [self.switch_ua_livepatch, self.label_ua_livepatch, self.label_ua_livepatch_error]:
-            widget.set_sensitive(entitled_to_service(livepatch_service) and not service_request_in_progress(livepatch_service))
+        update_sensitive(self.box_ua_livepatch, livepatch_service);
         update_switch(self.switch_ua_livepatch, livepatch_service, self.on_ua_livepatch_changed_handler)
         self.checkbutton_livepatch_topbar.set_sensitive(self.update_notifier_settings is not None and self.switch_ua_livepatch.get_active())
 
         fips_service = self.get_service('fips')
-        fips_updates_service = self.get_service('fips-updates')
-        fips_in_progress = service_request_in_progress(fips_service) or service_request_in_progress(fips_updates_service)
-        self.button_ua_fips.set_sensitive(entitled_to_service(fips_service) and not fips_in_progress)
-        if fips_in_progress:
-            self.stack_ua_main.set_visible_child(self.box_ua_fips_setup)
-        else:
-            self.stack_ua_main.set_visible_child(self.box_ua_options)
+        update_sensitive(self.box_ua_fips, fips_service)
+        update_switch(self.switch_ua_fips, fips_service, self.on_ua_fips_changed_handler)
 
-        usg_service = self.get_service('usg')
-        if not service_request_in_progress(usg_service):
-            if service_is_enabled(usg_service):
-                self.label_ua_usg_button.set_label(_('Disable _USG'))
-            else:
-                self.label_ua_usg_button.set_label(_('Enable _USG'))
-        self.button_ua_usg.set_sensitive(entitled_to_service(usg_service) and not service_request_in_progress(usg_service))
+        fips_updates_service = self.get_service('fips-updates')
+        update_sensitive(self.box_ua_fips_updates, fips_updates_service)
+        update_switch(self.switch_ua_fips_updates, fips_updates_service, self.on_ua_fips_updates_changed_handler)
+
+        cc_eal_service = self.get_service('cc-eal')
+        update_sensitive(self.box_ua_cc_eal, cc_eal_service)
+        update_switch(self.switch_ua_cc_eal, cc_eal_service, self.on_ua_cc_eal_changed_handler)
+
+        cis_service = self.get_service('cis')
+        update_sensitive(self.box_ua_cis_tools, cis_service)
+        update_switch(self.switch_ua_cis_tools, cis_service, self.on_ua_cis_tools_changed_handler)
 
     def on_button_ua_attach_clicked(self, button):
         dialog = DialogUaAttach(self._parent.window_main, self._parent.datadir, self.ua_object)
         dialog.run()
 
     def on_button_ua_detach_clicked(self, button):
-        dialog = DialogUaDetach(self._parent.window_main, self._parent.datadir, self.ua_object)
-        dialog.run()
+        def on_reply():
+            self.detaching = False
+            self.update_status()
+        def on_error(error):
+            # FIXME
+            print(error)
+            self.detaching = False
+            self.update_status()
+        self.ua_object.Detach(reply_handler=on_reply, error_handler=on_error, dbus_interface='com.canonical.UbuntuAdvantage.Manager')
+        self.detaching = True
+        self.update_status()
 
-    def set_service_enabled(self, service_name, enabled, error_label, error_label_messages):
-        if error_label is not None:
-            error_label.set_visible(False)
+    def set_service_enabled(self, service_name, switch, error_label):
+        error_label.set_visible(False)
         service = self.get_service(service_name)
         if service is None:
             return
@@ -232,30 +195,23 @@ class UbuntuProPage(object):
             service.request_in_progress = False
             self.update_status()
         def on_error(error):
+            # FIXME
             print(error)
-            if error_label is not None:
-                error_label.set_visible(True)
-                if enabled:
-                    error_label.set_label(error_label_messages["enable"])
-                else:
-                    error_label.set_label(error_label_messages["disable"])
+            error_label.set_visible(True)
             service.request_in_progress = False
             self.update_status()
-        if enabled:
-            service.bus_object.Enable(reply_handler=on_reply, error_handler=on_error, dbus_interface='com.canonical.UbuntuAdvantage.Service', timeout=600)
+        if switch.get_active():
+            service.bus_object.Enable(reply_handler=on_reply, error_handler=on_error, dbus_interface='com.canonical.UbuntuAdvantage.Service')
         else:
-            service.bus_object.Disable(reply_handler=on_reply, error_handler=on_error, dbus_interface='com.canonical.UbuntuAdvantage.Service', timeout=600)
+            service.bus_object.Disable(reply_handler=on_reply, error_handler=on_error, dbus_interface='com.canonical.UbuntuAdvantage.Service')
         service.request_in_progress = True
         self.update_status()
 
-    def on_ua_esm_infra_changed(self, switch, param):
-        self.set_service_enabled('esm-infra', self.switch_ua_esm_infra.get_active(), self.label_ua_esm_infra_error, self.label_ua_esm_infra_error_messages)
-
-    def on_ua_esm_apps_changed(self, switch, param):
-        self.set_service_enabled('esm-apps', self.switch_ua_esm_apps.get_active(), self.label_ua_esm_apps_error, self.label_ua_esm_apps_error_messages)
+    def on_ua_esm_changed(self, switch, param):
+        self.set_service_enabled('esm-infra', self.switch_ua_esm, self.label_ua_esm_error)
 
     def on_ua_livepatch_changed(self, switch, param):
-        self.set_service_enabled('livepatch', self.switch_ua_livepatch.get_active(), self.label_ua_livepatch_error, self.label_ua_livepatch_error_messages)
+        self.set_service_enabled('livepatch', self.switch_ua_livepatch, self.label_ua_livepatch_error)
 
     def on_checkbutton_livepatch_topbar_toggled(self, button):
         self.update_notifier_settings.handler_block(self.on_update_notifier_settings_changed_handler)
@@ -267,30 +223,14 @@ class UbuntuProPage(object):
         self.checkbutton_livepatch_topbar.set_active(self.update_notifier_settings.get_boolean('show-livepatch-status-icon'))
         self.checkbutton_livepatch_topbar.handler_unblock(self.on_checkbutton_livepatch_topbar_toggled_handler)
 
-    def on_button_ua_fips_clicked(self, button):
-        dialog = DialogUaFipsEnable(self._parent.window_main, self._parent.datadir, self.ua_object)
-        service_name = dialog.run()
-        if service_name is None:
-            return
+    def on_ua_fips_changed(self, switch, param):
+        self.set_service_enabled('fips', self.switch_ua_fips, self.label_ua_fips_error)
 
-        dialog = Gtk.MessageDialog(parent=self._parent.window_main,
-                                   flags=Gtk.DialogFlags.MODAL,
-                                   type=Gtk.MessageType.QUESTION,
-                                   message_format=None)
-        dialog.add_button(_('No, go back'), Gtk.ResponseType.CANCEL)
-        dialog.add_button(_('Enable FIPS'), Gtk.ResponseType.OK)
-        dialog.set_markup(_('Enabling FIPS could take a few minutes. This action cannot be reversed. Are you sure you want to enable FIPS?'))
-        result = dialog.run()
-        dialog.destroy()
-        if result != Gtk.ResponseType.OK:
-            return
+    def on_ua_fips_updates_changed(self, switch, param):
+        self.set_service_enabled('fips-updates', self.switch_ua_fips_updates, self.label_ua_fips_updates_error)
 
-        self.set_service_enabled(service_name, True, None, None)
+    def on_ua_cc_eal_changed(self, switch, param):
+        self.set_service_enabled('cc-eal', self.switch_ua_cc_eal, self.label_ua_cc_eal_error)
 
-    def on_button_ua_usg_clicked(self, button):
-        service = self.get_service('usg')
-        is_enabled = service is not None and service.status == 'enabled'
-        self.set_service_enabled('usg', not is_enabled, None, None)
-
-    def on_compliance_and_hardening_expand_changed(self, widget, param):
-        self._parent.window_main.resize(1, 1)
+    def on_ua_cis_tools_changed(self, switch, param):
+        self.set_service_enabled('cis', self.switch_ua_cis_tools, self.label_ua_cis_tools_error)

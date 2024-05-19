@@ -2,6 +2,8 @@ import datetime
 import glob
 import logging
 import os
+import re
+import shutil
 from typing import List, Optional  # noqa: F401
 
 from uaclient import (
@@ -18,6 +20,7 @@ from uaclient import system, timer, util
 from uaclient.clouds import AutoAttachCloudInstance  # noqa: F401
 from uaclient.clouds import identity
 from uaclient.defaults import (
+    APPARMOR_PROFILES,
     CLOUD_BUILD_INFO,
     DEFAULT_CONFIG_FILE,
     DEFAULT_LOG_PREFIX,
@@ -32,6 +35,8 @@ LOG = logging.getLogger(util.replace_top_level_logger_name(__name__))
 
 
 UA_SERVICES = (
+    "apt-news.service",
+    "esm-cache.service",
     "ua-timer.service",
     "ua-timer.timer",
     "ua-auto-attach.path",
@@ -48,7 +53,7 @@ def attach_with_token(
 ) -> None:
     """
     Common functionality to take a token and attach via contract backend
-    :raise UrlError: On unexpected connectivity issues to contract
+    :raise ConnectivityError: On unexpected connectivity issues to contract
         server or inability to access identity doc from metadata service.
     :raise ContractAPIError: On unexpected errors when talking to the contract
         server.
@@ -57,14 +62,9 @@ def attach_with_token(
 
     contract_client = contract.UAContractClient(cfg)
     attached_at = datetime.datetime.now(tz=datetime.timezone.utc)
-
-    try:
-        new_machine_token = contract_client.add_contract_machine(
-            contract_token=token, attachment_dt=attached_at
-        )
-    except exceptions.UrlError as e:
-        LOG.exception(str(e))
-        raise exceptions.ConnectivityError()
+    new_machine_token = contract_client.add_contract_machine(
+        contract_token=token, attachment_dt=attached_at
+    )
 
     cfg.machine_token_file.write(new_machine_token)
 
@@ -84,7 +84,7 @@ def attach_with_token(
             cfg.machine_token_file.entitlements,
             allow_enable,
         )
-    except (exceptions.UrlError, exceptions.UbuntuProError) as exc:
+    except (exceptions.ConnectivityError, exceptions.UbuntuProError) as exc:
         # Persist updated status in the event of partial attach
         attachment_data_file.write(AttachmentData(attached_at=attached_at))
         ua_status.status(cfg=cfg)
@@ -107,7 +107,7 @@ def auto_attach(
     allow_enable=True,
 ) -> None:
     """
-    :raise UrlError: On unexpected connectivity issues to contract
+    :raise ConnectivityError: On unexpected connectivity issues to contract
         server or inability to access identity doc from metadata service.
     :raise ContractAPIError: On unexpected errors when talking to the contract
         server.
@@ -176,6 +176,30 @@ def status(
     return status, ret
 
 
+def _write_apparmor_logs_to_file(filename: str) -> None:
+    """
+    Helper which gets ubuntu_pro apparmor logs from the kernel from the last
+    day and writes them to the specified filename.
+    """
+    # can't use journalctl's --grep, because xenial doesn't support it :/
+    cmd = ["journalctl", "-b", "-k", "--since=1 day ago"]
+    apparmor_re = r"apparmor=\".*(profile=\"ubuntu_pro_|name=\"ubuntu_pro_)"
+    kernel_logs = None
+    try:
+        kernel_logs, _ = system.subp(cmd)
+    except exceptions.ProcessExecutionError as e:
+        LOG.warning("Failed to collect kernel logs:\n%s", str(e))
+        system.write_file("{}-error".format(filename), str(e))
+    else:
+        if kernel_logs:  # some unit tests mock subp to return (None,None)
+            apparmor_logs = []
+            # filter out only what interests us
+            for kernel_line in kernel_logs.split("\n"):
+                if re.search(apparmor_re, kernel_line):
+                    apparmor_logs.append(kernel_line)
+            system.write_file(filename, "\n".join(apparmor_logs))
+
+
 def _write_command_output_to_file(
     cmd, filename: str, return_codes: Optional[List[int]] = None
 ) -> None:
@@ -196,7 +220,7 @@ def _get_state_files(cfg: config.UAConfig):
         timer_jobs_state_file.ua_file.path,
         CLOUD_BUILD_INFO,
         *(
-            entitlement.repo_list_file_tmpl.format(name=entitlement.name)
+            entitlement(cfg).repo_file
             for entitlement in entitlements.ENTITLEMENT_CLASSES
             if issubclass(entitlement, entitlements.repo.RepoEntitlement)
         ),
@@ -283,3 +307,15 @@ def collect_logs(cfg: config.UAConfig, output_dir: str):
             system.write_file(
                 os.path.join(output_dir, os.path.basename(f)), content
             )
+
+    # get apparmor logs
+    _write_apparmor_logs_to_file("{}/apparmor_logs.txt".format(output_dir))
+
+    # include apparmor profiles
+    for f in APPARMOR_PROFILES:
+        if os.path.isfile(f):
+            try:
+                shutil.copy(f, output_dir)
+            except Exception as e:
+                LOG.warning("Failed to copy file: %s\n%s", f, str(e))
+                continue

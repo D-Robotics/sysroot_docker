@@ -78,16 +78,6 @@ class ExecutionTime(object):
         print("%s: %s" % (self.info, time.time() - self.now))
 
 
-class SoftwarePropertiesPage():
-    ubuntu_software = 0
-    other_software = 1
-    updates = 2
-    authentication = 3
-    additional_drivers = 4
-    developer_options = 5
-    ubuntu_pro = 6
-
-
 def get_string_with_no_auth_from_source_entry(entry):
     tmp = copy(entry)
     url_parts = urlsplit(tmp.uri)

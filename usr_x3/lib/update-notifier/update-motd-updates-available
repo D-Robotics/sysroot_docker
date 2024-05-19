@@ -2,6 +2,7 @@
 #
 # helper for update-motd
 
+NO_ESM_MESSAGES=""
 
 # poor mans force
 if [ "$1" = "--force" ]; then
@@ -47,12 +48,18 @@ tmpfile=""
 trap cleanup EXIT
 tmpfile=$(mktemp -p $(dirname "$stamp"))
 
+# should we hide esm-related information in the output
+no_esm_file="/var/lib/update-notifier/hide-esm-in-motd"
+if [ -e "$no_esm_file" ]; then
+    NO_ESM_MESSAGES="--no-esm-messages"
+fi
+
 # output something for update-motd
 if [ "$NEED_UPDATE_CHECK" = "yes" ]; then
     {
 
         echo ""
-        /usr/lib/update-notifier/apt-check --human-readable
+        /usr/lib/update-notifier/apt-check --human-readable "$NO_ESM_MESSAGES"
         echo ""
     } > "$tmpfile"
     mv "$tmpfile" "$stamp"
