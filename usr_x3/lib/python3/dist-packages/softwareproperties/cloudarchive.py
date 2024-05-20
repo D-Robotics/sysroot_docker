@@ -19,6 +19,8 @@
 #  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
 #  USA
 
+from __future__ import print_function
+
 import os
 import subprocess
 
@@ -53,10 +55,6 @@ RELEASE_MAP = {
     'wallaby': 'focal',
     'xena': 'focal',
     'yoga': 'focal',
-    'zed': 'jammy',
-    'antelope': 'jammy',
-    'bobcat': 'jammy',
-    'caracal': 'jammy',
 }
 UCA = "Ubuntu Cloud Archive"
 WEB_LINK = 'https://wiki.ubuntu.com/OpenStack/CloudArchive'
@@ -168,3 +166,4 @@ class CloudArchiveShortcutHandler(ShortcutHandler):
 
         self._set_source_entry(handler.SourceEntry().line)
         return True
+

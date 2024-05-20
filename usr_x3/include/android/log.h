@@ -100,7 +100,7 @@ int __android_log_print(int prio, const char *tag,  const char *fmt, ...)
 #if defined(__GNUC__)
 	__attribute__ ((format(printf, 3, 4)))
 #endif
-	;
+    ;
 
 /*
  * A variant of __android_log_print() that takes a va_list to list
@@ -119,7 +119,7 @@ void __android_log_assert(const char *cond, const char *tag,
 	__attribute__ ((noreturn))
 	__attribute__ ((format(printf, 3, 4)))
 #endif
-	;
+    ;
 
 #ifdef __cplusplus
 }

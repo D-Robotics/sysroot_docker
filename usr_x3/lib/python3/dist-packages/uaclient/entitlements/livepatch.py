@@ -106,6 +106,16 @@ class LivepatchEntitlement(UAEntitlement):
 
         snap.run_snapd_wait_cmd()
 
+        try:
+            snap.refresh_snap("snapd")
+        except exceptions.ProcessExecutionError as e:
+            LOG.warning("Failed to refresh snapd snap", exc_info=e)
+            event.info(
+                messages.EXECUTING_COMMAND_FAILED.format(
+                    command="snap refresh snapd"
+                )
+            )
+
         http_proxy = http.validate_proxy(
             "http", self.cfg.http_proxy, http.PROXY_VALIDATION_SNAP_HTTP_URL
         )
@@ -214,7 +224,17 @@ class LivepatchEntitlement(UAEntitlement):
         if not livepatch.is_livepatch_installed():
             return (ApplicationStatus.DISABLED, messages.LIVEPATCH_NOT_ENABLED)
 
-        if livepatch.status() is None:
+        try:
+            livepatch_status = livepatch.status()
+        except exceptions.ProcessExecutionError as e:
+            return (
+                ApplicationStatus.WARNING,
+                messages.LIVEPATCH_CLIENT_FAILURE_WARNING.format(
+                    livepatch_error=e.stderr,
+                ),
+            )
+
+        if livepatch_status is None:
             # TODO(May want to parse INACTIVE/failure assessment)
             return (
                 ApplicationStatus.DISABLED,
@@ -249,6 +269,7 @@ class LivepatchEntitlement(UAEntitlement):
                 True,
                 messages.LIVEPATCH_KERNEL_UPGRADE_REQUIRED,
             )
+
         # if on_supported_kernel returns UNKNOWN we default to no warning
         # because there would be no way for a user to resolve the warning
         return False, None

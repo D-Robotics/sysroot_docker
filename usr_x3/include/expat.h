@@ -1050,6 +1050,10 @@ XML_SetBillionLaughsAttackProtectionActivationThreshold(
     XML_Parser parser, unsigned long long activationThresholdBytes);
 #endif
 
+/* Added in Expat 2.6.0. */
+XMLPARSEAPI(XML_Bool)
+XML_SetReparseDeferralEnabled(XML_Parser parser, XML_Bool enabled);
+
 /* Expat follows the semantic versioning convention.
    See http://semver.org.
 */

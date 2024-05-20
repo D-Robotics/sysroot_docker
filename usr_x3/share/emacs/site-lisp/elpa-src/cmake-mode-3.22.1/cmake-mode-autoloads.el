@@ -6,7 +6,7 @@
                          (or (file-name-directory #$) (car load-path))))
 
 
-;;;### (autoloads nil "cmake-mode" "cmake-mode.el" (25340 50806 0
+;;;### (autoloads nil "cmake-mode" "cmake-mode.el" (26046 52580 0
 ;;;;;;  0))
 ;;; Generated autoloads from cmake-mode.el
 
@@ -52,7 +52,7 @@ Queries for any of the four available help topics and prints out the appropriate
 
 ;;;***
 
-;;;### (autoloads nil nil ("cmake-mode-pkg.el") (25340 50806 0 0))
+;;;### (autoloads nil nil ("cmake-mode-pkg.el") (26046 52580 0 0))
 
 ;;;***
 

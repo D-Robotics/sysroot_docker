@@ -517,6 +517,7 @@ kernel/drivers/media/usb/em28xx/em28xx-v4l.ko
 kernel/drivers/media/usb/em28xx/em28xx-alsa.ko
 kernel/drivers/media/usb/em28xx/em28xx-rc.ko
 kernel/drivers/media/usb/usbtv/usbtv.ko
+kernel/drivers/hwmon/emc2301.ko
 kernel/drivers/hwmon/gpio-fan.ko
 kernel/drivers/hwmon/iio_hwmon.ko
 kernel/drivers/hwmon/sht21.ko

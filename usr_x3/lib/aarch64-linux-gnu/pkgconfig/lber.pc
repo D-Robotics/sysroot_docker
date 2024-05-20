@@ -6,7 +6,7 @@ libdir=${prefix}/lib/aarch64-linux-gnu
 Name: lber (OpenLDAP)
 Description: OpenLDAP Lightweight ASN.1 Basic Encoding Rules library
 URL: https://www.openldap.org
-Version: 2.5.16+dfsg-0ubuntu0.22.04.2
+Version: 2.5.17+dfsg-0ubuntu0.22.04.1
 Cflags: -I${includedir}
 Libs: -L${libdir} -llber
 Libs.private: 

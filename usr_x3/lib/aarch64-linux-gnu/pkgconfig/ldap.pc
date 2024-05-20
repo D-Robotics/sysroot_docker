@@ -6,7 +6,7 @@ libdir=${prefix}/lib/aarch64-linux-gnu
 Name: ldap (OpenLDAP)
 Description: OpenLDAP Lightweight Directory Access Protocol library
 URL: https://www.openldap.org
-Version: 2.5.16+dfsg-0ubuntu0.22.04.2
+Version: 2.5.17+dfsg-0ubuntu0.22.04.1
 Requires: lber
 Cflags: -I${includedir}
 Libs: -L${libdir} -lldap

@@ -128,7 +128,7 @@ def get_installed_snaps() -> List[SnapPackage]:
 def install_snapd():
     event.info(messages.APT_UPDATING_LIST.format(name="standard Ubuntu"))
     try:
-        apt.update_sources_list("/etc/apt/sources.list")
+        apt.update_sources_list(apt.get_system_sources_file())
     except exceptions.UbuntuProError as e:
         LOG.debug(
             "Trying to install snapd. Ignoring apt-get update failure: %s",
@@ -174,6 +174,10 @@ def install_snap(
         capture=True,
         retry_sleeps=SNAP_INSTALL_RETRIES,
     )
+
+
+def refresh_snap(snap: str):
+    system.subp([SNAP_CMD, "refresh", snap], capture=True)
 
 
 def get_snap_info(snap: str) -> SnapPackage:

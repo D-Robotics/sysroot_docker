@@ -517,6 +517,7 @@ kernel/drivers/media/usb/em28xx/em28xx-v4l.ko: kernel/drivers/media/usb/em28xx/e
 kernel/drivers/media/usb/em28xx/em28xx-alsa.ko: kernel/drivers/media/usb/em28xx/em28xx.ko kernel/drivers/media/common/tveeprom.ko
 kernel/drivers/media/usb/em28xx/em28xx-rc.ko: kernel/drivers/media/usb/em28xx/em28xx.ko kernel/drivers/media/common/tveeprom.ko
 kernel/drivers/media/usb/usbtv/usbtv.ko: kernel/drivers/media/v4l2-core/videobuf2-vmalloc.ko kernel/drivers/media/v4l2-core/videobuf2-memops.ko kernel/drivers/media/v4l2-core/videobuf2-v4l2.ko kernel/drivers/media/v4l2-core/videobuf2-core.ko
+kernel/drivers/hwmon/emc2301.ko:
 kernel/drivers/hwmon/gpio-fan.ko:
 kernel/drivers/hwmon/iio_hwmon.ko:
 kernel/drivers/hwmon/sht21.ko:
@@ -1037,4 +1038,3 @@ kernel/lib/ts_bm.ko:
 kernel/lib/ts_fsm.ko:
 kernel/drivers/soc/hobot/bpu/bpu_governor.ko: kernel/drivers/soc/hobot/bpu/bpu_framework.ko
 kernel/drivers/soc/hobot/bpu/bpu_cores.ko: kernel/drivers/soc/hobot/bpu/bpu_framework.ko
-kernel/drivers/soc/hobot/cnn_host/hobot_cnn_host_total.ko:

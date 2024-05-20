@@ -81,7 +81,6 @@ class MyCache(DistUpgrade.DistUpgradeCache.MyCache):
         self._initDepCache()
         self.all_changes = {}
         self.all_news = {}
-        self.pro_versions = {}
         # on broken packages, try to fix via saveDistUpgrade()
         if self._depcache.broken_count > 0:
             self.saveDistUpgrade()
@@ -425,22 +424,14 @@ class MyCache(DistUpgrade.DistUpgradeCache.MyCache):
                         "Please check your Internet connection.")
         self.all_changes[name] += error_message
 
-    # If the machine is not attached to Ubuntu Pro, Update Manager advertises
-    # the upgrades that would be available if it were attached.
-    # As that is unbeknownst to Apt, we need this map to show the correct
-    # version of each upgradable-if-pro-subscribed package.
-    def create_pro_cache(self, pro_pkgs):
-        for (name, version, _a, _a) in pro_pkgs:
-            self.pro_versions[name] = version
-
     def get_changelog(self, name):
         " get the changelog file from the changelog location "
         origins = self[name].candidate.origins
-        version = self.pro_versions.get(name, self[name].candidate.version)
         self.all_changes[name] = _("Changes for %s versions:\n"
                                    "Installed version: %s\n"
                                    "Available version: %s\n\n") % \
-            (name, getattr(self[name].installed, "version", None), version)
+            (name, getattr(self[name].installed, "version", None),
+             self[name].candidate.version)
         if self.CHANGELOG_ORIGIN not in [o.origin for o in origins]:
             self._fetch_changelog_for_third_party_package(name, origins)
             return

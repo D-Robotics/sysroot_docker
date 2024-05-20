@@ -180,8 +180,9 @@ class Debian(LsbDetect):
                 '11': 'bullseye',
                 '12': 'bookworm',
                 '13': 'trixie',
+                '14': 'forky',
                 'unstable': 'sid',
-                'rodete': 'bookworm',
+                'rodete': 'trixie',
             }.get(v, '')
 
 
@@ -318,7 +319,8 @@ _osx_codename_map = {
  '10.15': 'catalina',
  '11': 'big sur',
  '12': 'monterey',
- '13': 'ventura'
+ '13': 'ventura',
+ '14': 'sonoma',
 }
 
 
@@ -660,6 +662,7 @@ OS_DEBIAN = 'debian'
 OS_ELEMENTARY = 'elementary'
 OS_ELEMENTARY_OLD = 'elementary'
 OS_FEDORA = 'fedora'
+OS_FEDORA_ASAHI = 'fedora-asahi'
 OS_FREEBSD = 'freebsd'
 OS_FUNTOO = 'funtoo'
 OS_GENTOO = 'gentoo'
@@ -700,6 +703,7 @@ OsDetect.register_default(OS_DEBIAN, Debian())
 OsDetect.register_default(OS_ELEMENTARY, LsbDetect("elementary"))
 OsDetect.register_default(OS_ELEMENTARY_OLD, LsbDetect("elementary OS"))
 OsDetect.register_default(OS_FEDORA, FdoDetect("fedora"))
+OsDetect.register_default(OS_FEDORA_ASAHI, FdoDetect("fedora-asahi-remix"))
 OsDetect.register_default(OS_FREEBSD, FreeBSD())
 OsDetect.register_default(OS_FUNTOO, Funtoo())
 OsDetect.register_default(OS_GENTOO, Gentoo())

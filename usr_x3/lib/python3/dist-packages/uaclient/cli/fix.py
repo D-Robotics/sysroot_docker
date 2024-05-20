@@ -10,7 +10,7 @@ from typing import (  # noqa: F401
     Union,
 )
 
-from uaclient import apt, exceptions, messages, security, system, util
+from uaclient import apt, exceptions, messages, system, util
 from uaclient.actions import attach_with_token, enable_entitlement_by_name
 from uaclient.api.u.pro.attach.magic.initiate.v1 import _initiate
 from uaclient.api.u.pro.attach.magic.revoke.v1 import (
@@ -21,7 +21,13 @@ from uaclient.api.u.pro.attach.magic.wait.v1 import (
     MagicAttachWaitOptions,
     _wait,
 )
-from uaclient.api.u.pro.security.fix import (  # noqa: F401
+from uaclient.api.u.pro.security.fix._common import (
+    CVE_OR_USN_REGEX,
+    FixStatus,
+    UnfixedPackage,
+    status_message,
+)
+from uaclient.api.u.pro.security.fix._common.plan.v1 import (  # noqa: F401
     ESM_APPS_POCKET,
     ESM_INFRA_POCKET,
     STANDARD_UPDATES_POCKET,
@@ -42,7 +48,6 @@ from uaclient.api.u.pro.security.fix import (  # noqa: F401
     NoOpLivepatchFixData,
     USNAdditionalData,
 )
-from uaclient.api.u.pro.security.fix._common import status_message
 from uaclient.api.u.pro.security.fix.cve.plan.v1 import CVEFixPlanOptions
 from uaclient.api.u.pro.security.fix.cve.plan.v1 import _plan as cve_plan
 from uaclient.api.u.pro.security.fix.usn.plan.v1 import USNFixPlanOptions
@@ -66,7 +71,6 @@ from uaclient.entitlements.entitlement_status import (
 from uaclient.files import notices
 from uaclient.files.notices import Notice
 from uaclient.messages.urls import PRO_HOME_PAGE
-from uaclient.security import FixStatus
 from uaclient.status import colorize_commands
 
 
@@ -79,7 +83,7 @@ class FixContext:
         cfg: UAConfig,
     ):
         self.pkg_index = 0
-        self.unfixed_pkgs = []  # type: List[security.UnfixedPackage]
+        self.unfixed_pkgs = []  # type: List[UnfixedPackage]
         self.installed_pkgs = set()  # type: Set[str]
         self.fix_status = FixStatus.SYSTEM_NON_VULNERABLE
         self.title = title
@@ -88,6 +92,7 @@ class FixContext:
         self.cfg = cfg
         self.should_print_pkg_header = True
         self.warn_package_cannot_be_installed = False
+        self.fixed_by_livepatch = False
 
     def print_fix_header(self):
         if self.affected_pkgs:
@@ -128,7 +133,7 @@ class FixContext:
     def add_unfixed_packages(self, pkgs: List[str], unfixed_reason: str):
         for pkg in pkgs:
             self.unfixed_pkgs.append(
-                security.UnfixedPackage(pkg=pkg, unfixed_reason=unfixed_reason)
+                UnfixedPackage(pkg=pkg, unfixed_reason=unfixed_reason)
             )
 
 
@@ -261,7 +266,7 @@ def fix_usn(
     print("\n" + messages.SECURITY_FIXING_RELATED_USNS)
     related_usn_status = (
         {}
-    )  # type: Dict[str, Tuple[FixStatus, List[security.UnfixedPackage]]]
+    )  # type: Dict[str, Tuple[FixStatus, List[UnfixedPackage]]]
     for related_usn_plan in related_usns_plan:
         print("- {}".format(related_usn_plan.title))
         related_usn_status[related_usn_plan.title] = execute_fix_plan(
@@ -774,11 +779,6 @@ def _execute_enable_step(
         fix_context.cfg,
         fix_context.dry_run,
     ):
-        print(
-            messages.SECURITY_UA_SERVICE_NOT_ENABLED.format(
-                service=step.data.service
-            )
-        )
         fix_context.add_unfixed_packages(
             pkgs=step.data.source_packages,
             unfixed_reason=messages.SECURITY_UA_SERVICE_NOT_ENABLED_SHORT.format(  # noqa
@@ -809,6 +809,7 @@ def _execute_noop_fixed_by_livepatch_step(
                 version=step.data.patch_version,
             )
         )
+        fix_context.fixed_by_livepatch = True
 
 
 def _execute_noop_already_fixed_step(
@@ -826,7 +827,7 @@ def _execute_noop_already_fixed_step(
 
 def execute_fix_plan(
     fix_plan: FixPlanResult, dry_run: bool, cfg: UAConfig
-) -> Tuple[FixStatus, List[security.UnfixedPackage]]:
+) -> Tuple[FixStatus, List[UnfixedPackage]]:
     full_plan = [
         *fix_plan.plan,
         *fix_plan.warnings,
@@ -898,12 +899,14 @@ def execute_fix_plan(
             operation="fix operation",
         )
 
-    _handle_fix_status_message(fix_context.fix_status, fix_plan.title)
+    if not fix_context.fixed_by_livepatch:
+        _handle_fix_status_message(fix_context.fix_status, fix_plan.title)
+
     return (fix_context.fix_status, fix_context.unfixed_pkgs)
 
 
 def action_fix(args, *, cfg, **kwargs):
-    if not re.match(security.CVE_OR_USN_REGEX, args.security_issue):
+    if not re.match(CVE_OR_USN_REGEX, args.security_issue):
         raise exceptions.InvalidSecurityIssueIdFormat(
             issue=args.security_issue
         )

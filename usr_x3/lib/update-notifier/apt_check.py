@@ -222,21 +222,23 @@ def write_human_readable_summary(outstream, upgrades, security_updates,
                                  esm_infra_updates, esm_apps_updates,
                                  have_esm_infra, have_esm_apps,
                                  disabled_esm_infra_updates,
-                                 disabled_esm_apps_updates):
+                                 disabled_esm_apps_updates,
+                                 hide_esm_messages=False):
 
     " write out human summary summary to outstream "
     esm_distro = is_esm_distro()
     lts_distro = is_lts_distro()
 
-    if have_esm_infra is not None and esm_distro:
-        _output_esm_service_status(
-            outstream, have_esm_infra, service_type="Infrastructure"
-        )
+    if not hide_esm_messages:
+        if have_esm_infra is not None and esm_distro:
+            _output_esm_service_status(
+                outstream, have_esm_infra, service_type="Infrastructure"
+            )
 
-    if have_esm_apps is not None and lts_distro and not esm_distro:
-        _output_esm_service_status(
-            outstream, have_esm_apps, service_type="Applications"
-        )
+        if have_esm_apps is not None and lts_distro and not esm_distro:
+            _output_esm_service_status(
+                outstream, have_esm_apps, service_type="Applications"
+            )
 
     outstream.write(
         gettext.dngettext("update-notifier",
@@ -245,10 +247,11 @@ def write_human_readable_summary(outstream, upgrades, security_updates,
                           upgrades) % upgrades
     )
 
-    _output_esm_package_count(
-        outstream, service_type="Infra", esm_pkg_count=esm_infra_updates)
-    _output_esm_package_count(
-        outstream, service_type="Apps", esm_pkg_count=esm_apps_updates)
+    if not hide_esm_messages:
+        _output_esm_package_count(
+            outstream, service_type="Infra", esm_pkg_count=esm_infra_updates)
+        _output_esm_package_count(
+            outstream, service_type="Apps", esm_pkg_count=esm_apps_updates)
 
     if security_updates > 0:
         outstream.write("\n")
@@ -271,14 +274,22 @@ def write_human_readable_summary(outstream, upgrades, security_updates,
             have_esm_apps is not None,
             not have_esm_apps,
             lts_distro,
-            not esm_distro
+            not esm_distro,
+            not hide_esm_messages,
         ]
     ):
         _output_esm_package_alert(
             outstream, service_type="Apps",
             disabled_pkg_count=disabled_esm_apps_updates)
 
-    if have_esm_infra is not None and not have_esm_infra and esm_distro:
+    if all(
+        [
+            have_esm_infra is not None,
+            not have_esm_infra,
+            esm_distro,
+            not hide_esm_messages,
+        ]
+    ):
         _output_esm_package_alert(
             outstream, service_type="Infra",
             disabled_pkg_count=disabled_esm_infra_updates,
@@ -473,7 +484,8 @@ def run(options=None):
                                      esm_infra_updates, esm_apps_updates,
                                      have_esm_infra, have_esm_apps,
                                      disabled_esm_infra_updates,
-                                     disabled_esm_apps_updates)
+                                     disabled_esm_apps_updates,
+                                     options.hide_esm_messages)
     else:
         # print the number of regular upgrades and the number of
         # security upgrades
@@ -507,6 +519,12 @@ if __name__ == "__main__":
                       action="store_true",
                       dest="readable_output",
                       help=_("Show human readable output on stdout"))
+    parser.add_option("",
+                      "--no-esm-messages",
+                      action="store_true",
+                      dest="hide_esm_messages",
+                      help=_("Do not show esm related messages in human "
+                             "readable output"))
     parser.add_option("",
                       "--security-updates-unattended",
                       action="store_true",

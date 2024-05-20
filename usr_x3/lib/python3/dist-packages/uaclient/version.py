@@ -14,8 +14,8 @@ from uaclient.defaults import CANDIDATE_CACHE_PATH, UAC_RUN_PATH
 from uaclient.exceptions import ProcessExecutionError
 from uaclient.system import subp
 
-__VERSION__ = "30"
-PACKAGED_VERSION = "30~22.04"
+__VERSION__ = "31.2.3"
+PACKAGED_VERSION = "31.2.3~22.04"
 
 
 def get_version() -> str:
@@ -51,10 +51,9 @@ def get_last_known_candidate() -> Optional[str]:
         not os.path.exists(CANDIDATE_CACHE_PATH)
         or os.stat(CANDIDATE_CACHE_PATH).st_mtime < last_apt_cache_update
     ):
+        candidate_version = None
         try:
-            candidate_version = get_pkg_candidate_version(
-                "ubuntu-advantage-tools"
-            )
+            candidate_version = get_pkg_candidate_version("ubuntu-pro-client")
             if candidate_version:
                 os.makedirs(UAC_RUN_PATH, exist_ok=True)
                 with open(CANDIDATE_CACHE_PATH, "w") as f:
