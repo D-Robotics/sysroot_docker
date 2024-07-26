@@ -1,0 +1,106 @@
+kernel/fs/jffs2/jffs2.ko:
+kernel/crypto/tcrypt.ko:
+kernel/lib/crypto/libarc4.ko:
+kernel/lib/libcrc32c.ko:
+kernel/drivers/video/fbdev/vfb.ko:
+kernel/drivers/dma/dmatest.ko:
+kernel/drivers/soc/hobot/bpu/bpu_framework.ko:
+kernel/drivers/soc/hobot/bpu/bpu_governor.ko: kernel/drivers/soc/hobot/bpu/bpu_framework.ko
+kernel/drivers/soc/hobot/bpu/bpu_cores.ko: kernel/drivers/soc/hobot/bpu/bpu_framework.ko
+kernel/drivers/gpu/drm/panel/panel-jc-050hd134.ko:
+kernel/drivers/gpu/drm/bridge/verisilicon/vs_x5_syscon_bridge.ko:
+kernel/drivers/gpu/drm/verisilicon/vs_drm.ko: kernel/drivers/misc/verisilicon/gc820/vio_n2d.ko kernel/drivers/media/platform/horizon/camsys/vpf/hobot_vio_common.ko
+kernel/drivers/misc/verisilicon/gc820/vio_n2d.ko: kernel/drivers/media/platform/horizon/camsys/vpf/hobot_vio_common.ko
+kernel/drivers/misc/verisilicon/gc8000l/galcore.ko:
+kernel/drivers/spi/spidev.ko:
+kernel/drivers/net/phy/ax88796b.ko:
+kernel/drivers/net/usb/asix.ko: kernel/drivers/net/usb/usbnet.ko
+kernel/drivers/net/usb/ax88179_178a.ko: kernel/drivers/net/usb/usbnet.ko
+kernel/drivers/net/usb/cdc_ether.ko: kernel/drivers/net/usb/usbnet.ko
+kernel/drivers/net/usb/net1080.ko: kernel/drivers/net/usb/usbnet.ko
+kernel/drivers/net/usb/cdc_subset.ko: kernel/drivers/net/usb/usbnet.ko
+kernel/drivers/net/usb/zaurus.ko: kernel/drivers/net/usb/cdc_ether.ko kernel/drivers/net/usb/usbnet.ko
+kernel/drivers/net/usb/usbnet.ko:
+kernel/drivers/net/usb/cdc_ncm.ko: kernel/drivers/net/usb/cdc_ether.ko kernel/drivers/net/usb/usbnet.ko
+kernel/drivers/net/usb/r8153_ecm.ko: kernel/drivers/net/usb/cdc_ether.ko kernel/drivers/net/usb/usbnet.ko
+kernel/drivers/usb/gadget/function/usb_f_acm.ko: kernel/drivers/usb/gadget/libcomposite.ko kernel/drivers/usb/gadget/function/u_serial.ko
+kernel/drivers/usb/gadget/function/usb_f_ss_lb.ko: kernel/drivers/usb/gadget/libcomposite.ko
+kernel/drivers/usb/gadget/function/u_serial.ko:
+kernel/drivers/usb/gadget/function/usb_f_serial.ko: kernel/drivers/usb/gadget/libcomposite.ko kernel/drivers/usb/gadget/function/u_serial.ko
+kernel/drivers/usb/gadget/function/usb_f_obex.ko: kernel/drivers/usb/gadget/libcomposite.ko kernel/drivers/usb/gadget/function/u_serial.ko
+kernel/drivers/usb/gadget/function/u_ether.ko:
+kernel/drivers/usb/gadget/function/usb_f_ncm.ko: kernel/drivers/usb/gadget/function/u_ether.ko kernel/drivers/usb/gadget/libcomposite.ko
+kernel/drivers/usb/gadget/function/usb_f_ecm.ko: kernel/drivers/usb/gadget/function/u_ether.ko kernel/drivers/usb/gadget/libcomposite.ko
+kernel/drivers/usb/gadget/function/usb_f_eem.ko: kernel/drivers/usb/gadget/function/u_ether.ko kernel/drivers/usb/gadget/libcomposite.ko
+kernel/drivers/usb/gadget/function/usb_f_ecm_subset.ko: kernel/drivers/usb/gadget/function/u_ether.ko kernel/drivers/usb/gadget/libcomposite.ko
+kernel/drivers/usb/gadget/function/usb_f_rndis.ko: kernel/drivers/usb/gadget/function/u_ether.ko kernel/drivers/usb/gadget/libcomposite.ko
+kernel/drivers/usb/gadget/function/usb_f_mass_storage.ko: kernel/drivers/usb/gadget/libcomposite.ko
+kernel/drivers/usb/gadget/function/usb_f_fs.ko: kernel/drivers/usb/gadget/libcomposite.ko
+kernel/drivers/usb/gadget/function/usb_f_uvc.ko: kernel/drivers/media/common/videobuf2/videobuf2-vmalloc.ko kernel/drivers/media/common/videobuf2/videobuf2-dma-sg.ko kernel/drivers/media/common/videobuf2/videobuf2-memops.ko kernel/drivers/media/common/videobuf2/videobuf2-v4l2.ko kernel/drivers/media/common/videobuf2/videobuf2-common.ko kernel/drivers/usb/gadget/libcomposite.ko
+kernel/drivers/usb/gadget/function/usb_f_hid.ko: kernel/drivers/usb/gadget/libcomposite.ko
+kernel/drivers/usb/gadget/legacy/g_zero.ko: kernel/drivers/usb/gadget/libcomposite.ko
+kernel/drivers/usb/gadget/legacy/g_ether.ko: kernel/drivers/usb/gadget/function/usb_f_rndis.ko kernel/drivers/usb/gadget/function/u_ether.ko kernel/drivers/usb/gadget/libcomposite.ko
+kernel/drivers/usb/gadget/legacy/g_ffs.ko: kernel/drivers/usb/gadget/function/usb_f_fs.ko kernel/drivers/usb/gadget/function/usb_f_rndis.ko kernel/drivers/usb/gadget/function/u_ether.ko kernel/drivers/usb/gadget/libcomposite.ko
+kernel/drivers/usb/gadget/legacy/g_mass_storage.ko: kernel/drivers/usb/gadget/function/usb_f_mass_storage.ko kernel/drivers/usb/gadget/libcomposite.ko
+kernel/drivers/usb/gadget/legacy/g_serial.ko: kernel/drivers/usb/gadget/libcomposite.ko
+kernel/drivers/usb/gadget/legacy/g_multi.ko: kernel/drivers/usb/gadget/function/usb_f_mass_storage.ko kernel/drivers/usb/gadget/function/usb_f_rndis.ko kernel/drivers/usb/gadget/function/u_ether.ko kernel/drivers/usb/gadget/libcomposite.ko
+kernel/drivers/usb/gadget/legacy/g_webcam.ko: kernel/drivers/usb/gadget/libcomposite.ko
+kernel/drivers/usb/gadget/legacy/raw_gadget.ko:
+kernel/drivers/usb/gadget/libcomposite.ko:
+kernel/drivers/input/touchscreen/gt9xx_core.ko:
+kernel/drivers/input/evdev.ko:
+kernel/drivers/media/v4l2-core/v4l2-async.ko:
+kernel/drivers/media/v4l2-core/v4l2-fwnode.ko: kernel/drivers/media/v4l2-core/v4l2-async.ko
+kernel/drivers/media/common/videobuf2/videobuf2-common.ko:
+kernel/drivers/media/common/videobuf2/videobuf2-dma-contig.ko: kernel/drivers/media/common/videobuf2/videobuf2-memops.ko kernel/drivers/media/common/videobuf2/videobuf2-common.ko
+kernel/drivers/media/common/videobuf2/videobuf2-dma-sg.ko: kernel/drivers/media/common/videobuf2/videobuf2-memops.ko kernel/drivers/media/common/videobuf2/videobuf2-common.ko
+kernel/drivers/media/common/videobuf2/videobuf2-memops.ko: kernel/drivers/media/common/videobuf2/videobuf2-common.ko
+kernel/drivers/media/common/videobuf2/videobuf2-v4l2.ko: kernel/drivers/media/common/videobuf2/videobuf2-common.ko
+kernel/drivers/media/common/videobuf2/videobuf2-vmalloc.ko: kernel/drivers/media/common/videobuf2/videobuf2-memops.ko kernel/drivers/media/common/videobuf2/videobuf2-common.ko
+kernel/drivers/media/platform/horizon/codec/vpu/hobot_vpu.ko:
+kernel/drivers/media/platform/horizon/codec/jpg/hobot_jpu.ko:
+kernel/drivers/media/platform/horizon/camsys/vpf/hobot_vio_common.ko:
+kernel/drivers/media/platform/horizon/camsys/cam_subsys/hobot_camsys.ko: kernel/drivers/media/platform/horizon/camsys/vpf/hobot_vio_common.ko
+kernel/drivers/media/platform/horizon/camsys/vin_node/hobot_vin_vnode.ko: kernel/drivers/media/platform/horizon/camsys/vpf/hobot_vio_common.ko
+kernel/drivers/media/platform/horizon/camsys/vcon/hobot_vin_vcon.ko: kernel/drivers/media/platform/horizon/camsys/vin_node/hobot_vin_vnode.ko kernel/drivers/media/platform/horizon/camsys/vpf/hobot_vio_common.ko
+kernel/drivers/media/platform/horizon/camsys/gdc/hobot_gdc.ko: kernel/drivers/media/platform/horizon/camsys/cam_subsys/hobot_camsys.ko kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_cam_ctrl.ko kernel/drivers/media/platform/horizon/camsys/vpf/hobot_vio_common.ko
+kernel/drivers/media/platform/horizon/camsys/sensor/hobot_sensor.ko: kernel/drivers/media/platform/horizon/camsys/vpf/hobot_vio_common.ko
+kernel/drivers/media/platform/horizon/camsys/deserial/hobot_deserial.ko: kernel/drivers/media/platform/horizon/camsys/vpf/hobot_vio_common.ko
+kernel/drivers/media/platform/horizon/camsys/lpwm/hobot_lpwm.ko: kernel/drivers/media/platform/horizon/camsys/vin_node/hobot_vin_vnode.ko kernel/drivers/media/platform/horizon/camsys/vpf/hobot_vio_common.ko
+kernel/drivers/media/platform/horizon/camsys/codec_node/hobot_codec_vnode.ko: kernel/drivers/media/platform/horizon/camsys/vpf/hobot_vio_common.ko
+kernel/drivers/media/platform/horizon/camsys/mipi/hobot_mipicsi.ko: kernel/drivers/media/platform/horizon/camsys/mipi/hobot_mipiphy.ko kernel/drivers/media/platform/horizon/camsys/cam_subsys/hobot_camsys.ko kernel/drivers/media/platform/horizon/camsys/vin_node/hobot_vin_vnode.ko kernel/drivers/media/platform/horizon/camsys/vpf/hobot_vio_common.ko
+kernel/drivers/media/platform/horizon/camsys/mipi/hobot_mipiphy.ko:
+kernel/drivers/media/platform/horizon/camsys/mipi/hobot_mipidbg.ko: kernel/drivers/media/platform/horizon/camsys/mipi/hobot_mipicsi.ko kernel/drivers/media/platform/horizon/camsys/mipi/hobot_mipiphy.ko kernel/drivers/media/platform/horizon/camsys/cam_subsys/hobot_camsys.ko kernel/drivers/media/platform/horizon/camsys/vin_node/hobot_vin_vnode.ko kernel/drivers/media/platform/horizon/camsys/vpf/hobot_vio_common.ko
+kernel/drivers/media/platform/horizon/camsys/isi_sensor/hobot_isi_sensor.ko: kernel/drivers/media/platform/horizon/camsys/sensor/hobot_sensor.ko kernel/drivers/media/platform/horizon/camsys/vpf/hobot_vio_common.ko
+kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_isc.ko:
+kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_cam_ctrl.ko:
+kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_csi_wrapper.ko:
+kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_vid_v4l.ko: kernel/drivers/media/common/videobuf2/videobuf2-dma-contig.ko kernel/drivers/media/v4l2-core/v4l2-async.ko kernel/drivers/media/common/videobuf2/videobuf2-memops.ko kernel/drivers/media/common/videobuf2/videobuf2-v4l2.ko kernel/drivers/media/common/videobuf2/videobuf2-common.ko
+kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_isp_v4l.ko: kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_isc.ko kernel/drivers/media/common/videobuf2/videobuf2-dma-contig.ko kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_cam_ctrl.ko kernel/drivers/media/v4l2-core/v4l2-async.ko kernel/drivers/media/common/videobuf2/videobuf2-memops.ko kernel/drivers/media/common/videobuf2/videobuf2-common.ko
+kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_vse_v4l.ko: kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_isc.ko kernel/drivers/media/common/videobuf2/videobuf2-dma-contig.ko kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_cam_ctrl.ko kernel/drivers/media/v4l2-core/v4l2-async.ko kernel/drivers/media/common/videobuf2/videobuf2-memops.ko kernel/drivers/media/common/videobuf2/videobuf2-common.ko
+kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_sif_v4l.ko: kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_isc.ko kernel/drivers/media/common/videobuf2/videobuf2-dma-contig.ko kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_cam_ctrl.ko kernel/drivers/media/v4l2-core/v4l2-async.ko kernel/drivers/media/common/videobuf2/videobuf2-memops.ko kernel/drivers/media/common/videobuf2/videobuf2-common.ko
+kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_csi2_snps_v4l.ko: kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_csi_wrapper.ko kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_isc.ko kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_cam_ctrl.ko kernel/drivers/media/v4l2-core/v4l2-async.ko
+kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_gdc_arm_v4l.ko: kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_isc.ko kernel/drivers/media/common/videobuf2/videobuf2-dma-contig.ko kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_cam_ctrl.ko kernel/drivers/media/v4l2-core/v4l2-async.ko kernel/drivers/media/common/videobuf2/videobuf2-memops.ko kernel/drivers/media/common/videobuf2/videobuf2-common.ko
+kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_isp_nat.ko: kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_online_ops.ko kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_isc.ko kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_cam_ctrl.ko kernel/drivers/media/platform/horizon/camsys/vpf/hobot_vio_common.ko
+kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_vse_nat.ko: kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_online_ops.ko kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_isc.ko kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_cam_ctrl.ko kernel/drivers/media/platform/horizon/camsys/vpf/hobot_vio_common.ko
+kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_sif_nat.ko: kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_online_ops.ko kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_isc.ko kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_cam_ctrl.ko kernel/drivers/media/platform/horizon/camsys/vin_node/hobot_vin_vnode.ko kernel/drivers/media/platform/horizon/camsys/vpf/hobot_vio_common.ko
+kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_csi2_snps_nat.ko: kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_csi_wrapper.ko kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_isc.ko kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_cam_ctrl.ko
+kernel/drivers/media/platform/horizon/camsys/vsi_cam/vs_online_ops.ko:
+kernel/drivers/mmc/core/mmc_test.ko:
+kernel/drivers/staging/rtl8723bs/r8723bs.ko: kernel/lib/crypto/libarc4.ko kernel/net/wireless/cfg80211.ko kernel/net/rfkill/rfkill.ko
+kernel/drivers/staging/rtl8723du/8723du.ko: kernel/net/wireless/cfg80211.ko kernel/net/rfkill/rfkill.ko
+kernel/drivers/staging/rtl8852bs/8852bs.ko: kernel/net/wireless/cfg80211.ko kernel/net/rfkill/rfkill.ko
+kernel/drivers/bluetooth/hci_uart.ko: kernel/drivers/bluetooth/btrtl.ko kernel/net/bluetooth/bluetooth.ko kernel/net/rfkill/rfkill.ko
+kernel/drivers/bluetooth/btrtl.ko: kernel/net/bluetooth/bluetooth.ko kernel/net/rfkill/rfkill.ko
+kernel/sound/soc/codecs/es7210.ko:
+kernel/sound/soc/codecs/es8156.ko:
+kernel/sound/soc/codecs/es8311.ko:
+kernel/sound/soc/hobot/snd-soc-duplex-card.ko: kernel/sound/soc/generic/snd-soc-simple-card-utils.ko
+kernel/sound/soc/hobot/snd-soc-hobot-sound-machine.ko: kernel/sound/soc/generic/snd-soc-simple-card-utils.ko
+kernel/sound/soc/generic/snd-soc-simple-card-utils.ko:
+kernel/sound/soc/generic/snd-soc-simple-card.ko: kernel/sound/soc/generic/snd-soc-simple-card-utils.ko
+kernel/sound/soc/dwc/designware_i2s.ko:
+kernel/net/wireless/cfg80211.ko: kernel/net/rfkill/rfkill.ko
+kernel/net/bluetooth/bluetooth.ko: kernel/net/rfkill/rfkill.ko
+kernel/net/rfkill/rfkill.ko:
+kernel/drivers/soc/hobot/bpu/hw_io/bpu_hw_io_x5.ko: kernel/drivers/soc/hobot/bpu/bpu_cores.ko kernel/drivers/soc/hobot/bpu/bpu_framework.ko

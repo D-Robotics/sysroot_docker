@@ -1,0 +1,9 @@
+{
+	"swSimuCfg":
+	{
+		"enable": 1,
+		"SwSimuCaselist": "vvbcfg/case/sw_simulator_case/sw_simulator_case_lists.txt",
+		"caseName": "sw_simulator_case/vvb_000_sw_simulator_rdma_single_frame_dom.json"
+	},
+	"alignMask": 4096
+}
