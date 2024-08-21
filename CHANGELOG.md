@@ -1,5 +1,9 @@
 # Changelog for sysroot_docker
 
+tros_2.3.0 (2024-08-21)
+------------------
+1. 适配RDK X5平台。
+
 tros_2.2.1 (2023-07-14)
 ------------------
 1. 更新rdkultra的usr路径名。
