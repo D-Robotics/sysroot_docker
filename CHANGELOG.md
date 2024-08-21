@@ -1,6 +1,6 @@
 # Changelog for sysroot_docker
 
-tros_2.3.0 (2024-08-21)
+tros_2.4.0 (2024-08-21)
 ------------------
 1. 适配RDK X5平台。
 
