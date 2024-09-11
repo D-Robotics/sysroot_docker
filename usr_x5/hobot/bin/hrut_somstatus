@@ -118,12 +118,18 @@ do
 		echo -e "\t${temp##*/}: $min\t$cur\t$max\t$ratio"
 	done
 
-	echo "ddr frequency information---->"
-	echo -e "\t      min(M)\tcur(M)\tmax(M)"
-	min=`cat /sys/class/devfreq/soc\:ddrc-freq/min_freq`
-	cur=`cat /sys/class/devfreq/soc\:ddrc-freq/cur_freq`
-	max=`cat /sys/class/devfreq/soc\:ddrc-freq/max_freq`
-	echo -e "\tddr:  $min\t$cur\t$max"
+	if [ -d "/sys/class/devfreq/soc:ddrc-freq" ]; then
+		echo "ddr frequency information---->"
+		echo -e "\t      min(M)\tcur(M)\tmax(M)"
+		min=`cat /sys/class/devfreq/soc\:ddrc-freq/min_freq`
+		cur=`cat /sys/class/devfreq/soc\:ddrc-freq/cur_freq`
+		max=`cat /sys/class/devfreq/soc\:ddrc-freq/max_freq`
+		min=$((min / 1000000))
+		cur=$((cur / 1000000))
+		max=$((max / 1000000))
+		echo -e "\tddr:  $min\t$cur\t$max"
+	fi
+
 	if [ -d "/sys/class/devfreq/3c000000.gc8000" ]; then
 		echo "GPU gc8000 frequency information---->"
 		echo -e "\t      min(M)\tcur(M)\tmax(M)"

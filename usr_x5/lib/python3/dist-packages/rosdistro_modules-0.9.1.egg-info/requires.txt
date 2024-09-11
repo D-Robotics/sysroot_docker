@@ -1,0 +1,8 @@
+PyYAML
+setuptools
+
+[test]
+pytest
+
+[test:python_version < "3.3"]
+mock

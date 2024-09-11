@@ -6,6 +6,7 @@ from os.path import exists
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from uaclient import (
+    api,
     apt,
     contract,
     event_logger,
@@ -21,6 +22,7 @@ from uaclient.entitlements.entitlement_status import (
     CanDisableFailure,
     CanDisableFailureReason,
 )
+from uaclient.files.state_files import status_cache_file
 
 event = event_logger.get_event_logger()
 LOG = logging.getLogger(util.replace_top_level_logger_name(__name__))
@@ -31,7 +33,7 @@ RE_KERNEL_PKG = r"^linux-image-([\d]+[.-][\d]+[.-][\d]+-[\d]+-[A-Za-z0-9_-]+)$"
 
 
 class RepoEntitlement(base.UAEntitlement):
-    repo_list_file_tmpl = "/etc/apt/sources.list.d/ubuntu-{name}.list"
+    repo_file_tmpl = "/etc/apt/sources.list.d/ubuntu-{name}.{extension}"
     repo_pref_file_tmpl = "/etc/apt/preferences.d/ubuntu-{name}"
     repo_url_tmpl = "{}/ubuntu"
 
@@ -54,6 +56,18 @@ class RepoEntitlement(base.UAEntitlement):
         return None
 
     @property
+    def repo_file(self) -> str:
+        extension = "sources"
+        series = system.get_release_info().series
+        if series in apt.SERIES_NOT_USING_DEB822:
+            extension = "list"
+        return self.repo_file_tmpl.format(name=self.name, extension=extension)
+
+    @property
+    def repo_policy_check_tmpl(self) -> str:
+        return self.repo_url_tmpl + " {}"
+
+    @property
     def packages(self) -> List[str]:
         """debs to install on enablement"""
         packages = []
@@ -69,6 +83,22 @@ class RepoEntitlement(base.UAEntitlement):
             packages = additional_packages
 
         return packages
+
+    @property
+    def apt_url(self) -> Optional[str]:
+        return (
+            self.entitlement_cfg.get("entitlement", {})
+            .get("directives", {})
+            .get("aptURL")
+        )
+
+    @property
+    def apt_suites(self) -> Optional[str]:
+        return (
+            self.entitlement_cfg.get("entitlement", {})
+            .get("directives", {})
+            .get("suites")
+        )
 
     def _check_for_reboot(self) -> bool:
         """Check if system needs to be rebooted."""
@@ -105,38 +135,58 @@ class RepoEntitlement(base.UAEntitlement):
 
         return result, reason
 
-    def _perform_enable(self, silent: bool = False) -> bool:
+    def enable_steps(self) -> int:
+        will_install = self.packages is not None and len(self.packages) > 0
+        if self.access_only or not will_install:
+            # 1. Configure APT
+            # 2. Update APT lists
+            return 2
+        else:
+            # 3. Install packages
+            return 3
+
+    def _perform_enable(self, progress: api.ProgressWrapper) -> bool:
         """Enable specific entitlement.
 
         @return: True on success, False otherwise.
         @raises: UbuntuProError on failure to install suggested packages
         """
-        self.setup_apt_config(silent=silent)
+        progress.progress(
+            messages.CONFIGURING_APT_ACCESS.format(service=self.title)
+        )
+        self.setup_apt_config(progress)
 
         if self.supports_access_only and self.access_only:
             if len(self.packages) > 0:
-                event.info(
+                progress.emit(
+                    "info",
                     messages.SKIPPING_INSTALLING_PACKAGES.format(
                         packages=" ".join(self.packages)
-                    )
+                    ),
                 )
-            event.info(messages.ACCESS_ENABLED_TMPL.format(title=self.title))
         else:
-            self.install_packages()
-            event.info(messages.ENABLED_TMPL.format(title=self.title))
-            self._check_for_reboot_msg(operation="install")
+            self.install_packages(progress)
         return True
 
-    def _perform_disable(self, silent=False):
+    def disable_steps(self) -> int:
+        if not self.purge:
+            # 1. Unconfigure APT
+            # 2. Update package lists
+            return 2
+        else:
+            # 3. Purge
+            return 3
+
+    def _perform_disable(self, progress: api.ProgressWrapper):
         if self.purge and self.origin:
-            print(messages.PURGE_EXPERIMENTAL)
-            print()
+            progress.emit("info", messages.PURGE_EXPERIMENTAL)
+            progress.emit("info", "")
 
             repo_origin_packages = apt.get_installed_packages_by_origin(
                 self.origin
             )
 
-            if not self.purge_kernel_check(repo_origin_packages):
+            if not self.purge_kernel_check(repo_origin_packages, progress):
                 return False
 
             packages_to_reinstall = []
@@ -155,20 +205,23 @@ class RepoEntitlement(base.UAEntitlement):
                     packages_to_remove.append(package)
 
             if not self.prompt_for_purge(
-                packages_to_remove, packages_to_reinstall
+                packages_to_remove, packages_to_reinstall, progress
             ):
                 return False
 
         if hasattr(self, "remove_packages"):
             self.remove_packages()
-        self.remove_apt_config(silent=silent)
+        self.remove_apt_config(progress)
 
         if self.purge and self.origin:
+            progress.progress(
+                messages.PURGING_PACKAGES.format(title=self.title)
+            )
             self.execute_reinstall(packages_to_reinstall)
             self.execute_removal(packages_to_remove)
         return True
 
-    def purge_kernel_check(self, package_list):
+    def purge_kernel_check(self, package_list, progress: api.ProgressWrapper):
         """
         Checks if the purge operation involves a kernel.
 
@@ -189,14 +242,24 @@ class RepoEntitlement(base.UAEntitlement):
             if m:
                 linux_image_versions.append(m.group(1))
         if linux_image_versions:
-            print(messages.PURGE_KERNEL_REMOVAL.format(service=self.title))
-            print(" ".join(linux_image_versions))
+            # A kernel needs to be removed to purge
+            # API will fail here, but we want CLI to allow it to continue
+            # after a prompt
+            if not progress.is_interactive():
+                raise exceptions.NonInteractiveKernelPurgeDisallowed()
+
+            progress.emit(
+                "info",
+                messages.PURGE_KERNEL_REMOVAL.format(service=self.title),
+            )
+            progress.emit("info", " ".join(linux_image_versions))
 
             current_kernel = system.get_kernel_info().uname_release
-            print(
+            progress.emit(
+                "info",
                 messages.PURGE_CURRENT_KERNEL.format(
                     kernel_version=current_kernel
-                )
+                ),
             )
 
             installed_kernels = system.get_installed_ubuntu_kernels()
@@ -208,34 +271,58 @@ class RepoEntitlement(base.UAEntitlement):
             ]
 
             if not alternative_kernels:
-                print(messages.PURGE_NO_ALTERNATIVE_KERNEL)
+                progress.emit("info", messages.PURGE_NO_ALTERNATIVE_KERNEL)
                 return False
 
-            if not util.prompt_for_confirmation(
-                messages.PURGE_KERNEL_CONFIRMATION
-            ):
-                return False
+            progress.emit(
+                "message_operation",
+                [
+                    (
+                        util.prompt_for_confirmation,
+                        {"msg": messages.PURGE_KERNEL_CONFIRMATION},
+                    )
+                ],
+            )
 
         return True
 
-    def prompt_for_purge(self, packages_to_remove, packages_to_reinstall):
+    def prompt_for_purge(
+        self,
+        packages_to_remove,
+        packages_to_reinstall,
+        progress: api.ProgressWrapper,
+    ):
         prompt = False
         if packages_to_remove:
-            print(messages.WARN_PACKAGES_REMOVAL)
-            util.print_package_list(
-                [package.name for package in packages_to_remove]
+            progress.emit("info", messages.WARN_PACKAGES_REMOVAL)
+            progress.emit(
+                "info",
+                util.create_package_list_str(
+                    [package.name for package in packages_to_remove]
+                ),
             )
             prompt = True
 
         if packages_to_reinstall:
-            print(messages.WARN_PACKAGES_REINSTALL)
-            util.print_package_list(
-                [package.name for (package, _) in packages_to_reinstall]
+            progress.emit("info", messages.WARN_PACKAGES_REINSTALL)
+            progress.emit(
+                "info",
+                util.create_package_list_str(
+                    [package.name for (package, _) in packages_to_reinstall]
+                ),
             )
             prompt = True
 
         if prompt:
-            return util.prompt_for_confirmation(messages.PROCEED_YES_NO)
+            progress.emit(
+                "message_operation",
+                [
+                    (
+                        util.prompt_for_confirmation,
+                        {"msg": messages.PROCEED_YES_NO},
+                    )
+                ],
+            )
         return True
 
     def execute_removal(self, packages_to_remove):
@@ -288,13 +375,24 @@ class RepoEntitlement(base.UAEntitlement):
                 ApplicationStatus.DISABLED,
                 messages.NO_APT_URL_FOR_SERVICE.format(title=self.title),
             )
-        policy = apt.get_apt_cache_policy(error_msg=messages.APT_POLICY_FAILED)
-        match = re.search(self.repo_url_tmpl.format(repo_url), policy)
-        if match:
-            current_status = (
-                ApplicationStatus.ENABLED,
-                messages.SERVICE_IS_ACTIVE.format(title=self.title),
+        repo_suites = directives.get("suites")
+        if not repo_suites:
+            return (
+                ApplicationStatus.DISABLED,
+                messages.NO_SUITES_FOR_SERVICE.format(title=self.title),
             )
+
+        policy = apt.get_apt_cache_policy(error_msg=messages.APT_POLICY_FAILED)
+        for suite in repo_suites:
+            service_match = re.search(
+                self.repo_policy_check_tmpl.format(repo_url, suite), policy
+            )
+            if service_match:
+                current_status = (
+                    ApplicationStatus.ENABLED,
+                    messages.SERVICE_IS_ACTIVE.format(title=self.title),
+                )
+                break
 
         if self.check_packages_are_installed:
             for package in self.packages:
@@ -316,7 +414,7 @@ class RepoEntitlement(base.UAEntitlement):
         :return: False if apt url is already found on the source file.
                  True otherwise.
         """
-        apt_file = self.repo_list_file_tmpl.format(name=self.name)
+        apt_file = self.repo_file
         # If the apt file is commented out, we will assume that we need
         # to regenerate the apt file, regardless of the apt url delta
         if all(
@@ -359,7 +457,7 @@ class RepoEntitlement(base.UAEntitlement):
         delta_directives = delta_entitlement.get("directives", {})
         delta_apt_url = delta_directives.get("aptURL")
         delta_packages = delta_directives.get("additionalPackages")
-        status_cache = self.cfg.read_cache("status-cache")
+        status_cache = status_cache_file.read()
 
         if delta_directives and status_cache:
             application_status = self._check_application_status_on_cache()
@@ -383,11 +481,10 @@ class RepoEntitlement(base.UAEntitlement):
             old_url = orig_entitlement.get("directives", {}).get("aptURL")
             if old_url:
                 # Remove original aptURL and auth and rewrite
-                repo_filename = self.repo_list_file_tmpl.format(name=self.name)
-                apt.remove_auth_apt_repo(repo_filename, old_url)
+                apt.remove_auth_apt_repo(self.repo_file, old_url)
 
-            self.remove_apt_config()
-            self.setup_apt_config()
+            self.remove_apt_config(api.ProgressWrapper())
+            self.setup_apt_config(api.ProgressWrapper())
 
         if delta_packages:
             LOG.info("New additionalPackages, installing %r", delta_packages)
@@ -396,22 +493,23 @@ class RepoEntitlement(base.UAEntitlement):
                     packages=", ".join(delta_packages)
                 )
             )
-            self.install_packages(package_list=delta_packages)
+            self.install_packages(
+                api.ProgressWrapper(), package_list=delta_packages
+            )
 
         return True
 
     def install_packages(
         self,
+        progress: api.ProgressWrapper,
         package_list: Optional[List[str]] = None,
         cleanup_on_failure: bool = True,
-        verbose: bool = True,
     ) -> None:
         """Install contract recommended packages for the entitlement.
 
         :param package_list: Optional package list to use instead of
             self.packages.
         :param cleanup_on_failure: Cleanup apt files if apt install fails.
-        :param verbose: If true, print messages to stdout
         """
 
         if not package_list:
@@ -420,21 +518,18 @@ class RepoEntitlement(base.UAEntitlement):
         if not package_list:
             return
 
-        msg_ops = self.messaging.get("pre_install", [])
-        if not util.handle_message_operations(msg_ops):
-            return
+        progress.emit("message_operation", self.messaging.get("pre_install"))
 
         try:
-            self._update_sources_list()
+            self._update_sources_list(progress)
         except exceptions.UbuntuProError:
             if cleanup_on_failure:
-                self.remove_apt_config()
+                self.remove_apt_config(api.ProgressWrapper())
             raise
 
-        if verbose:
-            event.info(
-                messages.INSTALLING_SERVICE_PACKAGES.format(title=self.title)
-            )
+        progress.progress(
+            messages.INSTALLING_SERVICE_PACKAGES.format(title=self.title)
+        )
 
         if self.apt_noninteractive:
             override_env_vars = {"DEBIAN_FRONTEND": "noninteractive"}
@@ -454,12 +549,16 @@ class RepoEntitlement(base.UAEntitlement):
                 override_env_vars=override_env_vars,
             )
         except exceptions.UbuntuProError:
-            event.info(messages.ENABLE_FAILED.format(title=self.title))
             if cleanup_on_failure:
-                self.remove_apt_config()
+                LOG.info(
+                    "Apt install failed, removing apt config for {}".format(
+                        self.name
+                    )
+                )
+                self.remove_apt_config(api.ProgressWrapper())
             raise
 
-    def setup_apt_config(self, silent: bool = False) -> None:
+    def setup_apt_config(self, progress: api.ProgressWrapper) -> None:
         """Setup apt config based on the resourceToken and directives.
         Also sets up apt proxy if necessary.
 
@@ -497,7 +596,7 @@ class RepoEntitlement(base.UAEntitlement):
         apt.setup_apt_proxy(
             http_proxy=http_proxy, https_proxy=https_proxy, proxy_scope=scope
         )
-        repo_filename = self.repo_list_file_tmpl.format(name=self.name)
+        repo_filename = self.repo_file
         resource_cfg = self.entitlement_cfg
         directives = resource_cfg["entitlement"].get("directives", {})
         obligations = resource_cfg["entitlement"].get("obligations", {})
@@ -551,16 +650,16 @@ class RepoEntitlement(base.UAEntitlement):
             prerequisite_pkgs.append("ca-certificates")
 
         if prerequisite_pkgs:
-            if not silent:
-                event.info(
-                    messages.INSTALLING_PACKAGES.format(
-                        packages=", ".join(prerequisite_pkgs)
-                    )
-                )
+            progress.emit(
+                "info",
+                messages.INSTALLING_PACKAGES.format(
+                    packages=", ".join(prerequisite_pkgs)
+                ),
+            )
             try:
                 apt.run_apt_install_command(packages=prerequisite_pkgs)
             except exceptions.UbuntuProError:
-                self.remove_apt_config()
+                self.remove_apt_config(api.ProgressWrapper())
                 raise
         apt.add_auth_apt_repo(
             repo_filename,
@@ -573,16 +672,17 @@ class RepoEntitlement(base.UAEntitlement):
         # probably wants access to the repo that was just enabled.
         # Side-effect is that apt policy will now report the repo as accessible
         # which allows pro status to report correct info
-        if not silent:
-            event.info(messages.APT_UPDATING_LIST.format(name=self.title))
+        progress.progress(messages.APT_UPDATING_LIST.format(name=self.title))
         try:
             apt.update_sources_list(repo_filename)
         except exceptions.UbuntuProError:
-            self.remove_apt_config(run_apt_update=False)
+            self.remove_apt_config(api.ProgressWrapper(), run_apt_update=False)
             raise
 
     def remove_apt_config(
-        self, run_apt_update: bool = True, silent: bool = False
+        self,
+        progress: api.ProgressWrapper,
+        run_apt_update: bool = True,
     ):
         """Remove any repository apt configuration files.
 
@@ -590,7 +690,7 @@ class RepoEntitlement(base.UAEntitlement):
             command after removing the apt files.
         """
         series = system.get_release_info().series
-        repo_filename = self.repo_list_file_tmpl.format(name=self.name)
+        repo_filename = self.repo_file
         entitlement = self.cfg.machine_token_file.entitlements[self.name].get(
             "entitlement", {}
         )
@@ -599,6 +699,9 @@ class RepoEntitlement(base.UAEntitlement):
         if not repo_url:
             raise exceptions.MissingAptURLDirective(entitlement_name=self.name)
 
+        progress.progress(
+            messages.REMOVING_APT_CONFIGURATION.format(title=self.title)
+        )
         apt.remove_auth_apt_repo(repo_filename, repo_url, self.repo_key_file)
         apt.remove_apt_list_files(repo_url, series)
 
@@ -607,6 +710,5 @@ class RepoEntitlement(base.UAEntitlement):
             system.ensure_file_absent(repo_pref_file)
 
         if run_apt_update:
-            if not silent:
-                event.info(messages.APT_UPDATING_LISTS)
+            progress.progress(messages.APT_UPDATING_LISTS)
             apt.run_apt_update_command()

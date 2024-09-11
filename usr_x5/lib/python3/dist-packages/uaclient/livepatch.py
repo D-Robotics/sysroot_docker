@@ -130,9 +130,17 @@ def status() -> Optional[LivepatchStatusStatus]:
         out, _ = system.subp(
             [LIVEPATCH_CMD, "status", "--verbose", "--format", "json"]
         )
-    except exceptions.ProcessExecutionError:
-        LOG.warning("canonical-livepatch returned error when checking status")
-        return None
+    except exceptions.ProcessExecutionError as e:
+        # only raise an error if there is a legitimate problem, not just lack
+        # of enablement
+        if "Machine is not enabled" in e.stderr:
+            LOG.warning(e.stderr)
+            return None
+        LOG.warning(
+            "canonical-livepatch returned error when checking status:\n%s",
+            exc_info=e,
+        )
+        raise e
 
     try:
         status_json = json.loads(out)
@@ -193,9 +201,9 @@ class UALivepatchClient(serviceclient.UAServiceClient):
             "flavour": flavor,
             "architecture": arch,
             "codename": codename,
-            "build-date": build_date.isoformat()
-            if build_date is not None
-            else "unknown",
+            "build-date": (
+                build_date.isoformat() if build_date is not None else "unknown"
+            ),
         }
         headers = self.headers()
         try:
@@ -225,7 +233,11 @@ class UALivepatchClient(serviceclient.UAServiceClient):
 
 
 def _on_supported_kernel_cli() -> Optional[LivepatchSupport]:
-    lp_status = status()
+    try:
+        lp_status = status()
+    except exceptions.ProcessExecutionError:
+        return None
+
     if lp_status is None:
         return None
     return _convert_str_to_livepatch_support_status(lp_status.supported)

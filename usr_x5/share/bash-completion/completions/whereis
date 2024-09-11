@@ -22,7 +22,7 @@ _whereis_module()
 			return 0
 			;;
 	esac
-	COMPREPLY=( $(compgen -c -- $cur) )
+	COMPREPLY=( $(compgen -W "file" -- $cur) )
 	return 0
 }
 complete -F _whereis_module whereis
