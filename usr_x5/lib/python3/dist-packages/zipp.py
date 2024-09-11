@@ -8,6 +8,7 @@ import posixpath
 import zipfile
 import functools
 import itertools
+import re
 
 import more_itertools
 
@@ -54,7 +55,63 @@ def _ancestry(path):
         yield path
         path, tail = posixpath.split(path)
 
+class SanitizedNames:
+    """
+    ZipFile mix-in to ensure names are sanitized.
+    """
 
+    def namelist(self):
+        return list(map(self._sanitize, super().namelist()))
+
+    @staticmethod
+    def _sanitize(name):
+        r"""
+        Ensure a relative path with posix separators and no dot names.
+        Modeled after
+        https://github.com/python/cpython/blob/bcc1be39cb1d04ad9fc0bd1b9193d3972835a57c/Lib/zipfile/__init__.py#L1799-L1813
+        but provides consistent cross-platform behavior.
+        >>> san = SanitizedNames._sanitize
+        >>> san('/foo/bar')
+        'foo/bar'
+        >>> san('//foo.txt')
+        'foo.txt'
+        >>> san('foo/.././bar.txt')
+        'foo/bar.txt'
+        >>> san('foo../.bar.txt')
+        'foo../.bar.txt'
+        >>> san('\\foo\\bar.txt')
+        'foo/bar.txt'
+        >>> san('D:\\foo.txt')
+        'D/foo.txt'
+        >>> san('\\\\server\\share\\file.txt')
+        'server/share/file.txt'
+        >>> san('\\\\?\\GLOBALROOT\\Volume3')
+        '?/GLOBALROOT/Volume3'
+        >>> san('\\\\.\\PhysicalDrive1\\root')
+        'PhysicalDrive1/root'
+        Retain any trailing slash.
+        >>> san('abc/')
+        'abc/'
+        Raises a ValueError if the result is empty.
+        >>> san('../..')
+        Traceback (most recent call last):
+        ...
+        ValueError: Empty filename
+        """
+
+        def allowed(part):
+            return part and part not in {'..', '.'}
+
+        # Remove the drive letter.
+        # Don't use ntpath.splitdrive, because that also strips UNC paths
+        bare = re.sub('^([A-Z]):', r'\1', name, flags=re.IGNORECASE)
+        clean = bare.replace('\\', '/')
+        parts = clean.split('/')
+        joined = '/'.join(filter(allowed, parts))
+        if not joined:
+            raise ValueError("Empty filename")
+        return joined + '/' * name.endswith('/')
+    
 class Path:
     """
     A pathlib-compatible interface for zip files.
@@ -214,7 +271,7 @@ class Path:
         return self._next(parent_at)
 
     def _names(self):
-        return self._add_implied_dirs(self.root.namelist())
+        return self._add_implied_dirs(list(map(SanitizedNames._sanitize, self.root.namelist())))
 
     if sys.version_info < (3,):
         __div__ = __truediv__

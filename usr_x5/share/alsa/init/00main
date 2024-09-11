@@ -1,4 +1,4 @@
-# This is the toplevel configuration for 'alsactl init'.
+# This is toplevel configuration for for 'alsactl init'.
 # See 'man alsactl_init' for syntax.
 
 # set root device directory in sysfs for soundcard for ATTR{} command
@@ -32,6 +32,7 @@ RESULT=="skip", GOTO="init_end"
 # real ALSA configuration database
 CARDINFO{driver}=="HDA-Intel", INCLUDE="hda", GOTO="init_end"
 CARDINFO{driver}=="CA0106", INCLUDE="ca0106", GOTO="init_end"
+CARDINFO{driver}=="ENS1371", INCLUDE="ens1371", GOTO="init_end"
 CARDINFO{driver}=="Test", INCLUDE="test", GOTO="init_end"
 
 LABEL="init_end"

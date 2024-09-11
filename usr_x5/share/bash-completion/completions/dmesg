@@ -41,7 +41,6 @@ _dmesg_module()
 		--file
 		--facility
 		--human
-		--json
 		--kernel
 		--color
 		--level

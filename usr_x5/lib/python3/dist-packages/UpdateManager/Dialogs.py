@@ -153,17 +153,25 @@ class InternalDialog(BuilderDialog):
         codename = get_dist()
         return di.is_lts(codename)
 
+    def _has_livepatch_settings_ui(self):
+        try:
+            return Gio.DesktopAppInfo \
+                .new('gnome-online-accounts-panel.desktop')
+        except Exception:
+            return None
+
     def on_livepatch_status_ready(self, active, cs, ps, fixes):
         self.set_desc(None)
 
         if not active:
             if self._is_livepatch_supported() and \
                self.settings_button and \
+               self._has_livepatch_settings_ui() and \
                self.settings.get_int('launch-count') >= 4:
-                self.set_desc(_("<b>Tip:</b> You can use Livepatch with "
-                                "Ubuntu Pro to keep your computer more "
-                                "secure between restarts."))
-                self.settings_button.set_label(_("Settings & Pro…"))
+                self.set_desc(_("<b>Tip:</b> You can use Livepatch to "
+                                "keep your computer more secure between "
+                                "restarts."))
+                self.settings_button.set_label(_("Settings & Livepatch…"))
             return
 
         needs_reschedule = False

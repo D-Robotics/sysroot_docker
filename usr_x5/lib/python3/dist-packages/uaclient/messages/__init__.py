@@ -104,11 +104,12 @@ WARN_NEW_VERSION_AVAILABLE_CLI = (
         """\
  A new version is available: {version}
 Please run:
-    sudo apt-get install ubuntu-advantage-tools
+    sudo apt install ubuntu-pro-client
 to get the latest bug fixes and new features."""
     )
 )
 
+UNKNOWN_ERROR = t.gettext("an unknown error")
 
 ###############################################################################
 #                      GENERIC SYSTEM OPERATIONS                              #
@@ -161,12 +162,12 @@ CONTRACT_EXPIRED_WITH_PKGS = P(
     lambda n: t.ngettext(
         """\
 *Your Ubuntu Pro subscription has EXPIRED*
-{{pkg_num}} additional security update(s) require Ubuntu Pro with '{{service}}' enabled.
-Renew your service at {url}""",  # noqa: E501
+{{pkg_num}} additional security update requires Ubuntu Pro with '{{service}}' enabled.
+Renew your subscription at {url}""",  # noqa: E501
         """\
 *Your Ubuntu Pro subscription has EXPIRED*
-{{pkg_num}} additional security update(s) require Ubuntu Pro with '{{service}}' enabled.
-Renew your service at {url}""",  # noqa: E501
+{{pkg_num}} additional security updates require Ubuntu Pro with '{{service}}' enabled.
+Renew your subscription at {url}""",  # noqa: E501
         n,
     ).format(url=urls.PRO_DASHBOARD)
 )
@@ -201,7 +202,7 @@ Your grace period will expire in {{remaining_days}} days.""",
 CONTRACT_EXPIRED = t.gettext(
     """\
 *Your Ubuntu Pro subscription has EXPIRED*
-Renew your service at {url}"""
+Renew your subscription at {url}"""
 ).format(url=urls.PRO_DASHBOARD)
 
 
@@ -270,7 +271,7 @@ Warning: Failed to migrate /etc/ubuntu-advantage/uaclient.conf
 # ATTACH
 AUTO_ATTACH_RUNNING = t.gettext(
     "Currently attempting to automatically attach this machine to "
-    "Ubuntu Pro services"
+    "an Ubuntu Pro subscription"
 )
 ATTACH_SUCCESS_TMPL = t.gettext(
     """\
@@ -315,6 +316,7 @@ DETACH_SUCCESS = t.gettext("This machine is now detached.")
 REFRESH_CONTRACT_ENABLE = t.gettext(
     "One moment, checking your subscription first"
 )
+ENABLING_TMPL = t.gettext("Enabling {title}")
 ENABLED_TMPL = t.gettext("{title} enabled")
 ACCESS_ENABLED_TMPL = t.gettext("{title} access enabled")
 ENABLE_FAILED = t.gettext("Could not enable {title}.")
@@ -338,8 +340,10 @@ ENABLE_REBOOT_REQUIRED_TMPL = t.gettext(
     """\
 A reboot is required to complete {operation}."""
 )
+CONFIGURING_APT_ACCESS = t.gettext("Configuring APT access to {service}")
 
 # DISABLE
+REMOVING_APT_CONFIGURATION = t.gettext("Removing APT access to {title}")
 DISABLE_FAILED_TMPL = t.gettext("Could not disable {title}.")
 DEPENDENT_SERVICE = t.gettext(
     """\
@@ -354,6 +358,9 @@ Disabling dependent service: {required_service}"""
 APT_REMOVING_SOURCE_FILE = t.gettext("Removing apt source file: {filename}")
 APT_REMOVING_PREFERENCES_FILE = t.gettext(
     "Removing apt preferences file: {filename}"
+)
+PURGING_PACKAGES = t.gettext(
+    "Uninstalling all packages installed from {title}"
 )
 
 # Kernel checks for Purge
@@ -384,15 +391,15 @@ working properly, *do not proceed*. You may end up with an unbootable system.
 # These are for the retry-auto-attach functionality
 AUTO_ATTACH_RETRY_NOTICE = t.gettext(
     """\
-Failed to automatically attach to Ubuntu Pro services {num_attempts} time(s).
+Failed to automatically attach to an Ubuntu Pro subscription {num_attempts} time(s).
 The failure was due to: {reason}.
 The next attempt is scheduled for {next_run_datestring}.
-You can try manually with `sudo pro auto-attach`."""
+You can try manually with `sudo pro auto-attach`."""  # noqa: E501
 )
 
 AUTO_ATTACH_RETRY_TOTAL_FAILURE_NOTICE = t.gettext(
     """\
-Failed to automatically attach to Ubuntu Pro services {num_attempts} time(s).
+Failed to automatically attach to an Ubuntu Pro subscription {num_attempts} time(s).
 The most recent failure was due to: {reason}.
 Try re-launching the instance or report this issue by running `ubuntu-bug ubuntu-advantage-tools`
 You can try manually with `sudo pro auto-attach`."""  # noqa: E501
@@ -411,7 +418,6 @@ RETRY_ERROR_DETAIL_CONTRACT_API_ERROR = t.gettext(
 )
 RETRY_ERROR_DETAIL_CONNECTIVITY_ERROR = t.gettext("a connectivity error")
 RETRY_ERROR_DETAIL_URL_ERROR_URL = t.gettext("an error while reaching {url}")
-RETRY_ERROR_DETAIL_UNKNOWN = t.gettext("an unknown error")
 
 # These are related messages but actually occur during a "refresh"
 DISABLE_DURING_CONTRACT_REFRESH = t.gettext(
@@ -596,7 +602,7 @@ SECURITY_CVE_STATUS_UNKNOWN = t.gettext(
 UNKNOWN: {status}"""
 )
 
-SECURITY_FOUND_CVES = t.gettext("Found CVEs:")
+SECURITY_FOUND_CVES = t.gettext("Associated CVEs:")
 SECURITY_FOUND_LAUNCHPAD_BUGS = t.gettext("Found Launchpad bugs:")
 SECURITY_FIXING_REQUESTED_USN = t.gettext(
     """\
@@ -682,7 +688,7 @@ for a list of available options."""
 SS_UPDATE_CALL = t.gettext(
     """\
  Make sure to run
-    sudo apt-get update
+    sudo apt update
 to get the latest package information from apt."""
 )
 SS_UPDATE_DAYS = (
@@ -882,6 +888,10 @@ CLI_ASSUME_YES = t.gettext(
 
 CLI_API_DESC = t.gettext("Calls the Client API endpoints.")
 CLI_API_ENDPOINT = t.gettext("API endpoint to call")
+CLI_API_SHOW_PROGRESS = t.gettext(
+    "For endpoints that support progress updates, show each progress update "
+    "on a new line in JSON format"
+)
 CLI_API_ARGS = t.gettext(
     "Options to pass to the API endpoint, formatted as key=value"
 )
@@ -895,10 +905,10 @@ CLI_COLLECT_LOGS_DESC = t.gettext(
     "Collect logs and relevant system information into a tarball."
 )
 CLI_COLLECT_LOGS_OUTPUT = t.gettext(
-    "tarball where the logs will be stored. (Defaults to " "./ua_logs.tar.gz)"
+    "tarball where the logs will be stored. (Defaults to " "./pro_logs.tar.gz)"
 )
 
-CLI_CONFIG_SHOW_DESC = t.gettext("Show customisable configuration settings")
+CLI_CONFIG_SHOW_DESC = t.gettext("Show customizable configuration settings")
 CLI_CONFIG_SHOW_KEY = t.gettext(
     "Optional key or key(s) to show configuration settings."
 )
@@ -917,7 +927,7 @@ CLI_CONFIG_DESC = t.gettext("Manage Ubuntu Pro configuration")
 
 CLI_ATTACH_DESC = t.gettext(
     """\
-Attach this machine to Ubuntu Pro with a token obtained from:
+Attach this machine to an Ubuntu Pro subscription with a token obtained from:
 {url}
 
 When running this command without a token, it will generate a short code
@@ -950,6 +960,16 @@ CLI_FIX_NO_RELATED = t.gettext(
     "If used, when fixing a USN, the command will not try to"
     " also fix related USNs to the target USN."
 )
+
+CLI_FIX_FAIL_UPDATING_ESM_CACHE = t.gettext(
+    "WARNING: Failed to update ESM cache - package availability may be inaccurate"  # noqa
+)
+
+CLI_FIX_FAIL_UPDATING_ESM_CACHE_NON_ROOT = t.gettext(
+    "{bold}WARNING: Unable to update ESM cache when running as non-root,\n"
+    "please run sudo apt update and try again "
+    "if packages cannot be found.{end_bold}"
+).format(bold=TxtColor.BOLD, end_bold=TxtColor.ENDC)
 
 CLI_SS_DESC = t.gettext(
     """\
@@ -993,13 +1013,15 @@ Refresh three distinct Ubuntu Pro related artifacts in the system:
 * messages: Update APT and MOTD messages related to UA.
 
 You can individually target any of the three specific actions,
-by passing it's target to nome to the command.  If no `target`
+by passing the target name to the command.  If no `target`
 is specified, all targets are refreshed.
 """
 )
 CLI_REFRESH_TARGET = t.gettext("Target to refresh.")
 
-CLI_DETACH_DESC = t.gettext("Detach this machine from Ubuntu Pro services.")
+CLI_DETACH_DESC = t.gettext(
+    "Detach this machine from an Ubuntu Pro subscription."
+)
 
 CLI_HELP_DESC = t.gettext(
     "Provide detailed information about Ubuntu Pro services."
@@ -1198,7 +1220,7 @@ CIS_USG_POST_ENABLE = t.gettext("Visit {url} for the next steps").format(
 )
 CIS_IS_NOW_USG = t.gettext(
     """\
-From Ubuntu 20.04 and onwards 'pro enable cis' has been
+From Ubuntu 20.04 onward 'pro enable cis' has been
 replaced by 'pro enable usg'. See more information at:
 {url}"""
 ).format(url=urls.USG_DOCS)
@@ -1255,7 +1277,7 @@ Warning: FIPS kernel is not optimized for your specific cloud.
 To fix it, run the following commands:
 
     1. sudo pro disable fips
-    2. sudo apt-get remove ubuntu-fips
+    2. sudo apt remove ubuntu-fips
     3. sudo pro enable fips --assume-yes
     4. sudo reboot
 """
@@ -1297,6 +1319,13 @@ This will disable the {title} entitlement but the {title} packages will remain i
 """  # noqa: E501
     )
     + PROMPT_YES_NO
+)
+KERNEL_DOWNGRADE_WARNING = t.gettext(
+    """\
+This will downgrade the kernel from {current_version} to {new_version}.
+Warning: Downgrading the kernel may cause hardware failures.  Please ensure the
+         hardware is compatible with the new kernel version before proceeding.
+"""
 )
 FIPS_SYSTEM_REBOOT_REQUIRED = t.gettext(
     "FIPS support requires system reboot to complete configuration."
@@ -1367,6 +1396,13 @@ more. Find out more about Landscape at {home_url}"""
     install_url=urls.LANDSCAPE_DOCS_INSTALL,
     home_url=urls.LANDSCAPE_HOME_PAGE,
 )
+LANDSCAPE_CONFIG_REMAINS = t.gettext(
+    """\
+/etc/landscape/client.conf contains your landscape-client configuration.
+To re-enable Landscape with the same configuration, run:
+    sudo pro enable landscape --assume-yes
+"""
+)
 
 LIVEPATCH_TITLE = t.gettext("Livepatch")
 LIVEPATCH_DESCRIPTION = t.gettext("Canonical Livepatch service")
@@ -1395,6 +1431,8 @@ LIVEPATCH_DISABLE_REATTACH = t.gettext(
 LIVEPATCH_LTS_REBOOT_REQUIRED = t.gettext(
     "Livepatch support requires a system reboot across LTS upgrade."
 )
+INSTALLING_LIVEPATCH = t.gettext("Installing Livepatch")
+SETTING_UP_LIVEPATCH = t.gettext("Setting up Livepatch")
 
 REALTIME_TITLE = t.gettext("Real-time kernel")
 REALTIME_DESCRIPTION = t.gettext(
@@ -1416,6 +1454,10 @@ REALTIME_GENERIC_DESCRIPTION = t.gettext(
 REALTIME_NVIDIA_TITLE = t.gettext("Real-time NVIDIA Tegra Kernel")
 REALTIME_NVIDIA_DESCRIPTION = t.gettext(
     "RT kernel optimized for NVIDIA Tegra platform"
+)
+REALTIME_RASPI_TITLE = t.gettext("Raspberry Pi Real-time for Pi5/Pi4")
+REALTIME_RASPI_DESCRIPTION = t.gettext(
+    "24.04 Real-time kernel optimised for Raspberry Pi"
 )
 REALTIME_INTEL_TITLE = t.gettext("Real-time Intel IOTG Kernel")
 REALTIME_INTEL_DESCRIPTION = t.gettext(
@@ -1534,13 +1576,13 @@ It is only possible to enable Anbox Cloud on a container using
 the --access-only flag.""",
 )
 
-UNEXPECTED_ERROR = NamedMessage(
+UNEXPECTED_ERROR = FormattedNamedMessage(
     "unexpected-error",
     t.gettext(
         """\
-Unexpected error(s) occurred.
-For more details, see the log: /var/log/ubuntu-advantage.log
-To file a bug run: ubuntu-bug ubuntu-advantage-tools"""
+An unexpected error occurred: {error_msg}
+For more details, see the log: {log_path}
+If you think this is a bug, please run: ubuntu-bug ubuntu-advantage-tools"""
     ),
 )
 
@@ -1594,14 +1636,6 @@ FAILED_DISABLING_DEPENDENT_SERVICE = FormattedNamedMessage(
 Cannot disable dependent service: {required_service}{error}"""
     ),
 )
-DEPENDENT_SERVICE_STOPS_DISABLE = FormattedNamedMessage(
-    "depedent-service-stops-disable",
-    t.gettext(
-        """\
-Cannot disable {service_being_disabled} when {dependent_service} is enabled.
-"""
-    ),
-)
 REPO_PURGE_FAIL_NO_ORIGIN = FormattedNamedMessage(
     "repo-purge-fail-no-origin",
     t.gettext(
@@ -1613,22 +1647,6 @@ REPO_PURGE_FAIL_NO_ORIGIN = FormattedNamedMessage(
 ERROR_ENABLING_REQUIRED_SERVICE = FormattedNamedMessage(
     "error-enabling-required-service",
     t.gettext("Cannot enable required service: {service}{error}"),
-)
-REQUIRED_SERVICE_STOPS_ENABLE = FormattedNamedMessage(
-    "required-service-stops-enable",
-    t.gettext(
-        """\
-Cannot enable {service_being_enabled} when {required_service} is disabled.
-"""
-    ),
-)
-INCOMPATIBLE_SERVICE_STOPS_ENABLE = FormattedNamedMessage(
-    "incompatible-service-stops-enable",
-    t.gettext(
-        """\
-Cannot enable {service_being_enabled} when \
-{incompatible_service} is enabled."""
-    ),
 )
 
 SERVICE_ERROR_INSTALL_ON_CONTAINER = FormattedNamedMessage(
@@ -1653,18 +1671,31 @@ NO_APT_URL_FOR_SERVICE = FormattedNamedMessage(
     "no-apt-url-for-service",
     t.gettext("{title} does not have an aptURL directive"),
 )
+NO_SUITES_FOR_SERVICE = FormattedNamedMessage(
+    "no-suites-for-service",
+    t.gettext("{title} does not have a suites directive"),
+)
 ALREADY_DISABLED = FormattedNamedMessage(
     "service-already-disabled",
     t.gettext(
         """\
-{title} is not currently enabled\nSee: sudo pro status"""
+{title} is not currently enabled - nothing to do.
+See: sudo pro status"""
+    ),
+)
+CANNOT_DISABLE_NOT_APPLICABLE = FormattedNamedMessage(
+    "cannot-disable-not-applicable",
+    t.gettext(
+        """\
+Disabling {title} with pro is not supported.\nSee: sudo pro status"""
     ),
 )
 ALREADY_ENABLED = FormattedNamedMessage(
     "service-already-enabled",
     t.gettext(
         """\
-{title} is already enabled.\nSee: sudo pro status"""
+{title} is already enabled - nothing to do.
+See: sudo pro status"""
     ),
 )
 UNENTITLED = FormattedNamedMessage(
@@ -1793,7 +1824,7 @@ LIVEPATCH_KERNEL_EOL = FormattedNamedMessage(
         """\
 The current kernel ({{version}}, {{arch}}) has reached the end of its livepatch support.
 Supported kernels are listed here: {url}
-Either switch to a supported kernel or `pro disable livepatch` to dismiss this warning."""  # noqa: E501
+Either switch to a supported kernel or `sudo pro disable livepatch` to dismiss this warning."""  # noqa: E501
     ).format(url=urls.LIVEPATCH_SUPPORTED_KERNELS),
 )
 LIVEPATCH_KERNEL_NOT_SUPPORTED = FormattedNamedMessage(
@@ -1802,7 +1833,7 @@ LIVEPATCH_KERNEL_NOT_SUPPORTED = FormattedNamedMessage(
         """\
 The current kernel ({{version}}, {{arch}}) is not supported by livepatch.
 Supported kernels are listed here: {url}
-Either switch to a supported kernel or `pro disable livepatch` to dismiss this warning."""  # noqa: E501
+Either switch to a supported kernel or `sudo pro disable livepatch` to dismiss this warning."""  # noqa: E501
     ).format(
         url=urls.LIVEPATCH_SUPPORTED_KERNELS
     ),  # noqa: E501
@@ -1810,6 +1841,15 @@ Either switch to a supported kernel or `pro disable livepatch` to dismiss this w
 LIVEPATCH_APPLICATION_STATUS_CLIENT_FAILURE = NamedMessage(
     "livepatch-client-failure",
     t.gettext("canonical-livepatch status didn't finish successfully"),
+)
+
+LIVEPATCH_CLIENT_FAILURE_WARNING = FormattedNamedMessage(
+    "livepatch-client-failure-warning",
+    t.gettext(
+        """\
+Error running canonical-livepatch status:
+{livepatch_error}"""
+    ),
 )
 
 REALTIME_FIPS_INCOMPATIBLE = NamedMessage(
@@ -1841,6 +1881,17 @@ REALTIME_ERROR_INSTALL_ON_CONTAINER = NamedMessage(
     t.gettext("Cannot install Real-time kernel on a container."),
 )
 
+ROS_REQUIRES_ESM = NamedMessage(
+    "ros-requires-esm",
+    t.gettext("ROS packages assume ESM updates are enabled."),
+)
+ROS_UPDATES_REQUIRES_ROS = NamedMessage(
+    "ros-updates-requires-ros",
+    t.gettext(
+        "ROS bug-fix updates assume ROS security fix updates are enabled."
+    ),
+)
+
 UNATTENDED_UPGRADES_SYSTEMD_JOB_DISABLED = NamedMessage(
     "unattended-upgrades-systemd-job-disabled",
     t.gettext("apt-daily.timer jobs are not running"),
@@ -1858,19 +1909,6 @@ UNATTENDED_UPGRADES_UNINSTALLED = NamedMessage(
     t.gettext("unattended-upgrades package is not installed"),
 )
 
-LANDSCAPE_CLIENT_NOT_INSTALLED = NamedMessage(
-    "landscape-client-not-installed",
-    t.gettext("lanscape-client is not installed"),
-)
-LANDSCAPE_NOT_CONFIGURED = NamedMessage(
-    "landscape-not-configured",
-    t.gettext(
-        """\
-Landscape is installed but not configured.
-Run `sudo landscape-config` to set it up, or run `sudo pro disable landscape`\
-"""
-    ),
-)
 LANDSCAPE_NOT_REGISTERED = NamedMessage(
     "landscape-not-registered",
     t.gettext(
@@ -1883,15 +1921,8 @@ Run `sudo landscape-config` to register, or run `sudo pro disable landscape`\
 LANDSCAPE_SERVICE_NOT_ACTIVE = NamedMessage(
     "landscape-service-not-active",
     t.gettext(
-        """\
-Landscape is installed and configured and registered but not running.
-Run `sudo landscape-config` to start it, or run `sudo pro disable landscape`\
-"""
+        "landscape-client is either not installed or installed but disabled."
     ),
-)
-LANDSCAPE_CONFIG_FAILED = NamedMessage(
-    "landscape-config-failed",
-    t.gettext("""landscape-config command failed"""),
 )
 
 INVALID_SECURITY_ISSUE = FormattedNamedMessage(
@@ -1904,6 +1935,11 @@ USNs should follow the pattern USN-nnnn."""
     ),
 )
 
+
+GENERIC_UNKNOWN_ISSUE = NamedMessage(
+    "unknown-issue",
+    UNKNOWN_ERROR,
+)
 
 ###############################################################################
 #                              ERROR MESSAGES                                 #
@@ -2022,12 +2058,13 @@ E_PROXY_AUTH_FAIL = NamedMessage(
     "proxy-auth-fail", t.gettext("Proxy authentication failed")
 )
 
-E_CONNECTIVITY_ERROR = NamedMessage(
+E_CONNECTIVITY_ERROR = FormattedNamedMessage(
     "connectivity-error",
     t.gettext(
         """\
-Failed to connect to authentication server
-Check your Internet connection and try again."""
+Failed to connect to {url}
+{cause_error}
+"""
     ),
 )
 
@@ -2150,8 +2187,9 @@ E_VALID_SERVICE_FAILURE_UNATTACHED = FormattedNamedMessage(
     "valid-service-failure-unattached",
     t.gettext(
         """\
-To use '{{valid_service}}' you need an Ubuntu Pro subscription
-Personal and community subscriptions are available at no charge
+Cannot {{operation}} services when unattached - nothing to do.
+To use '{{valid_service}}' you need an Ubuntu Pro subscription.
+Personal and community subscriptions are available at no charge.
 See {url}"""
     ).format(url=urls.PRO_HOME_PAGE),
 )
@@ -2171,6 +2209,16 @@ E_ENTITLEMENT_NOT_FOUND = FormattedNamedMessage(
 E_ENTITLEMENTS_NOT_ENABLED_ERROR = NamedMessage(
     "entitlements-not-enabled",
     t.gettext("failed to enable some services"),
+)
+
+E_ENTITLEMENT_NOT_ENABLED_ERROR = FormattedNamedMessage(
+    "entitlement-not-enabled",
+    t.gettext("failed to enable {service}"),
+)
+
+E_ENTITLEMENT_NOT_DISABLED_ERROR = FormattedNamedMessage(
+    "entitlement-not-disabled",
+    t.gettext("failed to disable {service}"),
 )
 
 E_ATTACH_FAILURE_DEFAULT_SERVICES = NamedMessage(
@@ -2218,8 +2266,39 @@ E_INVALID_CONTRACT_DELTAS_SERVICE_TYPE = FormattedNamedMessage(
     t.gettext("Could not determine contract delta service type {orig} {new}"),
 )
 
+E_REQUIRED_SERVICE_STOPS_ENABLE = FormattedNamedMessage(
+    "required-service-stops-enable",
+    t.gettext(
+        """\
+Cannot enable {service_being_enabled} when {required_service} is disabled.
+"""
+    ),
+)
+E_INCOMPATIBLE_SERVICE_STOPS_ENABLE = FormattedNamedMessage(
+    "incompatible-service-stops-enable",
+    t.gettext(
+        """\
+Cannot enable {service_being_enabled} when \
+{incompatible_service} is enabled."""
+    ),
+)
+E_DEPENDENT_SERVICE_STOPS_DISABLE = FormattedNamedMessage(
+    "depedent-service-stops-disable",
+    t.gettext(
+        """\
+Cannot disable {service_being_disabled} when {dependent_service} is enabled.
+"""
+    ),
+)
+
 E_INVALID_PRO_IMAGE = FormattedNamedMessage(
-    name="invalid-pro-image", msg=t.gettext("Error on Pro Image:\n{error_msg}")
+    name="invalid-pro-image",
+    msg=t.gettext(
+        """\
+Failed to identify this image as a valid Ubuntu Pro image.
+Details:
+{error_msg}"""
+    ),
 )
 
 E_CLOUD_METADATA_ERROR = FormattedNamedMessage(
@@ -2379,6 +2458,11 @@ E_CLI_VALID_CHOICES = FormattedNamedMessage(
     "invalid-arg-choice", "\n" + t.gettext("{arg} must be one of: {choices}")
 )
 
+E_CLI_EMPTY_CONFIG_VALUE = FormattedNamedMessage(
+    "empty-value",
+    t.gettext("Empty value provided for {arg}."),
+)
+
 E_CLI_EXPECTED_FORMAT = FormattedNamedMessage(
     "generic-invalid-format",
     "\n" + t.gettext("Expected {expected} but found: {actual}"),
@@ -2419,6 +2503,11 @@ Include the token in the attach-config file instead.
 E_API_ERROR_ARGS_AND_DATA_TOGETHER = NamedMessage(
     "api-error-args-and-data-together",
     t.gettext("Cannot provide both --args and --data at the same time"),
+)
+
+E_PROMPT_DENIED = NamedMessage(
+    "prompt-denied",
+    t.gettext("Operation cancelled by user"),
 )
 
 E_LOCK_HELD_ERROR = FormattedNamedMessage(
@@ -2521,4 +2610,42 @@ E_INCORRECT_ENUM_VALUE_ERROR_MESSAGE = FormattedNamedMessage(
 
 E_PYCURL_CA_CERTIFICATES = NamedMessage(
     "pycurl-ca-certificates-error", "Problem reading SSL CA certificates"
+)
+
+E_UPDATING_ESM_CACHE = FormattedNamedMessage(
+    "error-updating-esm-cache",
+    t.gettext("Error updating ESM services cache: {error}"),
+)
+
+E_ENTITLEMENTS_APT_DIRECTIVES_ARE_NOT_UNIQUE = FormattedNamedMessage(
+    "entitlements-apt-directives-are-not-unique",
+    t.gettext(
+        "There is a problem with the resource directives provided by {url}\n"
+        "These entitlements: {names} are sharing the following directives\n"
+        " - APT url: {apt_url}\n - Suite: {suite}\n"
+        "These directives need to be unique for every entitlement."
+    ),
+)
+
+E_LANDSCAPE_CONFIG_FAILED = NamedMessage(
+    "landscape-config-failed",
+    t.gettext("landscape-config command failed"),
+)
+
+E_NON_INTERACTIVE_KERNEL_PURGE_DISALLOWED = NamedMessage(
+    "non-interactive-kernel-purge-disallowed",
+    t.gettext(
+        "You must use the pro command to purge a service that has installed a "
+        "kernel"
+    ),
+)
+
+E_NOT_SUPPORTED = NamedMessage(
+    "not-supported",
+    t.gettext("The operation is not supported"),
+)
+
+E_CONTRACT_EXPIRED = NamedMessage(
+    "contract-expired",
+    CONTRACT_EXPIRED,
 )

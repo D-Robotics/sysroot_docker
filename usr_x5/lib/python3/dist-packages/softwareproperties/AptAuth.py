@@ -59,9 +59,9 @@ class AptAuth:
     def list(self):
         cmd = ["/usr/bin/apt-key", "--quiet", "adv", "--with-colons", "--batch", "--fixed-list-mode", "--list-keys"]
         res = []
-        process = subprocess.run(cmd, stdout=PIPE, stderr=PIPE, text=True)
+        p = subprocess.run(cmd, stdout=PIPE, stderr=PIPE, universal_newlines=True).stdout
         name = ''
-        for line in process.stdout.splitlines():
+        for line in p:
             fields = line.split(":")
             if fields[0] in ["pub", "uid"]:
                 name = fields[9]

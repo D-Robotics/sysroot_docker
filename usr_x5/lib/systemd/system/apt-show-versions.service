@@ -1,0 +1,13 @@
+[Unit]
+Description=Daily apt-show-versions index rebuild
+Documentation=man:apt-show-versions(8)
+ConditionACPower=true
+
+[Service]
+Type=oneshot
+ExecStart=/etc/cron.daily/apt-show-versions systemd-timer
+
+# performance options
+Nice=19
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7

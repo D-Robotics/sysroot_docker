@@ -24,8 +24,7 @@ import distro_info
 from functools import wraps
 import gi
 gi.require_version("Gtk", "3.0")
-gi.require_version("Handy", "1")
-from gi.repository import Gio, Gtk, GLib, Handy
+from gi.repository import Gio, Gtk
 import json
 import os
 import subprocess
@@ -181,9 +180,3 @@ def retry(exceptions, tries=10, delay=0.1, backoff=2):
         return f_retry  # true decorator
 
     return deco_retry
-
-def is_dark_theme(widget):
-    env_gtk_theme = GLib.getenv("GTK_THEME")
-    if env_gtk_theme != None:
-        return GLib.str_has_suffix(env_gtk_theme, "dark")
-    return Handy.StyleManager.get_default().get_dark()

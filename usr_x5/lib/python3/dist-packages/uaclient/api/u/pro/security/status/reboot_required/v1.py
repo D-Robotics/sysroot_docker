@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import List, Optional
 
-from uaclient import livepatch
+from uaclient import exceptions, livepatch
 from uaclient.api.api import APIEndpoint
 from uaclient.api.data_types import AdditionalInfo
 from uaclient.config import UAConfig
@@ -92,7 +92,12 @@ def _get_reboot_status():
         return RebootStatus.REBOOT_REQUIRED
 
     our_kernel_version = get_kernel_info().proc_version_signature_version
-    lp_status = livepatch.status()
+
+    try:
+        lp_status = livepatch.status()
+    except exceptions.ProcessExecutionError:
+        return RebootStatus.REBOOT_REQUIRED
+
     if (
         lp_status is not None
         and our_kernel_version is not None
@@ -144,12 +149,16 @@ def _reboot_required(cfg: UAConfig) -> RebootRequiredResult:
     return RebootRequiredResult(
         reboot_required=reboot_status.value,
         reboot_required_packages=RebootRequiredPkgs(
-            standard_packages=reboot_required_pkgs.standard_packages
-            if reboot_required_pkgs
-            else None,
-            kernel_packages=reboot_required_pkgs.kernel_packages
-            if reboot_required_pkgs
-            else None,
+            standard_packages=(
+                reboot_required_pkgs.standard_packages
+                if reboot_required_pkgs
+                else None
+            ),
+            kernel_packages=(
+                reboot_required_pkgs.kernel_packages
+                if reboot_required_pkgs
+                else None
+            ),
         ),
         livepatch_enabled_and_kernel_patched=livepatch_enabled_and_kernel_patched,  # noqa
         livepatch_enabled=livepatch_enabled,

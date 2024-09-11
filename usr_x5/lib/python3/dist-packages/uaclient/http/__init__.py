@@ -168,7 +168,8 @@ def _readurl_urllib(
     except error.HTTPError as e:
         resp = e
     except error.URLError as e:
-        raise exceptions.UrlError(e, url=req.full_url)
+        LOG.exception(str(e.reason))
+        raise exceptions.ConnectivityError(cause=e, url=req.full_url)
 
     body = resp.read().decode("utf-8")
 
@@ -217,11 +218,7 @@ def _handle_pycurl_error(
         code = error.args[0]
     if len(error.args) > 1:
         msg = error.args[1]
-    if (
-        code == authentication_error_code
-        and msg
-        and "HTTP code 407 from proxy" in msg
-    ):
+    if code == authentication_error_code and msg and "407" in msg:
         raise exceptions.ProxyAuthenticationFailed()
     elif code == ca_certificates_error_code:
         raise exceptions.PycurlCACertificatesError(url=url)

@@ -2,7 +2,7 @@ from typing import Any, Dict, Optional, Tuple, Type  # noqa: F401
 
 from uaclient import apt, event_logger, messages, system, util
 from uaclient.entitlements import repo
-from uaclient.entitlements.base import IncompatibleService, UAEntitlement
+from uaclient.entitlements.base import EntitlementWithMessage, UAEntitlement
 from uaclient.types import (  # noqa: F401
     MessagingOperations,
     MessagingOperationsDict,
@@ -37,11 +37,12 @@ class RealtimeKernelEntitlement(repo.RepoEntitlement):
         return {
             GenericRealtime.variant_name: GenericRealtime,
             NvidiaTegraRealtime.variant_name: NvidiaTegraRealtime,
+            RaspberryPiRealtime.variant_name: RaspberryPiRealtime,
             IntelIotgRealtime.variant_name: IntelIotgRealtime,
         }
 
     @property
-    def incompatible_services(self) -> Tuple[IncompatibleService, ...]:
+    def incompatible_services(self) -> Tuple[EntitlementWithMessage, ...]:
         from uaclient.entitlements.fips import (
             FIPSEntitlement,
             FIPSUpdatesEntitlement,
@@ -49,14 +50,14 @@ class RealtimeKernelEntitlement(repo.RepoEntitlement):
         from uaclient.entitlements.livepatch import LivepatchEntitlement
 
         return (
-            IncompatibleService(
+            EntitlementWithMessage(
                 FIPSEntitlement, messages.REALTIME_FIPS_INCOMPATIBLE
             ),
-            IncompatibleService(
+            EntitlementWithMessage(
                 FIPSUpdatesEntitlement,
                 messages.REALTIME_FIPS_UPDATES_INCOMPATIBLE,
             ),
-            IncompatibleService(
+            EntitlementWithMessage(
                 LivepatchEntitlement, messages.REALTIME_LIVEPATCH_INCOMPATIBLE
             ),
         )
@@ -118,10 +119,10 @@ class RealtimeKernelEntitlement(repo.RepoEntitlement):
 
 class RealtimeVariant(RealtimeKernelEntitlement):
     @property
-    def incompatible_services(self) -> Tuple[IncompatibleService, ...]:
+    def incompatible_services(self) -> Tuple[EntitlementWithMessage, ...]:
         incompatible_variants = tuple(
             [
-                IncompatibleService(
+                EntitlementWithMessage(
                     cls,
                     messages.REALTIME_VARIANT_INCOMPATIBLE.format(
                         service=self.title, variant=cls.title
@@ -145,6 +146,14 @@ class NvidiaTegraRealtime(RealtimeVariant):
     variant_name = "nvidia-tegra"
     title = messages.REALTIME_NVIDIA_TITLE
     description = messages.REALTIME_NVIDIA_DESCRIPTION
+    is_variant = True
+    check_packages_are_installed = True
+
+
+class RaspberryPiRealtime(RealtimeVariant):
+    variant_name = "raspi"
+    title = messages.REALTIME_RASPI_TITLE
+    description = messages.REALTIME_RASPI_DESCRIPTION
     is_variant = True
     check_packages_are_installed = True
 

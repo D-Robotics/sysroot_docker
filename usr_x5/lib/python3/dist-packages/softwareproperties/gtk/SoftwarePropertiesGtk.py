@@ -272,9 +272,6 @@ class SoftwarePropertiesGtk(SoftwareProperties, SimpleGtkbuilderApp):
                                                apt_pkg.config.find("Dir::Etc::sourcelist"))):
             self.open_file(file)
 
-        # Make sure window is as small as possible initially.
-        self.window_main.resize(1, 1)
-
     def on_main_notebook_page_switched(self, notebook, page, page_num):
         # On the additional drivers page, don't show the backend revert button.
         if page == self.vbox_drivers:
@@ -1425,7 +1422,7 @@ class SoftwarePropertiesGtk(SoftwareProperties, SimpleGtkbuilderApp):
                 modules_package_obj = self.apt_cache[modules_package]
                 if modules_package and not modules_package_obj.current_ver:
                     self.driver_changes.append(modules_package_obj)
-            except (KeyError, TypeError):
+            except KeyError:
                 pass
 
         if button.get_active():

@@ -274,6 +274,7 @@ def get_machine_id(cfg) -> str:
     We first check for the machine-id in machine-token.json before
     looking at the system file.
     """
+    from uaclient.files.state_files import machine_id_file
 
     if cfg.machine_token:
         cfg_machine_id = cfg.machine_token.get("machineTokenInfo", {}).get(
@@ -282,15 +283,19 @@ def get_machine_id(cfg) -> str:
         if cfg_machine_id:
             return cfg_machine_id
 
-    fallback_machine_id_file = cfg.data_path("machine-id")
+    fallback_machine_id = machine_id_file.read()
 
-    for path in [ETC_MACHINE_ID, DBUS_MACHINE_ID, fallback_machine_id_file]:
+    for path in [ETC_MACHINE_ID, DBUS_MACHINE_ID]:
         if os.path.exists(path):
             content = load_file(path).rstrip("\n")
             if content:
                 return content
+
+    if fallback_machine_id:
+        return fallback_machine_id
+
     machine_id = str(uuid.uuid4())
-    cfg.write_cache("machine-id", machine_id)
+    machine_id_file.write(machine_id)
     return machine_id
 
 
@@ -747,15 +752,44 @@ def is_systemd_unit_active(service_name: str) -> bool:
     return True
 
 
+def get_systemd_unit_active_state(service_name: str) -> Optional[str]:
+    try:
+        out, _ = subp(
+            [
+                "systemctl",
+                "show",
+                "--property=ActiveState",
+                "--no-pager",
+                service_name,
+            ]
+        )
+        if out and out.startswith("ActiveState="):
+            return out.split("=")[1].strip()
+        else:
+            LOG.warning(
+                "Couldn't find ActiveState in systemctl show output for %s",
+                service_name,
+            )
+    except exceptions.ProcessExecutionError as e:
+        LOG.warning(
+            "Failed to get ActiveState for systemd unit %s",
+            service_name,
+            exc_info=e,
+        )
+    return None
+
+
 def get_user_cache_dir() -> str:
     if util.we_are_currently_root():
         return defaults.UAC_RUN_PATH
 
     xdg_cache_home = os.environ.get("XDG_CACHE_HOME")
     if xdg_cache_home:
-        return xdg_cache_home + "/" + defaults.USER_CACHE_SUBDIR
+        return os.path.join(xdg_cache_home, defaults.USER_CACHE_SUBDIR)
 
-    return os.path.expanduser("~") + "/.cache/" + defaults.USER_CACHE_SUBDIR
+    return os.path.join(
+        os.path.expanduser("~"), ".cache", defaults.USER_CACHE_SUBDIR
+    )
 
 
 def get_reboot_required_pkgs() -> Optional[RebootRequiredPkgs]:

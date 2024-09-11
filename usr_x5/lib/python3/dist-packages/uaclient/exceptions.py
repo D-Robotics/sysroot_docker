@@ -19,20 +19,6 @@ class DelayProLicensePolling(IsProLicensePresentError):
     pass
 
 
-class UrlError(IOError):
-    def __init__(
-        self,
-        cause: Exception,
-        url: str,
-    ):
-        if getattr(cause, "reason", None):
-            cause_error = str(getattr(cause, "reason"))
-        else:
-            cause_error = str(cause)
-        super().__init__(cause_error)
-        self.url = url
-
-
 class ProcessExecutionError(IOError):
     def __init__(
         self,
@@ -206,10 +192,6 @@ class ProxyAuthenticationFailed(UbuntuProError):
     _msg = messages.E_PROXY_AUTH_FAIL
 
 
-class ConnectivityError(UbuntuProError):
-    _msg = messages.E_CONNECTIVITY_ERROR
-
-
 class ExternalAPIError(UbuntuProError):
     _formatted_msg = messages.E_EXTERNAL_API_ERROR
     code = None  # type: int
@@ -236,9 +218,38 @@ class PycurlCACertificatesError(UbuntuProError):
         self.url = url
 
 
+class ConnectivityError(UbuntuProError, IOError):
+    _formatted_msg = messages.E_CONNECTIVITY_ERROR
+
+    def __init__(
+        self,
+        cause: Exception,
+        url: str,
+    ):
+        if getattr(cause, "reason", None):
+            cause_error = str(getattr(cause, "reason"))
+        else:
+            cause_error = str(cause)
+        IOError.__init__(self, cause_error)
+        UbuntuProError.__init__(self, cause_error=cause_error, url=url)
+
+        # Even though we already set those variable through UbuntuProError
+        # we need to set them again to avoid mypy warnings
+        self.cause_error = cause_error
+        self.url = url
+
+
+# We are doing that just to keep backwards compatibility
+# for our custom UrlError exception
+UrlError = ConnectivityError
+
 ###############################################################################
 #                              ATTACH/ENABLE                                  #
 ###############################################################################
+
+
+class ContractExpiredError(UbuntuProError):
+    _msg = messages.E_CONTRACT_EXPIRED
 
 
 class InvalidServiceOpError(UbuntuProError):
@@ -328,7 +339,6 @@ class EntitlementNotFoundError(UbuntuProError):
 
 
 class EntitlementsNotEnabledError(UbuntuProError):
-
     exit_code = 4
     _msg = messages.E_ENTITLEMENTS_NOT_ENABLED_ERROR
 
@@ -341,6 +351,38 @@ class EntitlementsNotEnabledError(UbuntuProError):
         ]
         super().__init__(
             additional_info={"services": info_dicts},
+        )
+
+
+class EntitlementNotEnabledError(UbuntuProError):
+    _formatted_msg = messages.E_ENTITLEMENT_NOT_ENABLED_ERROR
+
+    def __init__(self, service: str, reason: messages.NamedMessage):
+        super().__init__(
+            service=service,
+            additional_info={
+                "reason": {
+                    "code": reason.name,
+                    "title": reason.msg,
+                    "additional_info": reason.additional_info,
+                }
+            },
+        )
+
+
+class EntitlementNotDisabledError(UbuntuProError):
+    _formatted_msg = messages.E_ENTITLEMENT_NOT_DISABLED_ERROR
+
+    def __init__(self, service: str, reason: messages.NamedMessage):
+        super().__init__(
+            service=service,
+            additional_info={
+                "reason": {
+                    "code": reason.name,
+                    "title": reason.msg,
+                    "additional_info": reason.additional_info,
+                }
+            },
         )
 
 
@@ -366,6 +408,30 @@ class RepoPinFailNoOrigin(UbuntuProError):
 
 class InvalidContractDeltasServiceType(UbuntuProError):
     _formatted_msg = messages.E_INVALID_CONTRACT_DELTAS_SERVICE_TYPE
+
+
+class EntitlementsAPTDirectivesAreNotUnique(UbuntuProError):
+    _formatted_msg = messages.E_ENTITLEMENTS_APT_DIRECTIVES_ARE_NOT_UNIQUE
+
+
+class RequiredServiceStopsEnable(UbuntuProError):
+    _formatted_msg = messages.E_REQUIRED_SERVICE_STOPS_ENABLE
+
+
+class IncompatibleServiceStopsEnable(UbuntuProError):
+    _formatted_msg = messages.E_INCOMPATIBLE_SERVICE_STOPS_ENABLE
+
+
+class DependentServiceStopsDisable(UbuntuProError):
+    _formatted_msg = messages.E_DEPENDENT_SERVICE_STOPS_DISABLE
+
+
+class LandscapeConfigFailed(UbuntuProError):
+    _msg = messages.E_LANDSCAPE_CONFIG_FAILED
+
+
+class NonInteractiveKernelPurgeDisallowed(UbuntuProError):
+    _msg = messages.E_NON_INTERACTIVE_KERNEL_PURGE_DISALLOWED
 
 
 ###############################################################################
@@ -485,6 +551,10 @@ class InvalidArgChoice(UbuntuProError):
     _formatted_msg = messages.E_CLI_VALID_CHOICES
 
 
+class EmptyConfigValue(UbuntuProError):
+    _formatted_msg = messages.E_CLI_EMPTY_CONFIG_VALUE
+
+
 class GenericInvalidFormat(UbuntuProError):
     _formatted_msg = messages.E_CLI_EXPECTED_FORMAT
 
@@ -511,6 +581,10 @@ class CLIAttachTokenArgXORConfig(UbuntuProError):
 
 class CLIAPIOptionsXORData(UbuntuProError):
     _msg = messages.E_API_ERROR_ARGS_AND_DATA_TOGETHER
+
+
+class PromptDeniedError(UbuntuProError):
+    _msg = messages.E_PROMPT_DENIED
 
 
 ###############################################################################
