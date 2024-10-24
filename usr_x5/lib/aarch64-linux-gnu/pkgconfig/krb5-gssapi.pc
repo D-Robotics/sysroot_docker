@@ -1,1 +1,10 @@
-mit-krb5/krb5-gssapi.pc
+prefix=/usr
+exec_prefix=${prefix}
+libdir=${prefix}/lib/aarch64-linux-gnu
+includedir=${prefix}/include
+vendor=MIT
+
+Name: krb5-gssapi
+Description: Kerberos implementation of the GSSAPI
+Version: 1.19.2
+Requires: mit-krb5-gssapi

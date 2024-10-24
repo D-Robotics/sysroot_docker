@@ -1,0 +1,12 @@
+prefix=${pcfiledir}/../../../
+libdir=${prefix}/lib/aarch64-linux-gnu
+includedir=${prefix}/include/ignition/math6
+
+Name: Ignition math
+Description: A set of math classes for robot applications
+Version: 6.15.1
+Requires: ignition-cmake2 >= 1.1 
+Requires.private: 
+Libs: -L${libdir} -lignition-math6 
+Libs.private: 
+CFlags: -I${includedir} -std=c++17

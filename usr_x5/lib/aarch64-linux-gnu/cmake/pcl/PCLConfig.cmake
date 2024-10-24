@@ -125,7 +125,7 @@ macro(find_boost)
     "1.74.0" "1.74" "1.73.0" "1.73" "1.72.0" "1.72" "1.71.0" "1.71" "1.70.0" "1.70"
     "1.69.0" "1.69" "1.68.0" "1.68" "1.67.0" "1.67" "1.66.0" "1.66" "1.65.1" "1.65.0" "1.65")
   
-  find_package(Boost 1.65.0 ${QUIET_} COMPONENTS system filesystem date_time iostreams serialization)
+  find_package(Boost ${QUIET_} COMPONENTS system filesystem date_time iostreams serialization)
 
   set(BOOST_FOUND ${Boost_FOUND})
   set(BOOST_INCLUDE_DIRS "${Boost_INCLUDE_DIR}")
@@ -315,8 +315,6 @@ macro(find_external_library _component _lib _is_optional)
     find_rssdk()
   elseif("${_lib}" STREQUAL "rssdk2")
     find_rssdk2()
-  elseif("${_lib}" STREQUAL "vtk")
-    find_VTK()
   elseif("${_lib}" STREQUAL "libusb")
     find_libusb()
   elseif("${_lib}" STREQUAL "glew")
@@ -485,12 +483,12 @@ set(pcl_common_ext_dep eigen boost )
 set(pcl_kdtree_ext_dep flann )
 set(pcl_search_ext_dep flann )
 set(pcl_io_ext_dep boost eigen )
-set(pcl_visualization_ext_dep vtk )
+#set(pcl_visualization_ext_dep vtk )
 
 
 set(pcl_2d_opt_dep vtk )
 set(pcl_io_opt_dep openni openni2 pcap png vtk libusb )
-set(pcl_visualization_opt_dep openni openni2 )
+#set(pcl_visualization_opt_dep openni openni2 )
 set(pcl_surface_opt_dep qhull vtk )
 set(pcl_apps_opt_dep openni vtk )
 
@@ -722,7 +720,9 @@ endif()
 pcl_remove_duplicate_libraries(PCL_COMPONENTS PCL_LIBRARIES)
 
 # Add 3rd party libraries, as user code might include our .HPP implementations
-list(APPEND PCL_LIBRARIES ${BOOST_LIBRARIES} ${OPENNI_LIBRARIES} ${OPENNI2_LIBRARIES} ${ENSENSO_LIBRARIES} ${davidSDK_LIBRARIES} ${DSSDK_LIBRARIES} ${RSSDK_LIBRARIES} ${RSSDK2_LIBRARIES} ${VTK_LIBRARIES})
+list(APPEND PCL_LIBRARIES ${BOOST_LIBRARIES} ${OPENNI_LIBRARIES} ${OPENNI2_LIBRARIES} ${ENSENSO_LIBRARIES} ${davidSDK_LIBRARIES} ${DSSDK_LIBRARIES} ${RSSDK_LIBRARIES} ${RSSDK2_LIBRARIES} 
+#${VTK_LIBRARIES}
+)
 if (TARGET FLANN::FLANN)
   list(APPEND PCL_LIBRARIES FLANN::FLANN)
 endif()

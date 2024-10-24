@@ -1,0 +1,9 @@
+prefix=/usr
+libdir=${prefix}/lib/aarch64-linux-gnu
+includedir=${prefix}/include
+
+Name: gstreamer-gl-egl-1.0
+Description: Streaming media framework, OpenGL plugins libraries (EGL specifics)
+Version: 1.20.1
+Requires: gstreamer-gl-1.0, egl
+Cflags: -I${includedir}/gstreamer-1.0

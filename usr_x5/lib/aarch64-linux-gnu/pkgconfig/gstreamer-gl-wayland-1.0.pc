@@ -1,0 +1,9 @@
+prefix=/usr
+libdir=${prefix}/lib/aarch64-linux-gnu
+includedir=${prefix}/include
+
+Name: gstreamer-gl-wayland-1.0
+Description: Streaming media framework, OpenGL plugins libraries (Wayland specifics)
+Version: 1.20.1
+Requires: gstreamer-gl-1.0, wayland-egl, wayland-client
+Cflags: -I${includedir}/gstreamer-1.0
