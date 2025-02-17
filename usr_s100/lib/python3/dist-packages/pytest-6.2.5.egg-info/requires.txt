@@ -1,0 +1,14 @@
+
+[:python_version < "3.8"]
+
+[:sys_platform == "win32"]
+atomicwrites>=1.0
+colorama
+
+[testing]
+argcomplete
+hypothesis>=3.56
+mock
+nose
+requests
+xmlschema

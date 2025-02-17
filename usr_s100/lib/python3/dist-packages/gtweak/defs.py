@@ -1,0 +1,8 @@
+DATA_DIR = "/usr/share"
+APP_ID = "org.gnome.tweaks"
+PKG_DATA_DIR = "/usr/share/gnome-tweaks"
+GSETTINGS_SCHEMA_DIR = "/usr/share/glib-2.0/schemas"
+TWEAK_DIR = "/usr/lib/python3/dist-packages/gtweak/tweaks"
+VERSION = "42.beta"
+LOCALE_DIR = "/usr/share/locale"
+LIBEXEC_DIR = "/usr/libexec"
