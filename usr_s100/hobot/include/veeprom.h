@@ -1,5 +1,5 @@
 /*
- *	  J6X veerpom mapping
+ *	  Horizon Super SoC veerpom mapping
  *
  *    COPYRIGHT NOTICE
  *    Copyright 2024 Horizon Robotics, Inc.

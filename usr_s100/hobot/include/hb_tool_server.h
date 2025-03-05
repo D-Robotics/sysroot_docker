@@ -8,7 +8,7 @@ extern "C"
 
 #include <stdint.h>
 
-#define TOOL_VERSION                                      (2) // 0-XJ3 1-J5 2-J6
+#define TOOL_VERSION                                      (2) // 0-XJ3 1-J5 2-Super SoC
 #define COMMAND_SET                                       0x00000000
 #define COMMAND_GET                                       0x00000001
 
@@ -189,7 +189,7 @@ int32_t hb_tool_event_disable(tool_event_t * ev, uint32_t event);
 void hb_tool_event_setcb(tool_event_t * ev, hb_reg_ctrl_func regcb, hb_api_ctrl_func apicb,
     hb_calib_ctrl_func calibcb, hb_common_ctrl_func commcb, void *cbarg);
 
-// xj3 & j5 & j6 stats info
+// xj3 & j5 & Super SoC stats info
 typedef struct hb_tool_statics_awb_zone_attr_s {
 	uint16_t rg;
 	uint16_t bg;

@@ -15,28 +15,28 @@ enum hb_binfo_retval {
 };
 
 /*
-	key			dst
-	soc_gen			J6
-	soc_name		J6E
-				J6P
-				J6M
-	chip_id			real chip_id
-	hw_name			CVB
-				PAC
-				Matrix
-				EVM
-				SLT
-	pcie_mode		default
-				ep
-				rc
+	key					dst
+	soc_gen				Super
+	soc_name			S100
+						S100P
+						S600
+	chip_id				real chip_id
+	hw_name				CVB
+						PAC
+						Matrix
+						EVM
+						SLT
+	pcie_mode			default
+						ep
+						rc
 	bootdevice_name		mmc0
-	soc_uid			real uid
-	ddr_type		LPDDR4
-				LPDDR4X
-				LPDDR5
-	ddr_size		real ddr size(MB)
-	adc_boardid             hardware adc boardid
-	hw_version              board version
+	soc_uid				real uid
+	ddr_type			LPDDR4
+						LPDDR4X
+						LPDDR5
+	ddr_size			real ddr size(MB)
+	adc_boardid			hardware adc boardid
+	hw_version			board version
 */
 /**
  * @brief get board infos
@@ -45,7 +45,7 @@ enum hb_binfo_retval {
  * @param[out] dst: buffer to store info
  * @param[in] len: length of dst
  * @return errcode
- *  HB_BINFO_SUCCESS: success
+ *  -HB_BINFO_SUCCESS: success
  *  -HB_BINFO_INVALID_PARAM: param error
  *  -HB_BINFO_SHORT_BUF: len is too short
  *  -HB_BINFO_PLAT_NOT_SUPPORT: key is not support in this platform

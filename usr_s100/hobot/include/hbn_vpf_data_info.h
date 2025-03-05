@@ -23,7 +23,7 @@ extern "C" {
 
 #define HBN_LAYER_MAXIMUM 6u
 #define HBN_PIPELINE_BIND_MAX 16u /**< vio pipeline max bind count  @NO{S09E05C02U}  */
-#ifdef J6_CAMSYS
+#ifdef SUPER_CAMSYS
 #define HBN_GETFRAME_TIMEOUT 4000
 #else
 #define HBN_GETFRAME_TIMEOUT 1000 //1000ms for dvb
@@ -40,20 +40,20 @@ typedef enum hb_vnode_type_e {
 	HB_ISP_V0, // XJ3
 	HB_IPU_V0, // XJ3
 	HB_PYM_V0, // XJ3
-	HB_GDC, // XJ3/J5/J6
+	HB_GDC, // XJ3/J5/Super SoC
 	HB_VIN_V1, // J5
 	HB_ISP_V1, // J5
 	HB_PYM_V1, // J5
-	HB_STITCH, // J5/J6
+	HB_STITCH, // J5/Super SoC
 	HB_LKOF, // J5
-	HB_VIN, // J6
-	HB_ISP, // J6
-	HB_YNR, // J6
-	HB_PYM, // J6
-	HB_IDU, // XJ3/J5/J6
-	HB_VPU, // XJ3/J5/J6
-	HB_JPU, // XJ3/J5/J6
-	HB_CODEC, // XJ3/J5/J6
+	HB_VIN, // Super SoC
+	HB_ISP, // Super SoC
+	HB_YNR, // Super SoC
+	HB_PYM, // Super SoC
+	HB_IDU, // XJ3/J5/Super SoC
+	HB_VPU, // XJ3/J5/Super SoC
+	HB_JPU, // XJ3/J5/Super SoC
+	HB_CODEC, // XJ3/J5/Super SoC
 	HB_VIN_RB, // X5
 	HB_ISP_RB, // X5
 	HB_VSE, // X5

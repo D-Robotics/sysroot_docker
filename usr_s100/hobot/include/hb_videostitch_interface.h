@@ -80,7 +80,7 @@ enum { //enumeration of direct
 
 /**
  * @struct buffer_offset_s
- * @brief 
+ * @brief
  * @NO{S09E04C02}
  */
 typedef struct buffer_offset_s {
@@ -112,7 +112,7 @@ typedef struct buffer_offset_s {
 
 /**
  * @struct src_rect_s
- * @brief 
+ * @brief
  * @NO{S09E04C02}
  */
 typedef struct src_rect_s {
@@ -163,7 +163,7 @@ typedef struct src_rect_s {
 
 /**
  * @struct dst_rect_s
- * @brief 
+ * @brief
  * @NO{S09E04C02}
  */
 typedef struct dst_rect_s {
@@ -197,7 +197,7 @@ typedef struct dst_rect_s {
 
 /**
  * @struct ctrl_s
- * @brief 
+ * @brief
  * @NO{S09E04C02}
  */
 typedef struct ctrl_s {
@@ -225,7 +225,7 @@ typedef struct ctrl_s {
 
 /**
  * @struct src_gain_s
- * @brief 
+ * @brief
  * @NO{S09E04C02}
  */
 typedef struct src_gain_s {
@@ -259,7 +259,7 @@ typedef struct src_gain_s {
 
 /**
  * @struct roi_cfg_t
- * @brief 
+ * @brief
  * @NO{S09E04C02}
  */
 typedef struct roi_cfg_s {
@@ -312,7 +312,7 @@ typedef struct result_addr_s {	//abandoned structure
 
 /**
  * @struct cgp_addr_s
- * @brief 
+ * @brief
  * @NO{S09E04C02}
  */
 typedef struct cgp_addr_s {
@@ -332,7 +332,7 @@ typedef struct cgp_addr_s {
 
 /**
  * @struct lut_table_addr_s
- * @brief 
+ * @brief
  * @NO{S09E04C02}
  */
 typedef struct lut_table_addr_s {
@@ -352,7 +352,7 @@ typedef struct lut_table_addr_s {
 
 /**
  * @struct lut_table_s
- * @brief 
+ * @brief
  * @NO{S09E04C02}
  */
 typedef struct lut_table_s {
@@ -445,7 +445,7 @@ enum sth_working_status { STH_FREE, STH_INITED, STH_CONFED, STH_PROCESSING, STH_
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -463,7 +463,7 @@ int32_t hb_videostitch_init(void);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -483,7 +483,7 @@ int32_t hb_videostitch_deinit(void);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -503,7 +503,7 @@ int32_t hb_videostitch_calc_outbuf_size(uint32_t width, uint32_t height, buffer_
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -528,7 +528,7 @@ int32_t hb_videostitch_cgp_size(uint32_t roi_num, uint32_t *size);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -550,7 +550,7 @@ int32_t hb_videostitch_set_cfg(sth_mode_ctrl_t mode_ctrl, uint32_t roi_num, cons
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -569,7 +569,7 @@ int32_t hb_videostitch_blending_process(uint32_t src_frame_num, const frame_t *s
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph

@@ -55,7 +55,7 @@ typedef struct hb_pl_req_handle *hb_pl_handle;
  * @data_read None
  * @data_updated None
  *
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: v1.0.0
  *
  * @callgraph
@@ -81,7 +81,7 @@ hb_pl_handle hb_perflock_acq(struct perf_lock_event events[], int32_t len, int32
  * @data_read None
  * @data_updated None
  *
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: v1.0.0
  *
  * @callgraph

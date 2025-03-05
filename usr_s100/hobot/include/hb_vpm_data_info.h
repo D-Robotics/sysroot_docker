@@ -250,7 +250,7 @@ typedef struct pym_buffer_v2_s {
 	address_info_t bl[5];
 } pym_buffer_v2_t;
 
-//use in j6
+//use in Super SoC
 
 /**
  * @struct pym_buffer_v3_s

@@ -100,7 +100,7 @@ typedef struct IPCFHAL_Channel ipcfhal_chan_t;
  * @retval "0": success
  * @retval "!0": failure
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -121,7 +121,7 @@ int32_t hb_ipcfhal_init(ipcfhal_chan_t *channel);
  * @retval ">=0": success
  * @retval "<0": failure
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -142,7 +142,7 @@ int32_t hb_ipcfhal_getchan_byjson(const char *name,
  * @retval ">=0": success
  * @retval "<0": failure
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -164,7 +164,7 @@ int32_t hb_ipcfhal_config(ipcfhal_chan_t *channel);
  * @retval ">=0": success
  * @retval "<0": failure
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -187,7 +187,7 @@ int32_t hb_ipcfhal_send(const uint8_t *data, uint32_t length,
  * @retval ">=0": success
  * @retval "<0": failure
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -207,7 +207,7 @@ int32_t hb_ipcfhal_recv(uint8_t *data, uint32_t length, int32_t timeout,
  * @retval "0": success
  * @retval "!0": failure
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -229,7 +229,7 @@ int32_t hb_ipcfhal_deinit(ipcfhal_chan_t *channel);
  * @retval "0": success
  * @retval "!0": failure
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -250,7 +250,7 @@ int32_t hb_ipcfhal_trans_err(int32_t err_code, char **err_str);
  * @retval "0": success
  * @retval "!0": failure
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -269,7 +269,7 @@ int32_t hb_ipcfhal_get_version(uint32_t *major, uint32_t *minor, uint32_t *patch
  * @retval "0": success
  * @retval "!0": failure
  *
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -290,7 +290,7 @@ int32_t HorizonHal_IPCF_Init(IPCFHAL_Channel *channel);
  * @retval ">=0": success
  * @retval "<0": failure
  *
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -311,7 +311,7 @@ int32_t HorizonHal_IPCF_GetChannelbyJson(const char *name,
  * @retval ">=0": success
  * @retval "<0": failure
  *
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -333,7 +333,7 @@ int32_t HorizonHal_IPCF_Config(IPCFHAL_Channel *channel);
  * @retval ">=0": success
  * @retval "<0": failure
  *
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -356,7 +356,7 @@ int32_t HorizonHal_IPCF_Send(const uint8_t *data, uint32_t length,
  * @retval ">=0": success
  * @retval "<0": failure
  *
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -376,7 +376,7 @@ int32_t HorizonHal_IPCF_Recv(uint8_t *data, uint32_t length, int32_t timeout,
  * @retval "0": success
  * @retval "!0": failure
  *
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph

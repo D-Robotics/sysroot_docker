@@ -38,7 +38,7 @@ extern "C" {
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -60,7 +60,7 @@ extern int32_t hbn_camera_create(camera_config_t *cam_config, camera_handle_t *c
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -85,7 +85,7 @@ extern int32_t hbn_camera_destroy(camera_handle_t cam_fd);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -108,7 +108,7 @@ extern int32_t hbn_camera_attach_to_vin(camera_handle_t cam_fd, vpf_handle_t vin
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -135,7 +135,7 @@ extern int32_t hbn_camera_detach_from_vin(camera_handle_t cam_fd);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -157,7 +157,7 @@ extern int32_t hbn_camera_attach_to_deserial(camera_handle_t cam_fd, deserial_ha
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -179,7 +179,7 @@ extern int32_t hbn_camera_detach_from_deserial(camera_handle_t cam_fd);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -201,7 +201,7 @@ extern int32_t hbn_camera_start(camera_handle_t cam_fd);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -223,7 +223,7 @@ extern int32_t hbn_camera_stop(camera_handle_t cam_fd);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -247,7 +247,7 @@ extern int32_t hbn_camera_reset(camera_handle_t cam_fd);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -274,7 +274,7 @@ extern int32_t hbn_camera_change_fps(camera_handle_t cam_fd, int32_t fps);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -300,7 +300,7 @@ extern int32_t hbn_camera_read_register(camera_handle_t cam_fd, camera_reg_type_
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -324,7 +324,7 @@ extern int32_t hbn_camera_parse_emb(camera_handle_t cam_fd, char* embed_raw, str
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -351,7 +351,7 @@ extern int32_t hbn_camera_update_ae_info(camera_handle_t cam_fd, camera_ae_info_
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -397,7 +397,7 @@ extern int32_t hbn_camera_set_event_callback(camera_handle_t cam_fd, void (*even
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -425,7 +425,7 @@ extern int32_t hbn_camera_get_status(camera_handle_t cam_fd, camera_staus_t *sta
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -449,7 +449,7 @@ extern int32_t hbn_camera_get_version(camera_handle_t cam_fd, camera_version_typ
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -472,7 +472,7 @@ extern camera_handle_t hbn_camera_get_handle(vpf_handle_t vin_fd, int32_t camera
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph

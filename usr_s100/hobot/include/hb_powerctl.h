@@ -30,7 +30,7 @@ extern "C" {
  * @data_read None
  * @data_updated None
  *
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: v1.0.0
  *
  * @callgraph

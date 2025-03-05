@@ -64,7 +64,7 @@ extern "C" {
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -93,7 +93,7 @@ int32_t hb_vdsp_get_version(uint32_t *major, uint32_t *minor, uint32_t *patch);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -116,7 +116,7 @@ int32_t hb_vdsp_start(int32_t dsp_id, int32_t timeout, const char* pathname);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -142,7 +142,7 @@ int32_t hb_vdsp_stop(int32_t dsp_id);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -165,7 +165,7 @@ int32_t hb_vdsp_get_status(int32_t dsp_id, int32_t *status);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -190,7 +190,7 @@ int32_t hb_vdsp_reset(int32_t dsp_id);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -214,7 +214,7 @@ int32_t hb_vdsp_set_path(int32_t dsp_id, const char* strpath);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -237,7 +237,7 @@ int32_t hb_vdsp_set_name(int32_t dsp_id, const char* name);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -259,7 +259,7 @@ int32_t hb_vdsp_get_fd(int32_t dsp_id, int32_t *retfd);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -284,7 +284,7 @@ int32_t hb_vdsp_close_fd(int32_t vdspfd);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.0.1
  *
  * @callgraph
@@ -305,7 +305,7 @@ int32_t hb_vdsp_init(int32_t dsp_id);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.0.1
  *
  * @callgraph
@@ -335,7 +335,7 @@ int32_t hb_vdsp_deinit(int32_t dsp_id);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.0.1
  *
  * @callgraph
@@ -362,7 +362,7 @@ int32_t hb_vdsp_mem_alloc(int32_t dsp_id, uint64_t size, int64_t flags, uint64_t
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.0.1
  *
  * @callgraph
@@ -391,7 +391,7 @@ int32_t hb_vdsp_mem_free(int32_t dsp_id, uint64_t va);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.0.1
  *
  * @callgraph
@@ -417,7 +417,7 @@ int32_t hb_vdsp_mmu_map(int32_t dsp_id, uint64_t va, uint64_t size, uint64_t *vd
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.0.1
  *
  * @callgraph

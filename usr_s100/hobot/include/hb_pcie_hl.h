@@ -76,7 +76,7 @@ typedef enum {
  * @retval =0: success
  * @retval >0: failure
  *
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 0.1.0
  *
  * @Note
@@ -96,7 +96,7 @@ pcieErrCode pcieInit(pcieHandler *ph, uint8_t chipID, uint8_t topicID);
  * @retval =0: success
  * @retval >0: failure
  *
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 0.1.0
  */
 pcieErrCode pcieDeInit(pcieHandler ph);
@@ -112,7 +112,7 @@ pcieErrCode pcieDeInit(pcieHandler ph);
  * @retval =0: success
  * @retval >0: failure
  *
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 0.1.0
  *
  * @Note
@@ -131,12 +131,12 @@ pcieErrCode pcieGetMaxTopicSize(pcieHandler ph, uint8_t *topicSize);
  * @retval =0: success
  * @retval >0: failure
  *
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 0.1.0
  *
  * @Note
  *  DMA controller uses a weighted round robin (WRR) arbitration scheme to select the
- *  next channel to be serviced, the bandwidth for all transmission is shared in time and 
+ *  next channel to be serviced, the bandwidth for all transmission is shared in time and
  *  is controlled by a weighted round-robin arbiter.
  */
 pcieErrCode pciePublish(pcieHandler ph, uint8_t weight);
@@ -151,7 +151,7 @@ pcieErrCode pciePublish(pcieHandler ph, uint8_t weight);
  * @retval =0: success
  * @retval >0: failure
  *
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 0.1.0
  */
 pcieErrCode pcieSubscribe(pcieHandler ph);
@@ -167,7 +167,7 @@ pcieErrCode pcieSubscribe(pcieHandler ph);
  * @retval =0: success
  * @retval >0: failure
  *
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 0.1.0
  */
 pcieErrCode pcieGetMaxInnerBufSize(pcieHandler ph, uint32_t *size);
@@ -185,7 +185,7 @@ pcieErrCode pcieGetMaxInnerBufSize(pcieHandler ph, uint32_t *size);
  * @retval =0: success
  * @retval >0: failure
  *
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 0.1.0
  */
 pcieErrCode pcieAllocInnerBuf(pcieHandler ph, uint32_t size, void **virtualAddr, uint64_t *physAddr);
@@ -202,7 +202,7 @@ pcieErrCode pcieAllocInnerBuf(pcieHandler ph, uint32_t size, void **virtualAddr,
  * @retval =0: success
  * @retval >0: failure
  *
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 0.1.0
  */
 pcieErrCode pcieRegisterUserBuf(pcieHandler ph, uint64_t physAddr, uint32_t size);
@@ -219,7 +219,7 @@ pcieErrCode pcieRegisterUserBuf(pcieHandler ph, uint64_t physAddr, uint32_t size
  * @retval =0: success
  * @retval >0: failure
  *
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 0.1.0
  *
  * @Note
@@ -239,7 +239,7 @@ pcieErrCode pcieStartRecv(pcieHandler ph, recvDataCallBack fun, void *funData);
  * @retval =0: success
  * @retval >0: failure
  *
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 0.1.0
  *
  * @Note

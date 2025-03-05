@@ -32,7 +32,7 @@ extern "C" {
 #define MAX_HEIGHT (2160u) /* define new TRM r1p0 */
 #define MAX_FRAME_RATE (120u)
 
-/* j6E support 2 isp hw:isp0 and isp1 */
+/* S100 support 2 isp hw:isp0 and isp1 */
 #define ISP_SAFETY_SLOT_NUMS (4u)
 #define FIRMWARE_SENSOR_NUMBER (12u)
 #define FIRMWARE_CONTEXT_NUMBER (FIRMWARE_SENSOR_NUMBER + ISP_SAFETY_SLOT_NUMS)
@@ -46,7 +46,7 @@ extern "C" {
 	(FIRMWARE_CONTEXT_NUMBER) /* value 16: slots of per isp hw, include safety slots and
                                                                    sensor slots */
 #define ISP_SOC_SLOTS_MAX (ISP_IP_MAX * ISP_IP_SLOTS) /* value 32: toatl slots number of 2 isp hws */
-#define ISP_IP_SENSOR_SLOTS_MAX ((uint32_t)ISP_IP_MAX * (uint32_t)ISP_IP_SENSOR_SLOTS) /* value 24: J6E toatl sensor number of 2 isp hws */
+#define ISP_IP_SENSOR_SLOTS_MAX ((uint32_t)ISP_IP_MAX * (uint32_t)ISP_IP_SENSOR_SLOTS) /* value 24: S100 toatl sensor number of 2 isp hws */
 
 #define ISP_MIN_PIPE0 (0u)
 #define LEN_ADDR_ISP (0x20000u)
