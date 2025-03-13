@@ -282,11 +282,6 @@ typedef struct mipi_host_param_s {
 	uint32_t drop_mask;
 	uint32_t irq_cnt;
 	uint32_t irq_debug;
-	uint32_t stl_dbg;
-	uint32_t stl_mask;
-	uint32_t stl_pile;
-	uint32_t stl_ovif;
-	uint32_t stl_stif;
 	uint32_t fatal_ap;
 } mipi_host_param_t;
 #define MIPI_HOST_PARAMS_NUM ((int32_t)sizeof(struct mipi_host_param_s) / (int32_t)sizeof(uint32_t))
@@ -323,11 +318,6 @@ typedef struct mipi_host_param_s {
 	"drop_mask", \
 	"irq_cnt", \
 	"irq_debug", \
-	"stl_dbg", \
-	"stl_mask", \
-	"stl_pile", \
-	"stl_ovif", \
-	"stl_stif", \
 	"fatal_ap", \
 }
 
@@ -350,9 +340,6 @@ typedef struct mipi_dev_param_s {
 	uint32_t cfg_nocheck;
 	uint32_t irq_cnt;
 	uint32_t irq_debug;
-	uint32_t stl_dbg;
-	uint32_t stl_mask;
-	uint32_t stl_pile;
 	uint32_t fatal_ap;
 	uint32_t txout_param_valid;
 	uint32_t txout_freq_mode;
@@ -380,9 +367,6 @@ typedef struct mipi_dev_param_s {
 	"cfg_nocheck", \
 	"irq_cnt", \
 	"irq_debug", \
-	"stl_dbg", \
-	"stl_mask", \
-	"stl_pile", \
 	"fatal_ap", \
 	"txout_param_valid", \
 	"txout_freq_mode", \
