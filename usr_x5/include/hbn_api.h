@@ -214,6 +214,8 @@ hobot_status hbn_vnode_sendframe_async(hbn_vnode_handle_t vnode_fd, uint32_t ich
 hobot_status hbn_vnode_releaseframe(hbn_vnode_handle_t vnode_fd, uint32_t ochn_id, hbn_vnode_image_t *img);
 hobot_status hbn_vnode_releaseframe_group(hbn_vnode_handle_t vnode_fd, uint32_t ochn_id,
 					  hbn_vnode_image_group_t *img_group);
+hobot_status hbn_vnode_set_output_frame(hbn_vnode_handle_t vnode_fd, uint32_t ochn_id, hbn_vnode_image_t *img);
+hobot_status hbn_vnode_get_output_frame(hbn_vnode_handle_t vnode_fd, uint32_t ochn_id, hbn_vnode_image_t *img);
 
 hobot_status hbn_vflow_create(hbn_vflow_handle_t *vflow_fd);
 void hbn_vflow_destroy(hbn_vflow_handle_t vflow_fd);
