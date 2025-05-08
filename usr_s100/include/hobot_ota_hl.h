@@ -133,7 +133,7 @@ typedef struct ota_sec_info_s {
  * @data_read None
  * @data_updated g_upgrade_info.result: Set OTA upgrade result to Not Started
  * @data_updated g_is_ota_init: Set true
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.1
  *
  * @callgraph
@@ -153,7 +153,7 @@ int32_t otaInitLib(void);
  * @data_read None
  * @data_updated g_upgrade_info.result: Set OTA upgrade result to Not Started
  * @data_updated g_is_ota_init: Set false
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.1
  *
  * @callgraph
@@ -176,7 +176,7 @@ int32_t otaDeinitLib(void);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.1
  *
  * @callgraph
@@ -200,7 +200,7 @@ int32_t otaGetLibVersion(char *version, int32_t len);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.1
  *
  * @callgraph
@@ -222,7 +222,7 @@ int32_t otaGetSysVersion(char *version, int32_t len);
  *
  * @data_read g_upgrade_info.result: upgrade result
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.1
  *
  * @callgraph
@@ -241,7 +241,7 @@ int32_t otaGetResult(void);
  *
  * @data_read g_upgrade_info.progress: current upgrade progress
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.1
  *
  * @callgraph
@@ -265,7 +265,7 @@ int32_t otaGetProgress(void);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.1
  *
  * @callgraph
@@ -288,7 +288,7 @@ int32_t otaGetUpdatingImageName(char *image_name, int32_t len);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.1
  *
  * @callgraph
@@ -312,7 +312,7 @@ int32_t otaGetPartition(uint8_t *partition);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.1
  *
  * @callgraph
@@ -338,7 +338,7 @@ int32_t otaSetPartition(uint8_t partition);
  *
  * @data_read g_is_ota_init: check whether OTA lib is initialized
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.1
  *
  * @callgraph
@@ -361,7 +361,7 @@ int32_t otaRequestStart(const char *zip_path, ota_update_owner_e owner);
  *
  * @data_read g_is_ota_init: check whether OTA lib is initialized
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.1
  *
  * @callgraph
@@ -384,7 +384,7 @@ int32_t otaGetOwnerFlag(ota_update_owner_e *owner);
  *
  * @data_read g_is_ota_init: check whether OTA lib is initialized
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.1
  *
  * @callgraph
@@ -405,7 +405,7 @@ int32_t otaCheckUpdate(void);
  *
  * @data_read g_is_ota_init: check whether OTA lib is initialized
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.1
  *
  * @callgraph
@@ -425,7 +425,7 @@ int32_t otaPartitionSync(void);
  *
  * @data_read g_is_ota_init: check whether OTA lib is initialized
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.1
  *
  * @callgraph
@@ -446,7 +446,7 @@ int32_t otaMarkOTASuccessful(void);
  *
  * @data_read g_is_ota_init: check whether OTA lib is initialized
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.1
  *
  * @callgraph
@@ -467,7 +467,7 @@ int32_t otaInitSecImg(const char *zip_path, ota_sec_info_t *sec_info);
  *
  * @data_read g_is_ota_init: check whether OTA lib is initialized
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.1
  *
  * @callgraph
@@ -481,7 +481,7 @@ int32_t otaVerifySecImg(ota_sec_info_t *sec_info);
  * @ASIL{B}
  * @brief Abort current upgrading and clear flags in veeprom
  *
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.1
  *
  * @callgraph

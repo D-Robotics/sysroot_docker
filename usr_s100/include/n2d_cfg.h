@@ -7,7 +7,7 @@
 #ifndef X5_VIO_N2D_H_
 #define X5_VIO_N2D_H_
 
-#include "hbn_api.h"
+#include "hbn_vpf_data_info.h"
 
 #define N2D_CH_MAX 5
 #define N2D_IN_MAX 4

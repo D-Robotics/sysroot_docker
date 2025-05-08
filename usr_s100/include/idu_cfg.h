@@ -65,7 +65,7 @@ typedef enum {
 	IDU_ICHN2,
 	IDU_ICHN3,
 	IDU_ICHN4,
-#ifdef CONFIG_HOBOT_CHIP_J6X
+#ifdef CONFIG_HOBOT_CHIP_SUPER
 	IDU_ICHN5,
 	IDU_ICHN6,
 #endif
@@ -301,7 +301,7 @@ typedef struct channel_base_cfg_s {
 	uint32_t yposition;
 	uint32_t format;
 	uint32_t alpha;
-#ifdef CONFIG_HOBOT_CHIP_J6X
+#ifdef CONFIG_HOBOT_CHIP_SUPER
 	uint32_t keycolor_low;
 	uint32_t keycolor_hig;
 #elif CONFIG_HOBOT_CHIP_J5
@@ -317,7 +317,7 @@ typedef struct channel_base_cfg_s {
 	uint32_t crop_width;
 	uint32_t crop_height;
 	uint32_t rotation;
-#ifdef CONFIG_HOBOT_CHIP_J6X
+#ifdef CONFIG_HOBOT_CHIP_SUPER
 	uint32_t up_scaling_enable;
 	uint32_t dst_width;
 	uint32_t dst_height;

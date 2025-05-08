@@ -5,7 +5,7 @@
 ***************************************************************************/
 #ifndef __HBN_ISP_CFG_H__
 #define __HBN_ISP_CFG_H__
-//#include "cJSON.h"
+#include "cJSON.h"
 #include "hb_comm_isp.h"
 #include <stdint.h>
 #ifndef AUTO_ALLOC_ID

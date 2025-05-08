@@ -26,12 +26,12 @@ extern "C"
 extern const char *engine_tee_id;
 
 /**
- * @brief static load tee engine 
+ * @brief static load tee engine
  *
  *
  * @retval None
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -45,4 +45,3 @@ void ENGINE_load_teeEngine(void);
 #endif
 
 #endif /* __TEE_ENGINE_H__ */
-

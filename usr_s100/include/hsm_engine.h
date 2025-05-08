@@ -42,11 +42,11 @@ extern const char *engine_hsm_id;
         EVP_PKEY_CTX_ctrl(ctx, EVP_PKEY_SM2, \
                                 EVP_PKEY_OP_DERIVE, \
                                 EVP_PKEY_CTRL_SET_ROLE, len, NULL)
-                                
+
 #define EVP_PKEY_CTX_set_sm2_derive_own_eph_keyid(ctx, key, key_len) \
         EVP_PKEY_CTX_ctrl(ctx, EVP_PKEY_SM2, EVP_PKEY_OP_DERIVE, \
                                 EVP_PKEY_CTRL_SET_OWN_EPH_KEY, (int)key_len, (void*)(key))
-                                
+
 #define EVP_PKEY_CTX_set_sm2_derive_peer_eph_keyid(ctx, key, key_len) \
 		EVP_PKEY_CTX_ctrl(ctx, EVP_PKEY_SM2, EVP_PKEY_OP_DERIVE, \
 								EVP_PKEY_CTRL_SET_PEER_EPH_KEY, (int)key_len, (void*)(key))
@@ -54,7 +54,7 @@ extern const char *engine_hsm_id;
 #define EVP_PKEY_CTX_set_sm2_derive_initiator_id(ctx, id, id_len) \
         EVP_PKEY_CTX_ctrl(ctx, EVP_PKEY_SM2, EVP_PKEY_OP_DERIVE, \
                                 EVP_PKEY_CTRL_SET_INITIATOR_ID, (int)id_len, (void*)(id))
-                                
+
 #define EVP_PKEY_CTX_set_sm2_derive_responder_id(ctx, id, id_len) \
         EVP_PKEY_CTX_ctrl(ctx, EVP_PKEY_SM2, EVP_PKEY_OP_DERIVE, \
                                 EVP_PKEY_CTRL_SET_RESPONDER_ID, (int)id_len, (void*)(id))
@@ -86,12 +86,12 @@ extern const char *engine_hsm_id;
 #define OBJ_sm4_xts             OBJ_sm_scheme,104L,10L
 
 /**
- * @brief define sm4 xts mode used by openssl 
+ * @brief define sm4 xts mode used by openssl
  *
  *
  * @retval EVP_CIPHER pointer
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -101,12 +101,12 @@ extern const char *engine_hsm_id;
 const EVP_CIPHER *EVP_sm4_xts(void);
 
 /**
- * @brief define sm4 gcm mode used by openssl 
+ * @brief define sm4 gcm mode used by openssl
  *
  *
  * @retval EVP_CIPHER pointer
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -116,12 +116,12 @@ const EVP_CIPHER *EVP_sm4_xts(void);
 const EVP_CIPHER *EVP_sm4_gcm(void);
 
 /**
- * @brief define sm4 ccm mode used by openssl 
+ * @brief define sm4 ccm mode used by openssl
  *
  *
  * @retval EVP_CIPHER pointer
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -131,12 +131,12 @@ const EVP_CIPHER *EVP_sm4_gcm(void);
 const EVP_CIPHER *EVP_sm4_ccm(void);
 
 /**
- * @brief static load hsm engine 
+ * @brief static load hsm engine
  *
  *
  * @retval None
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -150,4 +150,3 @@ void ENGINE_load_hsmEngine(void);
 #endif
 
 #endif /* __HSM_ENGINE_H__ */
-

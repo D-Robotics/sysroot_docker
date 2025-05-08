@@ -49,7 +49,7 @@ typedef struct platform_hbm_info {
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -69,7 +69,7 @@ int32_t platform_hbm_info_get(platform_hbm_info_t *platform_hbm,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -91,7 +91,7 @@ int32_t platform_get_hbm_number();
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -112,7 +112,7 @@ char *platform_get_hbm_name(unsigned int hbm_index, char *hbm_name);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/J6
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph

@@ -100,7 +100,7 @@ typedef struct hb_skcipher_config {
  * @retval TEEC_SUCCESS: success
  * @retval others: fail
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -116,7 +116,7 @@ typedef struct hb_skcipher_config {
  *
  * @retval None
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -134,7 +134,7 @@ void hb_skcipher_destroy(struct hb_crypto_st *context);
  * @retval TEEC_SUCCESS: success
  * @retval others: fail
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -155,14 +155,14 @@ TEEC_Result hb_skcipher_init(struct hb_crypto_st *context, const hb_skcipher_con
  * @retval TEEC_SUCCESS: success
  * @retval others: fail
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
  * @callergraph
  * @design
  */
-TEEC_Result hb_skcipher_update(struct hb_crypto_st *context, const uint8_t *in, size_t inlen, 
+TEEC_Result hb_skcipher_update(struct hb_crypto_st *context, const uint8_t *in, size_t inlen,
                                                     			uint8_t *out, size_t *outlen);
 
 
@@ -174,14 +174,14 @@ TEEC_Result hb_skcipher_update(struct hb_crypto_st *context, const uint8_t *in, 
  * @retval TEEC_SUCCESS: success
  * @retval others: fail
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
  * @callergraph
  * @design
  */
-TEEC_Result hb_skcipher_final(struct hb_crypto_st *context, const uint8_t *in, size_t inlen, 
+TEEC_Result hb_skcipher_final(struct hb_crypto_st *context, const uint8_t *in, size_t inlen,
                                                     			uint8_t *out, size_t *outlen);
 
 
@@ -221,7 +221,7 @@ typedef struct hb_aead_config {
  * @retval TEEC_SUCCESS: success
  * @retval others: fail
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -237,7 +237,7 @@ typedef struct hb_aead_config {
  *
  * @retval None
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -256,7 +256,7 @@ void hb_aead_destroy(struct hb_crypto_st *context);
  * @retval TEEC_SUCCESS: success
  * @retval others: fail
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -275,7 +275,7 @@ TEEC_Result hb_aead_init(struct hb_crypto_st *context, const hb_aead_config *aea
  * @retval TEEC_SUCCESS: success
  * @retval others: fail
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -295,7 +295,7 @@ TEEC_Result hb_aead_set_aad(struct hb_crypto_st *context, const uint8_t *aad, si
  * @retval TEEC_SUCCESS: success
  * @retval others: fail
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -315,7 +315,7 @@ TEEC_Result hb_aead_set_tag(struct hb_crypto_st *context, const uint8_t *tag, ui
  * @retval TEEC_SUCCESS: success
  * @retval others: fail
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -337,14 +337,14 @@ TEEC_Result hb_aead_get_tag(struct hb_crypto_st *context, uint8_t *tag, uint32_t
 * @retval TEEC_SUCCESS: success
 * @retval others: fail
 *
-* @compatibility HW: J6
+* @compatibility HW: Super SoC
 * @compatibility SW: None
 *
 * @callgraph
 * @callergraph
 * @design
 */
-TEEC_Result hb_aead_update_data(struct hb_crypto_st *context, const uint8_t *in, size_t inlen, 
+TEEC_Result hb_aead_update_data(struct hb_crypto_st *context, const uint8_t *in, size_t inlen,
                                                     uint8_t *out, size_t *outlen);
 
 /**
@@ -359,14 +359,14 @@ TEEC_Result hb_aead_update_data(struct hb_crypto_st *context, const uint8_t *in,
  * @retval TEEC_SUCCESS: success
  * @retval others: fail
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
  * @callergraph
  * @design
- */ 
-TEEC_Result hb_aead_encrypt_final(struct hb_crypto_st *context, const uint8_t *in, size_t inlen, 
+ */
+TEEC_Result hb_aead_encrypt_final(struct hb_crypto_st *context, const uint8_t *in, size_t inlen,
                                                     uint8_t *out, size_t *outlen);
 
 /**
@@ -381,14 +381,14 @@ TEEC_Result hb_aead_encrypt_final(struct hb_crypto_st *context, const uint8_t *i
  * @retval TEEC_SUCCESS: success
  * @retval others: fail
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
  * @callergraph
  * @design
- */ 
-TEEC_Result hb_aead_decrypt_final(struct hb_crypto_st *context, const uint8_t *in, size_t inlen, 
+ */
+TEEC_Result hb_aead_decrypt_final(struct hb_crypto_st *context, const uint8_t *in, size_t inlen,
                                                     uint8_t *out, size_t *outlen);
 
 /* message digest */
@@ -439,7 +439,7 @@ typedef struct hb_md_config {
  * @retval TEEC_SUCCESS: success
  * @retval others: fail
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -455,7 +455,7 @@ typedef struct hb_md_config {
  *
  * @retval None
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -473,7 +473,7 @@ void hb_md_destroy(struct hb_crypto_st *context);
  * @retval TEEC_SUCCESS: success
  * @retval others: fail
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -492,7 +492,7 @@ TEEC_Result hb_md_init(struct hb_crypto_st *context, const hb_md_config *md_conf
  * @retval TEEC_SUCCESS: success
  * @retval others: fail
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -514,7 +514,7 @@ TEEC_Result hb_md_update(struct hb_crypto_st *context, const uint8_t *message, s
  * @retval TEEC_SUCCESS: success
  * @retval others: fail
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -598,7 +598,7 @@ struct sm2_dsa_param_t {
 struct eddsa_param_t {
 	uint8_t 	prehash_flag;		/**< pre hashed or not */
 	uint8_t		*ctx;				/**< ctx buffer */
-	uint32_t 	ctx_len;			/**< ctx length, 
+	uint32_t 	ctx_len;			/**< ctx length,
 									 * for ed25519ctx and ed448ctx, length must be in range from 1 to 255,
 							         * for ed25519ph and ed448ph, length must be in range from 0 to 255
 									 */
@@ -628,7 +628,7 @@ struct hb_akcipher_params {
  * @retval TEEC_SUCCESS: success
  * @retval others: fail
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -644,7 +644,7 @@ struct hb_akcipher_params {
  *
  * @retval None
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -663,7 +663,7 @@ void hb_akcipher_destroy(struct hb_crypto_st *context);
  * @retval TEEC_SUCCESS: success
  * @retval others: fail
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -692,7 +692,7 @@ TEEC_Result hb_akcipher_init(struct hb_crypto_st *context, const hb_akcipher_con
  * @retval TEEC_SUCCESS: success
  * @retval others: fail
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -722,13 +722,13 @@ TEEC_Result hb_akcipher_encrypt(struct hb_crypto_st *context,
  * @retval TEEC_SUCCESS: success
  * @retval others: fail
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
  * @callergraph
  * @design
- */ 
+ */
 TEEC_Result hb_akcipher_decrypt(struct hb_crypto_st *context,
 									   struct hb_akcipher_params *akcipher_param,
 									   const uint8_t *in, size_t inlen,
@@ -752,16 +752,16 @@ TEEC_Result hb_akcipher_decrypt(struct hb_crypto_st *context,
  * @retval TEEC_SUCCESS: success
  * @retval others: fail
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
  * @callergraph
  * @design
  */
-TEEC_Result hb_akcipher_sign(struct hb_crypto_st *context, 
-								  struct hb_akcipher_params *akcipher_param, 
-								  const uint8_t *data, size_t data_len, 
+TEEC_Result hb_akcipher_sign(struct hb_crypto_st *context,
+								  struct hb_akcipher_params *akcipher_param,
+								  const uint8_t *data, size_t data_len,
 								  uint8_t *sig, size_t *sig_len);
 
 /**
@@ -783,7 +783,7 @@ TEEC_Result hb_akcipher_sign(struct hb_crypto_st *context,
  * @retval TEEC_SUCCESS: success
  * @retval others: fail
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -791,8 +791,8 @@ TEEC_Result hb_akcipher_sign(struct hb_crypto_st *context,
  * @design
  */
 TEEC_Result hb_akcipher_verify(struct hb_crypto_st *context,
-									 struct hb_akcipher_params *akcipher_param, 
-									 const uint8_t *data, size_t data_len, 
+									 struct hb_akcipher_params *akcipher_param,
+									 const uint8_t *data, size_t data_len,
 									 const uint8_t *sig, size_t sig_len);
 
 /* kpp */
@@ -833,7 +833,7 @@ struct hb_sm2_kep_param {
 typedef struct hb_kpp_config {
 	uint32_t	 	algo;			/**< kpp algo, include sm2, ecdh, x25519 */
 	uint8_t		*own_key;				/**< own key id, provided by key management module */
-	uint32_t	own_keylen;				/**< own ephemeral key id, provided by key management module */	
+	uint32_t	own_keylen;				/**< own ephemeral key id, provided by key management module */
 	uint8_t		*own_eph_key;			/**< key id, provided by key management module */
 	uint32_t 	own_eph_keylen;			/**< key length, keylen = sizeof(key_id) */
 	uint8_t		no_hsm_flag;			/**< reserved */
@@ -847,7 +847,7 @@ typedef struct hb_kpp_config {
  * @retval TEEC_SUCCESS: success
  * @retval others: fail
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -863,7 +863,7 @@ typedef struct hb_kpp_config {
  *
  * @retval None
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -881,7 +881,7 @@ void hb_kpp_destroy(struct hb_crypto_st *context);
  * @retval TEEC_SUCCESS: success
  * @retval others: fail
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
@@ -891,7 +891,7 @@ void hb_kpp_destroy(struct hb_crypto_st *context);
 TEEC_Result hb_kpp_init(struct hb_crypto_st *context, const hb_kpp_config *kpp_config);
 
 /**
- * @brief set identity params for SM2_KEP 
+ * @brief set identity params for SM2_KEP
  *
  * @param[in] context CA crypto context
  * @param[in] initiatorid initiator identity
@@ -903,14 +903,14 @@ TEEC_Result hb_kpp_init(struct hb_crypto_st *context, const hb_kpp_config *kpp_c
  * @retval TEEC_SUCCESS: success
  * @retval others: fail
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
  * @callergraph
  * @design
- */ 
-TEEC_Result hb_kpp_sm2_set_param(struct hb_crypto_st *context, 
+ */
+TEEC_Result hb_kpp_sm2_set_param(struct hb_crypto_st *context,
 										const struct hb_sm2_kep_param *param);
 
 
@@ -923,13 +923,13 @@ TEEC_Result hb_kpp_sm2_set_param(struct hb_crypto_st *context,
  * @retval TEEC_SUCCESS: success
  * @retval others: fail
  *
- * @compatibility HW: J6
+ * @compatibility HW: Super SoC
  * @compatibility SW: None
  *
  * @callgraph
  * @callergraph
  * @design
- */  
+ */
 TEEC_Result hb_kpp_derive_key(struct hb_crypto_st *context, const uint8_t *peer_key, uint32_t peer_keylen,
 									uint8_t *derive_key, uint32_t *derive_key_len);
 

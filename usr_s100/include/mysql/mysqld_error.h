@@ -1,4 +1,4 @@
-/* Copyright (c) 2000, 2024, Oracle and/or its affiliates.
+/* Copyright (c) 2000, 2025, Oracle and/or its affiliates.
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License, version 2.0,
@@ -26,9 +26,9 @@
 #define MYSQLD_ERROR_INCLUDED
 
 static const int errmsg_section_start[] = { 1000, 3000, 3500, 10000 };
-static const int errmsg_section_size[] = { 888, 239, 667, 4076 };
+static const int errmsg_section_size[] = { 888, 239, 667, 4078 };
 
-static const int total_error_count = 5870;
+static const int total_error_count = 5872;
 
 //#define OBSOLETE_ER_HASHCHK 1000
 //#define OBSOLETE_ER_NISAMCHK 1001
@@ -1838,7 +1838,7 @@ static const int total_error_count = 5870;
 #define ER_LOG_SLOW_CANNOT_OPEN 10011
 #define ER_LOG_GENERAL_CANNOT_OPEN 10012
 #define ER_LOG_CANNOT_WRITE 10013
-#define ER_RPL_ZOMBIE_ENCOUNTERED 10014
+//#define OBSOLETE_ER_RPL_ZOMBIE_ENCOUNTERED 10014
 #define ER_RPL_GTID_TABLE_CANNOT_OPEN 10015
 #define ER_SYSTEM_SCHEMA_NOT_FOUND 10016
 #define ER_DD_INIT_UPGRADE_FAILED 10017
@@ -5899,13 +5899,15 @@ static const int total_error_count = 5870;
 #define ER_WAITING_FOR_NO_THDS 14072
 #define ER_IB_INDEX_PART_TOO_LONG 14073
 #define ER_DD_UPDATE_DATADIR_FLAG_FAIL 14074
-#define ER_IB_MSG_FIL_STATE_MOVED_PREV_OR_HAS_DATADIR 14075
-static const int obsolete_error_count = 556;
+#define ER_IB_MSG_FIL_STATE_MOVED_PREV 14075
+#define ER_RPL_KILL_OLD_DUMP_THREAD_ENCOUNTERED 14076
+#define ER_RPL_MTA_ALLOW_COMMIT_OUT_OF_ORDER 14077
+static const int obsolete_error_count = 557;
 
 static const int pfs_no_error_stat_count = 2;
 
 static const int pfs_session_error_stat_count = 1639;
 
-static const int pfs_global_error_stat_count = 3673;
+static const int pfs_global_error_stat_count = 3674;
 
 #endif

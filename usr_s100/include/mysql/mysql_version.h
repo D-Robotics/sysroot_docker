@@ -9,10 +9,10 @@
 #define _mysql_version_h
 
 #define PROTOCOL_VERSION            10
-#define MYSQL_SERVER_VERSION       "8.0.40"
+#define MYSQL_SERVER_VERSION       "8.0.41"
 #define MYSQL_BASE_VERSION         "mysqld-8.0"
 #define MYSQL_SERVER_SUFFIX_DEF    "-0ubuntu0.22.04.1"
-#define MYSQL_VERSION_ID            80040
+#define MYSQL_VERSION_ID            80041
 #define MYSQL_VERSION_STABILITY     "LTS"
 #define MYSQL_PORT                  3306
 #define MYSQL_ADMIN_PORT            33062
@@ -22,8 +22,8 @@
 #define MYSQL_PERSIST_CONFIG_NAME  "mysqld-auto"
 #define MYSQL_COMPILATION_COMMENT  "(Ubuntu)"
 #define MYSQL_COMPILATION_COMMENT_SERVER  "(Ubuntu)"
-#define LIBMYSQL_VERSION           "8.0.40"
-#define LIBMYSQL_VERSION_ID         80040
+#define LIBMYSQL_VERSION           "8.0.41"
+#define LIBMYSQL_VERSION_ID         80041
 
 #ifndef LICENSE
 #define LICENSE                     GPL

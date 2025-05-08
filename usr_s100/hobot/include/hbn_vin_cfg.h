@@ -6,8 +6,6 @@
 
 #ifndef __HBN_VIN_CFG_H__
 #define __HBN_VIN_CFG_H__
-#include <stdint.h>
-
 
 #define LPWM_CHN_NUM 4u
 #define SENSOR_ERR_PIN_NUM 4
