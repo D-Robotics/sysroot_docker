@@ -1,0 +1,13 @@
+[Unit]
+Description=Hobot load linux module
+DefaultDependencies=no
+Before=sysinit.target system.slice shutdown.target
+Conflicts=shutdown.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/hobot-loadko.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=sysinit.target

@@ -1,0 +1,5 @@
+
+[:implementation_name == "cpython" and python_version < "3.8"]
+typed-ast<2.0,>=1.4.0
+
+[:python_version < "3.10"]

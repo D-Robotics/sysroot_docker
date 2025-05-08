@@ -1,0 +1,12 @@
+[Unit]
+Description=QEMU Guest Agent
+After=basic.target
+
+[Service]
+Type=simple
+ExecStart=/usr/sbin/qemu-ga -v -m unix-listen -p /var/lib/qga
+Restart=always
+RestartSec=0
+
+[Install]
+WantedBy=basic.target

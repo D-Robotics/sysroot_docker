@@ -1,0 +1,10 @@
+# Soft dependencies extracted from modules themselves.
+softdep f2fs pre: crc32
+softdep libcrc32c pre: crc32c
+softdep lima pre: governor_simpleondemand
+softdep panfrost pre: governor_simpleondemand
+softdep r8169 pre: realtek
+softdep ohci_pci pre: ehci_pci
+softdep xt_LOG pre: nf_log_syslog
+softdep mali_kbase pre: memory_group_manager
+softdep snd_soc_dummy_codec pre: soundcore snd snd-timer snd-pcm snd-soc-core

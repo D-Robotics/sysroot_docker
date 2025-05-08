@@ -1,0 +1,17 @@
+tomli-1.2.2.dist-info/INSTALLER,sha256=91a475e3f8891fc45b7eb71b7c504ae31111b86ae04524763ab0e91f97f6f8df,4
+tomli-1.2.2.dist-info/METADATA,sha256=822230740b34ec91d611edf5441dc796e9bc40553d9c18c46b664008f1d1a8d8,9101
+tomli-1.2.2.dist-info/REQUESTED,sha256=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855,0
+tomli/__init__.py,sha256=91b84f155509ad0c5a8dcc405846d8cc36048e3b5127a7464fbe14e174ce9212,299
+tomli/__pycache__/__init__.cpython-310.pyc,,
+tomli/__pycache__/__init__.cpython-39.pyc,,
+tomli/__pycache__/_parser.cpython-310.pyc,,
+tomli/__pycache__/_parser.cpython-39.pyc,,
+tomli/__pycache__/_re.cpython-310.pyc,,
+tomli/__pycache__/_re.cpython-39.pyc,,
+tomli/__pycache__/_types.cpython-310.pyc,,
+tomli/__pycache__/_types.cpython-39.pyc,,
+tomli/_parser.py,sha256=1d826e381ab5401666d0ee8f31e2c93d42dd615c2c75871d6544ae001ba35d33,21659
+tomli/_re.py,sha256=6f0e3f115a389f5a99c1c1336bb6a4250ff033a84b0c9167d59b2e7fd6128ecf,2817
+tomli/_types.py,sha256=6f599abd82d460b073d043f6943acc54ce8419515eaafc62aa44b4de35cd06fb,126
+tomli/py.typed,sha256=f0f8f2675695a10a5156fb7bd66bafbaae6a13e8d315990af862c792175e6e67,26
+tomli-1.2.2.dist-info/RECORD,,
