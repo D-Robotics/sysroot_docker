@@ -16,7 +16,7 @@ extern "C" {
 #include <stdint.h>
 
 #define HB_UCP_VERSION_MAJOR (3U)
-#define HB_UCP_VERSION_MINOR (3U)
+#define HB_UCP_VERSION_MINOR (7U)
 #define HB_UCP_VERSION_PATCH (3U)
 
 typedef void *hbUCPTaskHandle_t;
@@ -24,16 +24,18 @@ typedef void *hbUCPTaskHandle_t;
 typedef void (*hbUCPTaskDoneCb)(hbUCPTaskHandle_t taskHandle, int32_t status,
                                 void *userdata);
 
-#define HB_UCP_ALL_BACKENDS                                                  \
-  (HB_UCP_CORE_ANY | HB_UCP_BPU_CORE_0 | HB_UCP_BPU_CORE_1 |                 \
-   HB_UCP_BPU_CORE_2 | HB_UCP_BPU_CORE_3 | HB_UCP_BPU_CORE_ANY |             \
-   HB_UCP_BPU_CORE_ANY | HB_UCP_DSP_CORE_0 | HB_UCP_DSP_CORE_1 |             \
-   HB_UCP_DSP_CORE_ANY | HB_UCP_GDC_CORE_0 | HB_UCP_GDC_CORE_1 |             \
-   HB_UCP_GDC_CORE_ANY | HB_UCP_STITCH_CORE_0 | HB_UCP_LKOF_CORE_0 |         \
-   HB_UCP_JPU_CORE_0 | HB_UCP_JPU_CORE_1 | HB_UCP_JPU_CORE_2 |               \
-   HB_UCP_JPU_CORE_ANY | HB_UCP_VPU_CORE_0 | HB_UCP_PYRAMID_CORE_0 |         \
-   HB_UCP_PYRAMID_CORE_1 | HB_UCP_PYRAMID_CORE_2 | HB_UCP_PYRAMID_CORE_ANY | \
-   HB_UCP_ISP_CORE_0 | HB_UCP_ISP_CORE_1)
+#define HB_UCP_ALL_BACKENDS                                                \
+  (HB_UCP_CORE_ANY | HB_UCP_BPU_CORE_0 | HB_UCP_BPU_CORE_1 |               \
+   HB_UCP_BPU_CORE_2 | HB_UCP_BPU_CORE_3 | HB_UCP_BPU_CORE_ANY |           \
+   HB_UCP_BPU_CORE_ANY | HB_UCP_DSP_CORE_0 | HB_UCP_DSP_CORE_1 |           \
+   HB_UCP_DSP_CORE_ANY | HB_UCP_GDC_CORE_0 | HB_UCP_GDC_CORE_1 |           \
+   HB_UCP_GDC_CORE_ANY | HB_UCP_STITCH_CORE_0 | HB_UCP_LKOF_CORE_0 |       \
+   HB_UCP_JPU_CORE_0 | HB_UCP_JPU_CORE_1 | HB_UCP_JPU_CORE_2 |             \
+   HB_UCP_JPU_CORE_ANY | HB_UCP_VPU_CORE_0 | HB_UCP_VPU_CORE_1 |           \
+   HB_UCP_VPU_CORE_2 | HB_UCP_VPU_CORE_ANY | HB_UCP_PYRAMID_CORE_0 |       \
+   HB_UCP_PYRAMID_CORE_1 | HB_UCP_PYRAMID_CORE_2 | HB_UCP_PYRAMID_CORE_3 | \
+   HB_UCP_PYRAMID_CORE_4 | HB_UCP_PYRAMID_CORE_ANY | HB_UCP_ISP_CORE_0 |   \
+   HB_UCP_ISP_CORE_1 | HB_UCP_ISP_CORE_2 | HB_UCP_ISP_CORE_3)
 
 #define HB_UCP_CORE_ANY (0 << 0)
 #define HB_UCP_BPU_CORE_0 (1ULL << 0)
@@ -54,12 +56,19 @@ typedef void (*hbUCPTaskDoneCb)(hbUCPTaskHandle_t taskHandle, int32_t status,
 #define HB_UCP_JPU_CORE_2 (1ULL << 27)
 #define HB_UCP_JPU_CORE_ANY (1ULL << 29)
 #define HB_UCP_VPU_CORE_0 (1ULL << 30)
+#define HB_UCP_VPU_CORE_1 (1ULL << 31)
+#define HB_UCP_VPU_CORE_2 (1ULL << 32)
+#define HB_UCP_VPU_CORE_ANY (1ULL << 33)
 #define HB_UCP_PYRAMID_CORE_0 (1ULL << 35)
 #define HB_UCP_PYRAMID_CORE_1 (1ULL << 36)
 #define HB_UCP_PYRAMID_CORE_2 (1ULL << 37)
-#define HB_UCP_PYRAMID_CORE_ANY (1ULL << 38)
-#define HB_UCP_ISP_CORE_0 (1ULL << 39)
-#define HB_UCP_ISP_CORE_1 (1ULL << 40)
+#define HB_UCP_PYRAMID_CORE_3 (1ULL << 38)
+#define HB_UCP_PYRAMID_CORE_4 (1ULL << 39)
+#define HB_UCP_PYRAMID_CORE_ANY (1ULL << 40)
+#define HB_UCP_ISP_CORE_0 (1ULL << 42)
+#define HB_UCP_ISP_CORE_1 (1ULL << 43)
+#define HB_UCP_ISP_CORE_2 (1ULL << 44)
+#define HB_UCP_ISP_CORE_3 (1ULL << 45)
 
 typedef enum hbUCPTaskPriority {
   HB_UCP_PRIORITY_LOWEST = 0,

@@ -20,6 +20,13 @@ extern "C" {
     (param)->qualityFactor = 50;               \
     (param)->extendedSequential = false;       \
     (param)->outBufCount = 5;                  \
+    (param)->backend = HB_UCP_JPU_CORE_0;      \
+  }
+
+#define HB_VP_INITIALIZE_JPEG_DEC_PARAM(param) \
+  {                                            \
+    (param)->outBufCount = 5;                  \
+    (param)->backend = HB_UCP_JPU_CORE_0;      \
   }
 
 /**
@@ -33,6 +40,7 @@ extern "C" {
  * height: the height of input image, values[32, 8192].
  * qualityFactor: quality factor, values[1, 100], recommended value is 50.
  * outBufCount: the count of output buffers, values[1, 1000], recommended value is 5.
+ * backend: specifies the execution backend for JPEG encoding tasks.
 */
 typedef struct {
   uint8_t extendedSequential;
@@ -41,7 +49,22 @@ typedef struct {
   int32_t height;
   uint32_t qualityFactor;
   uint32_t outBufCount;
+  uint64_t backend;
 } hbVPJPEGEncParam;
+
+/**
+ * JPEG decoding parameters
+ * imageFormat: the format of output image.
+                support HB_VP_IMAGE_FORMAT_NV12, HB_VP_IMAGE_FORMAT_YUV444
+                HB_VP_IMAGE_FORMAT_YUV444_P and HB_VP_IMAGE_FORMAT_YUV420.
+ * outBufCount: the count of output buffers. values[1, 31], recommended value is 5.
+ * backend: specifies the execution backend for JPEG decoding tasks.
+ */
+typedef struct {
+  uint8_t imageFormat;
+  uint32_t outBufCount;
+  uint64_t backend;
+} hbVPJPEGDecParam;
 
 typedef void *hbVPJPEGContext;
 
@@ -53,7 +76,7 @@ typedef void *hbVPJPEGContext;
  * @return 0 if success, return defined error code otherwise
  */
 int32_t hbVPCreateJPEGEncContext(hbVPJPEGContext *context,
-                                 hbVPJPEGEncParam *param);
+                                 hbVPJPEGEncParam const *param);
 
 /**
  * @brief release JPEG encoding context
@@ -87,19 +110,15 @@ int32_t hbVPJPEGEncode(hbUCPTaskHandle_t *taskHandle, hbVPImage const *srcImg,
 */
 int32_t hbVPGetJPEGEncOutputBuffer(hbVPArray *outBuf,
                                    hbUCPTaskHandle_t taskHandle);
-
 /**
  * @brief generate JPEG decoding context
  *
- * @param[out] context JPEG decoding context, dispatched on JPU
- * @param[in] outBufCount the count of output buffers. values[1, 31], recommended value is 5.
- * @param[in] imageFormat the format of output image.
- *                        support HB_VP_IMAGE_FORMAT_NV12, HB_VP_IMAGE_FORMAT_YUV444
-                          HB_VP_IMAGE_FORMAT_YUV444_P and HB_VP_IMAGE_FORMAT_YUV420.
+ * @param[out] context JPEG decoding  context, dispatched on JPU
+ * @param[in] param param for jpeg decode
  * @return 0 if success, return defined error code otherwise
  */
-int32_t hbVPCreateJPEGDecContext(hbVPJPEGContext *context, uint32_t outBufCount,
-                                 uint8_t imageFormat);
+int32_t hbVPCreateJPEGDecContext(hbVPJPEGContext *context,
+                                 hbVPJPEGDecParam const *param);
 
 /**
  * @brief release JPEG decoding context

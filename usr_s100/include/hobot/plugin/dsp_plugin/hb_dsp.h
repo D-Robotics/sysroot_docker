@@ -27,15 +27,15 @@ typedef enum {
   HB_DSP_RPC_CMD_CONFIG = 0x01,
   HB_DSP_RPC_CMD_R_E = 0x3ff,
 
-  // [0x400, 0x800) for neural network operators
+  // [0x400, 0x800) reserved for neural network operators
   HB_DSP_RPC_CMD_NN_B = 0x400,
   HB_DSP_RPC_CMD_NN_E = 0x7ff,
 
-  // [0x800, 0xfff) for cv operators
+  // [0x800, 0xfff) reserved for cv operators
   HB_DSP_RPC_CMD_CV_B = 0x800,
   HB_DSP_RPC_CMD_CV_E = 0xfff,
 
-  // [0x1000, 0x13ff) for hpl operators
+  // [0x1000, 0x13ff) reserved for hpl operators
   HB_DSP_RPC_CMD_HPL_B = 0x1000,
   HB_DSP_RPC_CMD_HPL_E = 0x13ff,
 

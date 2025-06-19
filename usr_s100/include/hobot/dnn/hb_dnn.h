@@ -16,7 +16,7 @@
 extern "C" {
 #endif  // __cplusplus
 
-#define HB_DNN_TENSOR_MAX_DIMENSIONS (8)
+#define HB_DNN_TENSOR_MAX_DIMENSIONS (10)
 
 typedef void *hbDNNPackedHandle_t;
 typedef void *hbDNNHandle_t;
@@ -256,8 +256,6 @@ int32_t hbDNNGetModelDesc(char const **desc, uint32_t *size, int32_t *type,
 
 /**
  * @brief Get hbm description
- * 
- * @note This interface is intended for experimental use 
  * 
  * @param[out] desc Address of the description information.
  * @param[out] size Size of the description information.

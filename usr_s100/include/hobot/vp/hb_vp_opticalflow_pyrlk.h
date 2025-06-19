@@ -54,9 +54,9 @@ typedef struct hbVPLKOFParam {
 
 /**
  * @brief Optical flow calculation
- * For pyramid image input, the address of the i layer needs to be
- * greater than the i-1 layer to ensure that the memory will not overlap.
- *
+ * For pyramid image input, the address of the i layer needs to be 
+ * greater than the i-1 layer to ensure that the memory will not overlap. 
+ * 
  * @param[out] taskHandle handle of task
  * case1: given *taskHandle is nullptr, create new task handle
  * case2: given taskHandle is nullptr to run in sync mode
@@ -64,10 +64,10 @@ typedef struct hbVPLKOFParam {
  * @param[out] currPointsStatus output status vector, data type should be unsigned char
  * @param[out] currPointsConf optical flow confidence
  * case1: j5 environment, data type should be float
- * case2: Super SoC environment, should be nullptr
+ * case2: j6 environment, should be nullptr
  * @param[in] prevPoints pointer to the previous key points array
  * @param[in] currPym pointer to current gaussian pyramid image array
- * @param[in] prevPym pointer to previous gaussian pyramid image array
+ * @param[in] prevPym pointer to previous gaussian pyramid image array 
  * @param[in] lkofParam param for OpticalFlowPyrLK
  * @return 0 if success, return defined error code otherwise
 */
