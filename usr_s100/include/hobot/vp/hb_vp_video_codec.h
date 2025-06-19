@@ -170,6 +170,7 @@ typedef struct {
  *         H264: values[128, 4096], aligned with 8.
  * outBufCount: the count of output buffers.
  *               values[1, 1000], recommended value is 5.
+ * backend: specifies the execution backend for video encoding tasks.
  * videoType: the encoding types of video
  * rcParams: the rate control parameters.
  * gopParams: the gop parameters
@@ -179,6 +180,7 @@ typedef struct {
   int32_t width;
   int32_t height;
   uint32_t outBufCount;
+  uint64_t backend;
   hbVPVideoType videoType;
   hbVPVideoRcParam rcParam;
   hbVPVideoGopParam gopParam;
@@ -251,12 +253,14 @@ int32_t hbVPGetVideoEncOutputBuffer(hbVPArray *outBuf,
  *                  values[1024, 8192 * 4096 * 3] and the recommended value is 10*1024*1024.
  *                   usually set its value to height * width * Size(pixelFormat)
  * @param outBufCount the count of output buffers. values[1, 31], recommended value is 5.
+ * @param backend specifies the execution backend for video decoding tasks.
  * @param videoType the decoding types of video
 */
 typedef struct {
   uint8_t pixelFormat;
   uint32_t inBufSize;
   uint32_t outBufCount;
+  uint64_t backend;
   hbVPVideoType videoType;
 } hbVPVideoDecParam;
 

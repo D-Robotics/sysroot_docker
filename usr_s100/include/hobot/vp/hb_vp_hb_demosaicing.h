@@ -16,8 +16,7 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * @brief Applies the demosaicing to an image. This is an experimental feature. It may change or be removed in future versions.
- *       Please use with caution and do not rely on it in production environments.
+ * @brief Applies the demosaicing to an image.
  * 
  * @param[out] taskHandle handle of task
  * case1: given *taskHandle is nullptr, create new task handle
