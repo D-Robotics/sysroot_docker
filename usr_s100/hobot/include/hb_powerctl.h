@@ -11,8 +11,10 @@ extern "C" {
 
 #include <stdint.h>
 
-#define RESTART		0   /* CMD  RESTART */
-#define POWEROFF	1   /* CMD  POWEROFF */
+#define RESTART         0   /* CMD  RESTART */
+#define POWEROFF        1   /* CMD  POWEROFF */
+#define RESTART_OS      2   /* CMD  RESTART_OS */
+#define RESTART_OSOFF   3   /* CMD  RESTART_OSOFF */
 
 
 /**
