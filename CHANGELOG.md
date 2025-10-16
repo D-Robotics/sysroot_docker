@@ -1,5 +1,9 @@
 # Changelog for sysroot_docker
 
+tros_2.4.9 (2025-10-16)
+------------------
+1. 适配mobile solution交叉编译
+
 tros_2.4.7 (2025-06-19)
 ------------------
 1. 适配RDK S100平台。
