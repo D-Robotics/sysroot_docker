@@ -1,5 +1,9 @@
 # Changelog for sysroot_docker
 
+tros_2.4.10 (2025-10-28)
+------------------
+1. 升级到RDK X5 V3.4.0版本，对应sdk v1.1.1版本。
+   
 tros_2.4.9 (2025-10-16)
 ------------------
 1. 适配mobile solution交叉编译
