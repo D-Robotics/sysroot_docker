@@ -37,7 +37,7 @@ extern "C" {
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -60,7 +60,7 @@ extern int32_t hbn_txser_create(txser_config_t *txs_config, txser_handle_t *txs_
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -87,7 +87,7 @@ extern int32_t hbn_txser_destroy(txser_handle_t txs_fd);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -112,7 +112,7 @@ extern int32_t hbn_txser_attach_to_vin(txser_handle_t txs_fd, camera_txs_csi_t c
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph

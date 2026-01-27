@@ -116,6 +116,64 @@ typedef enum camera_txs_csi_e {
 } camera_txs_csi_t;
 
 /**
+ * @enum camera_txs_mfp_e
+ * camera txser mfp index enum
+ */
+typedef enum camera_txs_mfp_e {
+	CAMERA_TXS_MFP0,
+	CAMERA_TXS_MFP1,
+	CAMERA_TXS_MFP2,
+	CAMERA_TXS_MFP3,
+	CAMERA_TXS_MFP4,
+	CAMERA_TXS_MFP5,
+	CAMERA_TXS_MFP6,
+	CAMERA_TXS_MFP7,
+	CAMERA_TXS_MFP8,
+	CAMERA_TXS_MFP9,
+	CAMERA_TXS_MFP10,
+	CAMERA_TXS_MFP11,
+	CAMERA_TXS_MFP12,
+	CAMERA_TXS_MFP13,
+	CAMERA_TXS_MFP14,
+	CAMERA_TXS_MFP15,
+	CAMERA_TXS_MFP16,
+	CAMERA_TXS_MFP17,
+	CAMERA_TXS_MFP18,
+	CAMERA_TXS_MFP19,
+	CAMERA_TXS_MFP20,
+	CAMERA_TXS_MFPMAX,
+} camera_txs_mfp_t;
+
+/**
+ * @enum camera_txs_gpio_e
+ * camera txser mfp index enum
+ */
+typedef enum camera_txs_gpio_e {
+	CAMERA_TXS_GPIO_LOCK,
+	CAMERA_TXS_GPIO_ERRB,
+	CAMERA_TXS_GPIO_NC2,
+	CAMERA_TXS_GPIO_NC3,
+	CAMERA_TXS_GPIO_NC4,
+	CAMERA_TXS_GPIO_NC5,
+	CAMERA_TXS_GPIO_NC6,
+	CAMERA_TXS_GPIO_NC7,
+	CAMERA_TXS_GPIO_NC8,
+	CAMERA_TXS_GPIO_NC9,
+	CAMERA_TXS_GPIO_NC10,
+	CAMERA_TXS_GPIO_NC11,
+	CAMERA_TXS_GPIO_NC12,
+	CAMERA_TXS_GPIO_NC13,
+	CAMERA_TXS_GPIO_NC14,
+	CAMERA_TXS_GPIO_NC15,
+	CAMERA_TXS_GPIO_NC16,
+	CAMERA_TXS_GPIO_NC17,
+	CAMERA_TXS_GPIO_NC18,
+	CAMERA_TXS_GPIO_NC19,
+	CAMERA_TXS_GPIO_NC20,
+	CAMERA_TXS_GPIO_MAX,
+} camera_txs_gpio_t;
+
+/**
  * @struct camera_config_s
  * camera config infor struct for handle create
  * @NO{S10E02C01}
@@ -161,6 +219,8 @@ typedef struct poc_config_s {
 	uint32_t gpio_level;	// GPIO操作状态，工作状态
 	uint32_t poc_map;	// poc与link的map关系
 	uint32_t power_delay;	// poc开关操作的delay时间
+	uint32_t bus_select;	// poc设备bus select
+	uint32_t poc_mode;	// poc内部自定义模式配置
 	uint32_t end_flag;	// end flag of config struct.
 } poc_config_t;
 
@@ -179,6 +239,7 @@ typedef struct deserial_config_s {
 	uint32_t bus_timeout;	// I2C的timeout时间配置
 	uint32_t lane_mode;	// PHY配置: lane模式选择
 	uint32_t lane_speed;	// PHY配置: lane速率配置
+	//coverity[misra_c_2012_rule_5_7_violation:SUPPRESS], ## violation reason SYSSW_V_5.7_01
 	uint32_t link_map;	// Link与CSI/VC的map关系配置
 	char link_desp[CAMERA_DES_LINKMAX][CAMERA_DES_PORTDESP_LEN]; // 各Link连接模组的配置描述(多进程使用)
 	uint32_t reset_delay;	// reset操作的delay时间
@@ -200,9 +261,12 @@ typedef struct txser_config_s {
 	uint32_t gpio_enable;	// GPIO操作使能，索引自VCON
 	uint32_t gpio_level;	// GPIO操作状态，工作状态
 	uint8_t gpio_mfp[CAMERA_DES_GPIO_MAX];	// MFP的GPIO功能选择
-	uint32_t bus_select;	// I2C的选择，索引自VCON
+	uint32_t bus_select;	// I2C的选择(0-tx,1-bypass0,2-bypass1)，索引自VCON
 	uint32_t bus_timeout;	// I2C的timeout时间配置
 	uint32_t lane_mode;	// PHY配置: lane模式选择
+	//coverity[misra_c_2012_rule_5_8_violation:SUPPRESS], ## violation reason SYSSW_V_5.8_02
+	uint32_t extra_mode;	// 运行索引配置
+	//coverity[misra_c_2012_rule_5_7_violation:SUPPRESS], ## violation reason SYSSW_V_5.7_01
 	uint32_t link_map;	// Link与CSI/VC的map关系配置
 	uint32_t reset_delay;	// reset操作的delay时间
 	uint32_t flags;		// 可选功能:诊断,debug等

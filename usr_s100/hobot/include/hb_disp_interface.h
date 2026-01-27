@@ -18,14 +18,6 @@ extern "C" {
 
 #define DEFAULT_CFG_PATH ""
 
-#define MAX_FRAME_WIDTH (3840u)
-#define MAX_FRAME_HEIGHT (2160u)
-#define MAX_INPUT_WIDTH (2880u)
-#define MAX_INPUT_HEIGHT (2160u)
-#define MAX_OUTPUT_WIDTH (3840u)
-#define MAX_OUTPUT_HEIGHT (2160u)
-#define MAX_FRAME_BUF_SIZE (MAX_FRAME_WIDTH * MAX_FRAME_HEIGHT * 4u)
-
 typedef enum {
 	DISP_PRI_1 = 0,
 	DISP_PRI_2 = 1,
@@ -89,7 +81,7 @@ typedef enum {
  * @callergraph
  * @data_read display config json file
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -109,7 +101,7 @@ HB_API int32_t hb_disp_init_dev_cfg(uint32_t disp_id, const char *cfg_file);
  * @callergraph
  * @data_read display config json file
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -128,7 +120,7 @@ HB_API int32_t hb_disp_init_cfg(const char *cfg_file);
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -148,7 +140,7 @@ HB_API int32_t hb_disp_close(void);
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -167,7 +159,7 @@ HB_API int32_t hb_disp_close_id(uint32_t disp_id);
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -187,7 +179,7 @@ HB_API int32_t hb_disp_start(void);
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -206,7 +198,7 @@ HB_API int32_t hb_disp_start_id(uint32_t disp_id);
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -226,7 +218,7 @@ HB_API int32_t hb_disp_stop(void);
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -246,7 +238,7 @@ HB_API int32_t hb_disp_stop_id(uint32_t disp_id);
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -267,7 +259,7 @@ HB_API int32_t hb_disp_layer_on(uint32_t layer_number);
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -287,7 +279,7 @@ HB_API int32_t hb_disp_layer_on_id(uint32_t layer_number, uint32_t disp_id);
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -308,7 +300,7 @@ HB_API int32_t hb_disp_layer_off(uint32_t layer_number);
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -331,7 +323,7 @@ HB_API int32_t hb_disp_layer_off_id(uint32_t layer_number, uint32_t disp_id);
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -355,7 +347,7 @@ HB_API int32_t hb_disp_set_video_bufaddr(uint32_t layer_no, void *addr_y, void *
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -379,7 +371,7 @@ HB_API int32_t hb_disp_set_video_bufaddr_id(uint32_t disp_id, uint32_t layer_no,
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -406,7 +398,7 @@ HB_API int32_t hb_disp_set_layer_cfg(uint32_t layer_no, uint32_t width,
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -428,7 +420,7 @@ HB_API int32_t hb_disp_set_layer_cfg_id(uint32_t layer_no, uint32_t width,
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -449,7 +441,7 @@ HB_API int32_t hb_disp_set_timing(disp_timing_t *user_timing);
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -470,7 +462,7 @@ HB_API int32_t hb_disp_set_timing_id(disp_timing_t *user_timing,
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -491,7 +483,7 @@ HB_API int32_t hb_disp_get_gamma_cfg(float32_t *gamma_val);
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -511,7 +503,7 @@ HB_API int32_t hb_disp_get_gamma_cfg_id(float32_t *gamma_val, uint32_t disp_id);
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -532,7 +524,7 @@ HB_API int32_t hb_disp_set_gamma_cfg(float32_t gamma_user);
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -553,7 +545,7 @@ HB_API int32_t hb_disp_set_gamma_cfg_id(float32_t gamma_user, uint32_t disp_id);
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -573,7 +565,7 @@ HB_API int32_t hb_disp_set_output_dynamic_cfg_id(output_dynamic_cfg_t *dynamic_c
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -594,7 +586,7 @@ HB_API int32_t hb_disp_get_output_cfg(output_cfg_t *cfg);
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -614,7 +606,7 @@ HB_API int32_t hb_disp_get_output_cfg_id(output_cfg_t *cfg, uint32_t disp_id);
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -635,7 +627,7 @@ HB_API int32_t hb_disp_set_output_cfg(output_cfg_t *cfg);
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -656,7 +648,7 @@ HB_API int32_t hb_disp_set_output_cfg_id(output_cfg_t *cfg,
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -677,7 +669,7 @@ HB_API int32_t hb_disp_get_upscaling_cfg(upscaling_cfg_t *cfg);
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -698,7 +690,7 @@ HB_API int32_t hb_disp_get_upscaling_cfg_id(upscaling_cfg_t *cfg,
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -719,7 +711,7 @@ HB_API int32_t hb_disp_set_upscaling_cfg(const upscaling_cfg_t *cfg);
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -741,7 +733,7 @@ HB_API int32_t hb_disp_set_upscaling_cfg_id(const upscaling_cfg_t *cfg,
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -763,7 +755,7 @@ HB_API int32_t hb_disp_get_channel_cfg(uint32_t chn, channel_base_cfg_t *cfg);
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -785,7 +777,7 @@ HB_API int32_t hb_disp_get_channel_cfg_id(uint32_t chn, channel_base_cfg_t *cfg,
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -808,7 +800,7 @@ HB_API int32_t hb_disp_set_channel_cfg(uint32_t			 chn,
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -832,7 +824,7 @@ HB_API int32_t hb_disp_set_channel_cfg_id(uint32_t		    chn,
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -857,7 +849,7 @@ HB_API int32_t hb_disp_out_upscale(uint32_t src_w, uint32_t src_h,
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -877,7 +869,7 @@ HB_API int32_t hb_disp_out_upscale_id(uint32_t src_w, uint32_t src_h,
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -896,7 +888,7 @@ HB_API int32_t hb_disp_get_display_done(void);
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -917,7 +909,7 @@ HB_API int32_t hb_disp_get_display_done_id(uint32_t disp_id);
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -940,7 +932,7 @@ HB_API int32_t hb_disp_check_video_bufaddr_valid(size_t	  graphic_size,
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -963,7 +955,7 @@ HB_API int32_t hb_disp_check_video_bufaddr_valid_id(size_t   graphic_size,
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -983,7 +975,7 @@ HB_API int32_t hb_disp_get_video_display_done_id(uint32_t layer, uint32_t disp_i
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -1004,7 +996,7 @@ HB_API int32_t hb_disp_get_video_display_done(uint32_t layer);
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -1026,7 +1018,7 @@ HB_API int32_t hb_disp_get_disp_done_sync_id(uint32_t disp_id, uint64_t rel_seq)
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -1048,7 +1040,7 @@ HB_API int32_t hb_disp_get_capture_buf_id(uint32_t disp_id, uint32_t timeout, st
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 0.0.1
  * @design
  */
@@ -1068,7 +1060,7 @@ HB_API int32_t hb_disp_release_capture_buf_id(uint32_t disp_id, struct hb_mem_gr
  * @callergraph
  * @data_read NULL
  * @data_updated NULL
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 0.0.1
  * @design
  */

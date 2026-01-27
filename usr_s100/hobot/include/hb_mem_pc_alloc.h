@@ -38,7 +38,7 @@ typedef struct hb_mem_pc_handle {
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -58,7 +58,7 @@ hb_mem_pc_handle_t hb_mem_pc_alloc(uint32_t size, uint64_t flag, const char* lab
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -80,7 +80,7 @@ void hb_mem_pc_free(hb_mem_pc_handle_t handle);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -102,7 +102,7 @@ void hb_mem_pc_cache_invalid(hb_mem_pc_handle_t handle, uint32_t size);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -123,7 +123,7 @@ void hb_mem_pc_cache_clean(hb_mem_pc_handle_t handle, uint32_t size);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -144,7 +144,7 @@ uint64_t hb_mem_pc_phyaddr(hb_mem_pc_handle_t handle);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 0.1.1
  *
  * @callgraph

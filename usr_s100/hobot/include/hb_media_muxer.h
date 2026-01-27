@@ -288,7 +288,7 @@ typedef struct _media_muxer_context {
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -318,7 +318,7 @@ extern hb_s32 hb_mm_mx_get_default_context(media_muxer_context_t
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -344,7 +344,7 @@ extern hb_s32 hb_mm_mx_initialize(media_muxer_context_t *context);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -370,7 +370,7 @@ extern hb_s32 hb_mm_mx_add_stream(media_muxer_context_t *context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -395,7 +395,7 @@ extern hb_s32 hb_mm_mx_start(media_muxer_context_t *context);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -422,7 +422,7 @@ extern hb_s32 hb_mm_mx_stop(media_muxer_context_t *context);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -446,7 +446,7 @@ extern hb_s32 hb_mm_mx_write_stream(media_muxer_context_t *context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -468,7 +468,7 @@ extern hb_s32 hb_mm_mx_get_state(media_muxer_context_t *context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -490,7 +490,7 @@ extern hb_s32 hb_mm_mx_probe_stream(hb_string input_file_name);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph

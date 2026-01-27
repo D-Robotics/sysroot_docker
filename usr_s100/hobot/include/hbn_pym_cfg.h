@@ -77,7 +77,11 @@ typedef struct {
 	int32_t layer_num_share_prev;
 	chn_ctrl_t chn_ctrl;
 	uint32_t fb_buf_num;
-	uint32_t reserved[6];
+	uint8_t indata_type;
+	uint8_t outdata_type;
+	uint8_t expand_layer_en;
+	uint8_t reserved_u8[1];
+	uint32_t reserved[5];
 	uint32_t magicNumber;
 } pym_cfg_t;
 

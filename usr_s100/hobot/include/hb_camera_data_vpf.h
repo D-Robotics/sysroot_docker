@@ -141,6 +141,10 @@ typedef struct mipi_host_cfg_s {
  * @irq_cnt:	irq count limit set.
  * @irq_debug:	irq debug print level.
  * @fatal_ap:	fatal inject function select: fun/ap.
+ * @ipi1_adv_value:	the config value of IPI1 adv_feature register.
+ * @ipi2_adv_value:	the config value of IPI2 adv_feature register.
+ * @ipi3_adv_value:	the config value of IPI3 adv_feature register.
+ * @ipi4_adv_value:	the config value of IPI4 adv_feature register.
  *
  */
 typedef struct mipi_host_param_s {
@@ -177,6 +181,10 @@ typedef struct mipi_host_param_s {
 	uint32_t irq_cnt;
 	uint32_t irq_debug;
 	uint32_t fatal_ap;
+	uint32_t ipi1_adv_value;
+	uint32_t ipi2_adv_value;
+	uint32_t ipi3_adv_value;
+	uint32_t ipi4_adv_value;
 } mipi_host_param_t;
 
 /* run params name strings, see: struct mipi_host_param_s */
@@ -213,6 +221,10 @@ typedef struct mipi_host_param_s {
 	"irq_cnt", \
 	"irq_debug", \
 	"fatal_ap", \
+	"ipi1_adv_value", \
+	"ipi2_adv_value", \
+	"ipi3_adv_value", \
+	"ipi4_adv_value", \
 }
 #define MIPI_HOST_PARAMS_NUM    ((uint32_t)(sizeof(struct mipi_host_param_s)/sizeof(uint32_t)))
 
@@ -263,6 +275,11 @@ typedef struct mipi_dev_cfg_s {
 	uint16_t ipi_lines;
 	uint16_t channel_num;
 	uint16_t channel_sel[MIPIDEV_CHANNEL_NUM];
+	uint16_t idi_enable;
+	uint16_t rx_select;
+	uint16_t vc_mask;
+	uint16_t frameid_enable;
+	uint16_t frameid_vc[MIPIDEV_CHANNEL_NUM];
 } mipi_dev_cfg_t;
 #define MIPI_DEV_CFG_NUM        ((uint32_t)(sizeof(mipi_dev_cfg_t)/sizeof(uint16_t)))
 
@@ -285,6 +302,14 @@ typedef struct mipi_dev_cfg_s {
 	"channel_sel1", \
 	"channel_sel2", \
 	"channel_sel3", \
+	"idi_enable", \
+	"rx_select", \
+	"vc_mask", \
+	"frameid_enable", \
+	"frameid_vc0", \
+	"frameid_vc1", \
+	"frameid_vc2", \
+	"frameid_vc3", \
 }
 
 /**
