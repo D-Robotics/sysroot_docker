@@ -130,6 +130,17 @@ typedef enum _media_codec_id {
 
 	/* Subtitle Codecs */
 	MEDIA_CODEC_ID_MOV_TEXT,
+
+/* CONFIG_ARCH_HOBOT_SOC_SIGIP */
+	MEDIA_CODEC_ID_H264_HW1,
+	MEDIA_CODEC_ID_H264_HW2,
+	MEDIA_CODEC_ID_H265_HW1,
+	MEDIA_CODEC_ID_H265_HW2,
+	MEDIA_CODEC_ID_MJPEG_HW1,
+	MEDIA_CODEC_ID_MJPEG_HW2,
+	MEDIA_CODEC_ID_JPEG_HW1,
+	MEDIA_CODEC_ID_JPEG_HW2,
+
 	MEDIA_CODEC_ID_TOTAL,
 } media_codec_id_t;
 
@@ -282,6 +293,12 @@ typedef enum _mc_pixel_format {
 	MC_PIXEL_FORMAT_YUV440P,
 	/* Gray Y, YUV 4:0:0 */
 	MC_PIXEL_FORMAT_YUV400,
+
+	/* Y 10bit, CbCr 8bit. Only S20 support. */
+	MC_PIXEL_FORMAT_NV12_Y10C8,	/* msb */
+	MC_PIXEL_FORMAT_NV21_Y10C8,	/* msb */
+	MC_PIXEL_FORMAT_NV12_Y10C8_LSB,	/* lsb */
+	MC_PIXEL_FORMAT_NV21_Y10C8_LSB, /* lsb */
 
 	MC_PIXEL_FORMAT_TOTAL,
 } mc_pixel_format_t;
@@ -2042,7 +2059,7 @@ typedef struct _mc_video_custom_gop_pic_params {
  * The valid numbers are as follows.
  *     0 : I picture
  *     1 : P picture
- *     2 : B picture, It's only for XJ3/Super SoC.
+ *     2 : B picture, It's only for XJ3/Super.
  *
  * - Note: It's unchangable parameter.
  * - Encoding: Support.
@@ -2077,8 +2094,8 @@ typedef struct _mc_video_custom_gop_pic_params {
  * The number of reference L0 of Nth picture in the custom GOP.
  * Flag to use multi reference picture for P picture.
  * It is valid only if PIC_TYPE is P.
- * Values[0,1] for XJ3/Super SoC
- * Values[0] for J5
+ * Values[0,1] for XJ3/Super
+ * Values[0] for Ultra
  *
  * - Note: It's unchangable parameter.
  * - Encoding: Support.
@@ -2169,6 +2186,8 @@ typedef struct _mc_video_gop_params {
 
 /**
  * A GOP structure preset option.
+ * Values [0, 9] for S100/S600
+ * Values {1, 9} for S20
  * The valid numbers are as follows.
  *     0: Custom GOP
  *     1 : I-I-I-I,..I (all intra, gop_size=1)
@@ -2184,7 +2203,7 @@ typedef struct _mc_video_gop_params {
  * - Note: It's unchangable parameter.
  * - Encoding: Support.
  * - Decoding: Unsupport.
- * - Default: 2
+ * - Default:  2 for S100/S600, 9 for S20.
  */
 	hb_u32 gop_preset_idx;
 
@@ -2955,7 +2974,7 @@ typedef struct _mc_h265_dec_config {
  *     0x01: skip non-IRAP.
  *     0x02: skip non-reference picture.
  *     0x03: thumbnail mode. It skips non-IRAP pictures w/o registering
- *           reference DPB. It's only for XJ3/Super SoC.
+ *           reference DPB. It's only for XJ3/Super.
  *
  * - Note: It's unchangable parameters in the same sequence.
  * - Encoding: Unsupport.
@@ -3006,7 +3025,7 @@ typedef struct _mc_h265_dec_config {
  *         SPS_MAX_SUB_LAYER is signalled from bitstream.
  *         When use of relative value decoder can keep the skip ratio
  *         regardless the cange of SPS_MAX_SUB_LAYER in the bitstream.
- *         It's only for XJ3/Super SoC.
+ *         It's only for XJ3/Super.
  *
  * - Note: It's unchangable parameters in the same sequence.
  * - Encoding: Unsupport.
@@ -3180,8 +3199,8 @@ typedef struct _mc_video_codec_dec_params {
 
 /**
  * Specify the count of bitstream buffers.
- * Values[1,65536] for XJ3/Super SoC
- * Values[2,65536] for J5
+ * Values[1,65536] for XJ3/Super
+ * Values[2,65536] for Ultra
  *
  * - Note: It's unchangable parameters in the same sequence.
  * - Encoding: Unsupport.
@@ -4524,6 +4543,17 @@ typedef struct _mc_h264_h265_output_stream_info {
  * - Default: 0
  */
 	hb_u32 longterm_ref_type;
+
+/**
+ * SSD reporting for each Y, Cb, Cr for every frame.
+ * The ssd value is a sum of the square of (source - recon).
+ *
+ * - Note:  h265 only
+ * - Encoding: Support.
+ * - Decoding: Unsupport.
+ * - Default:
+ */
+	hb_u64 ssd_y, ssd_cb, ssd_cr;
 } mc_h264_h265_output_stream_info_t;
 
 /**
@@ -5233,7 +5263,7 @@ typedef struct _mc_video_intra_refresh_params {
  *     1: row
  *     2: column
  *     3: step size in MB or CTU
- *     4: adaptive intra refresh (only for H265 of XJ3/Super SoC)
+ *     4: adaptive intra refresh (only for H265 of XJ3/Super)
  *
  * - Note: It's unchangable parameter in the same sequence.
  * - Encoding: Support.
@@ -5978,7 +6008,7 @@ typedef struct _mc_h265_slice_params {
  * The valid numbers are as follows.
  *     0: no multi-slice
  *     1: slice in CTU number
- *     2: slice in CTU number with interrupt. It's only for J5
+ *     2: slice in CTU number with interrupt. It's only for Ultra
  *
  * - Note: It's changable RDO parameters and the slice interrupt is
  *         unchangable.
@@ -6005,8 +6035,8 @@ typedef struct _mc_h265_slice_params {
  *     0: no multi-slice
  *     1 : slice in CTU number
  *     2 : slice in number of byte
- *     3 : slice in CTU number with interrupt. It's only for J5
- *     4 : slice in number of byte with interrupt. It's only for J5
+ *     3 : slice in CTU number with interrupt. It's only for Ultra
+ *     4 : slice in number of byte with interrupt. It's only for Ultra
  *
  * - Note: It's changable RDO parameters and the slice interrupt is
  *         unchangable.
@@ -6062,7 +6092,7 @@ typedef struct _mc_video_slice_params {
 
 /**
 * Define the parameters of h264/h265 smart backgroud encoding.
-* It's only for XJ3/Super SoC.
+* It's only for XJ3/Super.
 **/
 typedef struct _mc_video_smart_bg_enc_params {
 /**
@@ -6190,8 +6220,8 @@ typedef struct _mc_h265_pred_unit_params {
  *     0 : disable
  *     1 : enable
  * - Note: It's unchangable parameters in same sequence.
- *         Values[0,1] for XJ3/Super SoC
- *         Values[0] for J5
+ *         Values[0,1] for XJ3/Super
+ *         Values[0] for Ultra
  *
  * - Encoding: Support.
  * - Decoding: Unsupport.
@@ -6310,10 +6340,10 @@ typedef struct _mc_h264_transform_params {
 typedef struct _mc_h265_transform_params {
 /**
  * The value of chroma(Cb) QP offset.
- * Values[-12~12] for XJ3/Super SoC
- * Values[0] for J5
+ * Values[-12~12] for XJ3/Super
+ * Values[0] for Ultra
  *
- * - Note: It's changable parameter in the same sequence for XJ3/Super SoC.
+ * - Note: It's changable parameter in the same sequence for XJ3/Super.
  * - Encoding: Support.
  * - Decoding: Unsupport.
  * - Default: 0
@@ -6322,10 +6352,10 @@ typedef struct _mc_h265_transform_params {
 
 /**
  * The value of chroma(Cr) QP offset.
- * Values[-12~12] for XJ3/Super SoC
- * Values[0] for J5
+ * Values[-12~12] for XJ3/Super
+ * Values[0] for Ultra
  *
- * - Note: It's changable parameter in the same sequence for XJ3/Super SoC.
+ * - Note: It's changable parameter in the same sequence for XJ3/Super.
  * - Encoding: Support.
  * - Decoding: Unsupport.
  * - Default: 0
@@ -6340,7 +6370,7 @@ typedef struct _mc_h265_transform_params {
  *     0 : disable user scaling list
  *     1 : enable using user defined scaling list
  * - Note: It's unchangable parameter in the same sequence.
- *         When user enable this, the J5 uses the default scaling list.
+ *         When user enable this, the Ultra uses the default scaling list.
  * - Encoding: Support.
  * - Decoding: Unsupport.
  * - Default: 0
@@ -6474,9 +6504,9 @@ typedef struct _mc_video_roi_params {
  * Specify the ROI map number.
  * Values[1, MC_VIDEO_MAX_MB_NUM] for h264,
  * and the size should be (ALIGN16(picWidth)>>4)*(ALIGN16(picHeight)>>4)
- * Values[1, MC_VIDEO_MAX_SUB_CTU_NUM] for XJ3/Super SoC h265
+ * Values[1, MC_VIDEO_MAX_SUB_CTU_NUM] for XJ3/Super h265
  * and the size should be (ALIGN64(picWidth)>>5)*(ALIGN64(picHeight)>>5)
- * Values[1, MC_VIDEO_MAX_CTU_NUM] for J5 h265
+ * Values[1, MC_VIDEO_MAX_CTU_NUM] for Ultra h265
  * and the size should be (ALIGN64(picWidth)>>6)*(ALIGN64(picHeight)>>6)
  *
  * - Note: It's unchangable parameter in the same sequence.
@@ -6578,7 +6608,7 @@ typedef struct _mc_video_roi_params_ex {
 
 /**
 * Define the parameters of block encoding mode decision.
-* It's only for XJ3/Super SoC.
+* It's only for XJ3/Super.
 **/
 typedef struct _mc_video_mode_decision_params {
 /**
@@ -7259,7 +7289,7 @@ typedef struct _mc_user_status {
 
 /**
 * Define the parameters of 3DNR encoding.
-* It's only for XJ3/Super SoC.
+* It's only for XJ3/Super.
 **/
 typedef struct _mc_video_3dnr_enc_params {
 /**
@@ -7433,7 +7463,7 @@ typedef struct _mc_video_3dnr_enc_params {
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -7457,7 +7487,7 @@ extern const media_codec_descriptor_t *hb_mm_mc_get_descriptor(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -7485,7 +7515,7 @@ extern hb_s32 hb_mm_mc_get_default_context(media_codec_id_t codec_id,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -7511,7 +7541,7 @@ extern hb_s32 hb_mm_mc_initialize(media_codec_context_t *context);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -7537,7 +7567,7 @@ extern hb_s32 hb_mm_mc_vpf_init(media_codec_context_t * context, hb_s32 channel_
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -7563,7 +7593,7 @@ extern hb_s32 hb_mm_mc_configure(media_codec_context_t *context);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -7590,7 +7620,7 @@ extern hb_s32 hb_mm_mc_set_callback(media_codec_context_t *context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -7618,7 +7648,7 @@ extern hb_s32 hb_mm_mc_set_vlc_buffer_listener(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -7647,7 +7677,7 @@ extern hb_s32 hb_mm_mc_set_camera(media_codec_context_t *context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -7672,7 +7702,7 @@ extern hb_s32 hb_mm_mc_start(media_codec_context_t *context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -7696,7 +7726,7 @@ extern hb_s32 hb_mm_mc_stop(media_codec_context_t *context);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -7722,7 +7752,7 @@ extern hb_s32 hb_mm_mc_pause(media_codec_context_t *context);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -7746,7 +7776,7 @@ extern hb_s32 hb_mm_mc_flush(media_codec_context_t *context);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -7771,7 +7801,7 @@ extern hb_s32 hb_mm_mc_release(media_codec_context_t *context);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -7797,7 +7827,7 @@ extern hb_s32 hb_mm_mc_get_state(media_codec_context_t *context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -7827,7 +7857,7 @@ extern hb_s32 hb_mm_mc_get_status(media_codec_context_t *context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -7859,7 +7889,7 @@ extern hb_s32 hb_mm_mc_queue_input_buffer(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -7891,7 +7921,7 @@ extern hb_s32 hb_mm_mc_dequeue_input_buffer(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -7924,7 +7954,7 @@ extern hb_s32 hb_mm_mc_queue_output_buffer(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -7953,7 +7983,7 @@ extern hb_s32 hb_mm_mc_dequeue_output_buffer(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -7982,7 +8012,7 @@ extern hb_s32 hb_mm_mc_get_longterm_ref_mode(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8009,7 +8039,7 @@ extern hb_s32 hb_mm_mc_set_longterm_ref_mode(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8039,7 +8069,7 @@ extern hb_s32 hb_mm_mc_get_intra_refresh_config(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8066,7 +8096,7 @@ extern hb_s32 hb_mm_mc_set_intra_refresh_config(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8095,7 +8125,7 @@ extern hb_s32 hb_mm_mc_get_rate_control_config(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8121,7 +8151,7 @@ extern hb_s32 hb_mm_mc_set_rate_control_config(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8151,7 +8181,7 @@ extern hb_s32 hb_mm_mc_get_max_bit_rate_config(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8178,7 +8208,7 @@ extern hb_s32 hb_mm_mc_set_max_bit_rate_config(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8206,7 +8236,7 @@ extern hb_s32 hb_mm_mc_get_deblk_filter_config(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8233,7 +8263,7 @@ extern hb_s32 hb_mm_mc_set_deblk_filter_config(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8260,7 +8290,7 @@ extern hb_s32 hb_mm_mc_get_sao_config(media_codec_context_t *context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8286,7 +8316,7 @@ extern hb_s32 hb_mm_mc_set_sao_config(media_codec_context_t *context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Super SoC
+ * @compatibility HW: XJ3/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8314,7 +8344,7 @@ extern hb_s32 hb_mm_mc_get_entropy_config(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Super SoC
+ * @compatibility HW: XJ3/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8341,7 +8371,7 @@ extern hb_s32 hb_mm_mc_set_entropy_config(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8369,7 +8399,7 @@ extern hb_s32 hb_mm_mc_get_vui_timing_config(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8396,7 +8426,7 @@ extern hb_s32 hb_mm_mc_set_vui_timing_config(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8424,7 +8454,7 @@ extern hb_s32 hb_mm_mc_get_vui_config(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8451,7 +8481,7 @@ extern hb_s32 hb_mm_mc_set_vui_config(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8478,7 +8508,7 @@ extern hb_s32 hb_mm_mc_get_slice_config(media_codec_context_t *context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8505,7 +8535,7 @@ extern hb_s32 hb_mm_mc_set_slice_config(media_codec_context_t *context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8530,7 +8560,7 @@ extern hb_s32 hb_mm_mc_insert_user_data(media_codec_context_t * context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8559,7 +8589,7 @@ extern hb_s32 hb_mm_mc_request_idr_frame(media_codec_context_t *context);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8589,7 +8619,7 @@ extern hb_s32 hb_mm_mc_request_idr_header(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8619,7 +8649,7 @@ extern hb_s32 hb_mm_mc_enable_idr_frame(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8645,7 +8675,7 @@ extern hb_s32 hb_mm_mc_skip_pic(media_codec_context_t * context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Super SoC
+ * @compatibility HW: XJ3/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8674,7 +8704,7 @@ extern hb_s32 hb_mm_mc_get_3dnr_enc_config(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Super SoC
+ * @compatibility HW: XJ3/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8701,7 +8731,7 @@ extern hb_s32 hb_mm_mc_set_3dnr_enc_config(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Super SoC
+ * @compatibility HW: XJ3/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8729,7 +8759,7 @@ extern hb_s32 hb_mm_mc_get_smart_bg_enc_config(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Super SoC
+ * @compatibility HW: XJ3/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8756,7 +8786,7 @@ extern hb_s32 hb_mm_mc_set_smart_bg_enc_config(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8784,7 +8814,7 @@ extern hb_s32 hb_mm_mc_get_pred_unit_config(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8811,7 +8841,7 @@ extern hb_s32 hb_mm_mc_set_pred_unit_config(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8839,7 +8869,7 @@ extern hb_s32 hb_mm_mc_get_transform_config(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8866,7 +8896,7 @@ extern hb_s32 hb_mm_mc_set_transform_config(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8893,7 +8923,7 @@ extern hb_s32 hb_mm_mc_get_roi_config(media_codec_context_t * context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8919,7 +8949,7 @@ extern hb_s32 hb_mm_mc_set_roi_config(media_codec_context_t * context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8948,7 +8978,7 @@ extern hb_s32 hb_mm_mc_get_roi_avg_qp(media_codec_context_t * context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -8974,7 +9004,7 @@ extern hb_s32 hb_mm_mc_set_roi_avg_qp(media_codec_context_t * context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -9000,7 +9030,7 @@ extern hb_s32 hb_mm_mc_get_roi_config_ex(media_codec_context_t *context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5
+ * @compatibility HW: Ultra
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -9026,7 +9056,7 @@ extern hb_s32 hb_mm_mc_set_roi_config_ex(media_codec_context_t *context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Super SoC
+ * @compatibility HW: XJ3/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -9054,7 +9084,7 @@ extern hb_s32 hb_mm_mc_get_mode_decision_config(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Super SoC
+ * @compatibility HW: XJ3/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -9084,7 +9114,7 @@ extern hb_s32 hb_mm_mc_set_mode_decision_config(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -9109,7 +9139,7 @@ extern hb_s32 hb_mm_mc_get_user_data(media_codec_context_t * context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -9138,7 +9168,7 @@ extern hb_s32 hb_mm_mc_release_user_data(media_codec_context_t * context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -9168,7 +9198,7 @@ extern hb_s32 hb_mm_mc_get_explicit_header_config(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -9194,7 +9224,7 @@ extern hb_s32 hb_mm_mc_set_explicit_header_config(
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -9221,7 +9251,7 @@ extern hb_s32 hb_mm_mc_get_mjpeg_config(media_codec_context_t * context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -9247,7 +9277,7 @@ extern hb_s32 hb_mm_mc_set_mjpeg_config(media_codec_context_t * context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -9274,7 +9304,7 @@ extern hb_s32 hb_mm_mc_get_jpeg_config(media_codec_context_t * context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -9298,7 +9328,7 @@ extern hb_s32 hb_mm_mc_set_jpeg_config(media_codec_context_t * context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -9323,7 +9353,7 @@ extern hb_s32 hb_mm_mc_get_fd(media_codec_context_t * context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -9349,7 +9379,7 @@ extern hb_s32 hb_mm_mc_close_fd(media_codec_context_t * context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -9374,7 +9404,7 @@ extern hb_s32 hb_mm_mc_register_audio_encoder(hb_s32 *handle,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -9399,7 +9429,7 @@ extern hb_s32 hb_mm_mc_unregister_audio_encoder(hb_s32 handle);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -9424,7 +9454,7 @@ extern hb_s32 hb_mm_mc_register_audio_decoder(hb_s32 *handle,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph

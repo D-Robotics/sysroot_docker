@@ -38,8 +38,24 @@
 #define COVERT_AXI_OUTPUT_MODE_IR8 10
 #define COVERT_AXI_OUTPUT_MODE_YUV420_RAW12 11
 #define COVERT_AXI_OUTPUT_MODE_YUV422_RAW12 12
+//coverity[misra_c_2012_rule_5_4_violation:SUPPRESS], ## violation reason SYSSW_V_5.4_01
 #define COVERT_AXI_OUTPUT_MODE_YUV420_RAW16 13
+//coverity[misra_c_2012_rule_5_4_violation:SUPPRESS], ## violation reason SYSSW_V_5.4_01
 #define COVERT_AXI_OUTPUT_MODE_YUV422_RAW16 14
+#define COVERT_AXI_OUTPUT_MODE_RAW16_LSB 15
+//coverity[misra_c_2012_rule_5_4_violation:SUPPRESS], ## violation reason SYSSW_V_5.4_01
+#define COVERT_AXI_OUTPUT_MODE_YUV420_RAW16_LSB 16
+//coverity[misra_c_2012_rule_5_4_violation:SUPPRESS], ## violation reason SYSSW_V_5.4_01
+#define COVERT_AXI_OUTPUT_MODE_YUV422_RAW16_LSB 17
+//coverity[misra_c_2012_rule_5_4_violation:SUPPRESS], ## violation reason SYSSW_V_5.4_01
+#define COVERT_AXI_OUTPUT_MODE_YUV420_10_8_8 18
+//coverity[misra_c_2012_rule_5_4_violation:SUPPRESS], ## violation reason SYSSW_V_5.4_01
+#define COVERT_AXI_OUTPUT_MODE_YUV420_12_8_8 19
+//coverity[misra_c_2012_rule_5_4_violation:SUPPRESS], ## violation reason SYSSW_V_5.4_01
+#define COVERT_AXI_OUTPUT_MODE_YUV422_10_8_8 20
+//coverity[misra_c_2012_rule_5_4_violation:SUPPRESS], ## violation reason SYSSW_V_5.4_01
+#define COVERT_AXI_OUTPUT_MODE_YUV422_12_8_8 21
+
 
 #define ISP_GET_FRAME_TIME_OUT 3000
 #define ISP_IMAGE_BUF_COUNT 6
@@ -49,6 +65,7 @@ typedef struct isp_cfg_s {
 	isp_module_ctrl_u module_ctrl;
 	isp_ochn_attr_t ochn_attr;
 	isp_ichn_attr_t ichn_attr;
+	uint32_t fb_buf_num;
 } isp_cfg_t;
 
 #endif

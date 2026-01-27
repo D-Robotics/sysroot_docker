@@ -28,8 +28,6 @@ extern "C" {
 #define ISP_INVAILD_VALUE (0xFF)
 #define HB_VOID void
 
-#define MAX_WIDTH (4096u)
-#define MAX_HEIGHT (2160u) /* define new TRM r1p0 */
 #define MAX_FRAME_RATE (120u)
 
 /* S100 support 2 isp hw:isp0 and isp1 */
@@ -39,7 +37,10 @@ extern "C" {
 
 #define ISP_HW0 (0u)
 #define ISP_HW1 (1u)
-#define ISP_IP_MAX (2u)
+#define ISP_HW2 (2u)
+#define ISP_HW3 (3u)
+
+#define ISP_IP_MAX (4u)
 
 #define ISP_IP_SENSOR_SLOTS (FIRMWARE_SENSOR_NUMBER) /* value 12: slots of per isp hw, include sensor slots */
 #define ISP_IP_SLOTS \
@@ -475,6 +476,13 @@ typedef enum tag_isp_axi_output_mode_e {
 	AXI_OUTPUT_MODE_YUV422_RAW12 = 12, /* yuv422 & raw12 */
 	AXI_OUTPUT_MODE_YUV420_RAW16 = 13, /* yuv420 & raw16 */
 	AXI_OUTPUT_MODE_YUV422_RAW16 = 14, /* yuv422 & raw16 */
+	AXI_OUTPUT_MODE_RAW16_LSB = 15, /* raw16 lsb */
+	AXI_OUTPUT_MODE_YUV420_RAW16_LSB = 16, /* yuv420 & raw16 lsb */
+	AXI_OUTPUT_MODE_YUV422_RAW16_LSB = 17, /* yuv422 & raw16 lsb */
+	AXI_OUTPUT_MODE_YUV420_10_8_8 = 18, /* yuv420,y10bit,uv8bit */
+	AXI_OUTPUT_MODE_YUV420_12_8_8 = 19, /* yuv420,y12bit,uv8bit */
+	AXI_OUTPUT_MODE_YUV422_10_8_8 = 20, /* yuv422,y10bit,uv8bit */
+	AXI_OUTPUT_MODE_YUV422_12_8_8 = 21, /* yuv422,y12bit,uv8bit */
 
 	AXI_OUTPUT_MODE_BUTT
 } isp_axi_output_mode_e;
@@ -747,6 +755,9 @@ typedef struct isp_calib_lut_s {
 	uint32_t size; /* size = rows * cols */
 	void *ptr; /* max needed bytes by the user malloc */
 	uint32_t len; /* get the len of lut info */
+#if defined __QNX__
+	uint8_t data[]; /* max needed bytes by the user malloc */
+#endif
 } isp_calib_lut_t;
 
 typedef struct isp_reg_mask_s {
@@ -760,6 +771,9 @@ typedef struct isp_lut_reg_s {
 	void *ptr;
 	isp_cmd_dir_e dir;
 	uint32_t elem;
+#if defined __QNX__
+	uint8_t data[];
+#endif
 } isp_lut_reg_t;
 
 /**

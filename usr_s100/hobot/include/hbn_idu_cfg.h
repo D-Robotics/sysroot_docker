@@ -10,16 +10,19 @@
 #define __HBN_IDU_CFG_H__
 
 #include "cJSON.h"
-
-#define MAX_DISP_NUM (2U)
+#ifdef CONFIG_ARCH_HOBOT_SOC_SIGIB
+#define MAX_DISP_NUM 		(1U)
+#else
+#define MAX_DISP_NUM 		(2U)
+#endif
 #define DISP_DEV_MASK (0x11U)
 #define PALETTE_SIZE 		(256)
 #define PORT_MAX 		(2)
 #define NAME_MAX_LENGTH		(16)
 #define PIN_CTRL_MAX_NUM	(8)
-//coverity[misra_c_2012_rule_5_6_violation:SUPPRESS]
+//coverity[misra_c_2012_rule_5_6_violation:SUPPRESS], ## violation reason SYSSW_V_5.6_01
 typedef float float32_t;
-//coverity[misra_c_2012_rule_5_6_violation:SUPPRESS]
+//coverity[misra_c_2012_rule_5_6_violation:SUPPRESS], ## violation reason SYSSW_V_5.6_01
 typedef double float64_t;
 
 #define HB_DISP_INVALID_CHN_FMT (10004)
@@ -66,22 +69,49 @@ typedef double float64_t;
 #define HB_DISP_SUCCESS ((int32_t)0)
 #define HB_DISP_FAILED ((int32_t)1)
 
+#define MAX_FRAME_WIDTH (3840u)
+#define MAX_FRAME_HEIGHT (2160u)
+
+#if defined (CONFIG_ARCH_HOBOT_SOC_SIGIB)
+#define MAX_INPUT_WIDTH (3840u)
+#else
+#define MAX_INPUT_WIDTH (2880u)
+#endif
+
+#define MAX_INPUT_HEIGHT (2160u)
+#define MAX_OUTPUT_WIDTH (3840u)
+#define MAX_OUTPUT_HEIGHT (2160u)
+#define MAX_FRAME_BUF_SIZE (MAX_FRAME_WIDTH * MAX_FRAME_HEIGHT * 4u)
+#define MIM_IDU_PCLK	(70000000)
+#if defined (CONFIG_ARCH_HOBOT_SOC_SIGIB)
+#define MAX_IDU_PCLK		(400000000)
+#define MAX_PLUS_IDU_PCLK	(450000000)
+#elif defined (CONFIG_ARCH_HOBOT_SOC_SIGIP)
+#define MAX_IDU_PCLK	(625000000)
+#else
+#define MAX_IDU_PCLK	(600000000)
+#endif
+
 typedef enum {
 	IDU_ICHN1 = 0,
+#ifndef CONFIG_ARCH_HOBOT_SOC_SIGIB
 	IDU_ICHN2,
 	IDU_ICHN3,
 	IDU_ICHN4,
-#ifdef CONFIG_HOBOT_CHIP_SUPER
+#ifdef CONFIG_HOBOT_CHIP_J6X
 	IDU_ICHN5,
 	IDU_ICHN6,
+#endif
 #endif
 	IDU_ICHN_NUM,
 } idu_input_channel_e;
 
 typedef enum {
 	OCHN_MIPI_CSI_DEV = 0,
+#ifndef CONFIG_ARCH_HOBOT_SOC_SIGIB
 	OCHN_MIPI_DSI,
 	OCHN_WRITEBACK,
+#endif
 	OCHN_NUM,
 } idu_output_type_e;
 
@@ -98,6 +128,7 @@ typedef enum board_type_e {
 	DSI2HDMI,
 	PANEL,
 	DSI2IPI,
+	TXSER,
 } board_type_e;
 
 enum pin_ctrl_purpose_e {
@@ -141,6 +172,7 @@ typedef enum {
 	DISPLAY_EXT_GET_DONE_FLAG = 0x1000U,
 	DISPLAY_EXT_GET_WAIT_VSYNC = 0x1001U,
 	DISPLAY_EXT_GET_CAPTURE_CRC = 0x1002U,
+	DISPLAY_EXT_GET_DPICLK = 0x1003U,
 } disp_ext_command_e;
 
 typedef enum {
@@ -315,7 +347,7 @@ typedef struct channel_base_cfg_s {
 	uint32_t yposition;
 	uint32_t format;
 	uint32_t alpha;
-#ifdef CONFIG_HOBOT_CHIP_SUPER
+#ifdef CONFIG_HOBOT_CHIP_J6X
 	uint32_t keycolor_low;
 	uint32_t keycolor_hig;
 #elif CONFIG_HOBOT_CHIP_J5
@@ -331,7 +363,7 @@ typedef struct channel_base_cfg_s {
 	uint32_t crop_width;
 	uint32_t crop_height;
 	uint32_t rotation;
-#ifdef CONFIG_HOBOT_CHIP_SUPER
+#ifdef CONFIG_HOBOT_CHIP_J6X
 	uint32_t up_scaling_enable;
 	uint32_t dst_width;
 	uint32_t dst_height;
@@ -417,6 +449,10 @@ typedef struct port_info_s {
 	void				*adapter_fd;
 } port_info_t;
 
+typedef struct txser_adapter_info_s {
+	void				*txser_fd;
+}txser_adapter_info_t;
+
 typedef struct board_info_s {
 	int32_t				dsi_id;
 	uint32_t			bus_num;
@@ -428,6 +464,7 @@ typedef struct board_info_s {
 	deserial_info_t			deserial_info[PORT_MAX];
 	panel_info_t			panel_info;
 	dsi2hdmi_info_t			dsi2hdmi_info;
+	txser_adapter_info_t		txser_info;
 } board_info_t;
 
 typedef struct disp_cfg_s {

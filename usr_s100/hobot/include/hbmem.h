@@ -51,6 +51,30 @@ enum hbmem_backends {
 
 #define MEM_CACHEABLE ((uint64_t)0x1U << 0)	/**< memory cacheable flag*/
 
+#ifdef __QNX__
+/**
+ * @NO{S21E04C02I}
+ * @ASIL{B}
+ * @brief get the hbmem version
+ *
+ * @param[out] major: Major version number
+ * @param[out] minor: Minor version number
+ * @param[out] patch_version: Patch version number
+ *
+ * @retval "0": succeed
+ * @retval "-1": failed
+ *
+ * @data_read None
+ * @data_updated None
+ * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility SW: 0.1.1
+ *
+ * @callgraph
+ * @callergraph
+ * @design
+ */
+int32_t hbmem_version(uint32_t *major, uint32_t *minor, uint32_t *patch_version);
+#else
 /**
  * @NO{S21E04C02I}
  * @ASIL{B}
@@ -65,7 +89,7 @@ enum hbmem_backends {
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -73,6 +97,7 @@ enum hbmem_backends {
  * @design
  */
 int32_t hbmem_version(uint32_t *major, uint32_t *minor, uint32_t *patch);
+#endif
 
 /**
  * @NO{S21E04C02I}
@@ -89,7 +114,7 @@ int32_t hbmem_version(uint32_t *major, uint32_t *minor, uint32_t *patch);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -110,7 +135,7 @@ hbmem_addr_t hbmem_alloc(uint32_t size, uint64_t flag, const char* label);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -135,7 +160,7 @@ void hbmem_free(hbmem_addr_t addr);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -162,7 +187,7 @@ hbmem_addr_t hbmem_mmap(uint64_t phyaddr, uint32_t size, uint64_t flag);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -184,7 +209,7 @@ hbmem_addr_t hbmem_mmap_with_share_id(uint64_t phyaddr, uint32_t size,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -210,7 +235,7 @@ void hbmem_munmap(hbmem_addr_t addr);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -233,7 +258,7 @@ int32_t hbmem_dmacpy(hbmem_addr_t dst, hbmem_addr_t src, uint32_t size);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -256,7 +281,7 @@ int32_t hbmem_is_cacheable(hbmem_addr_t addr);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -279,7 +304,7 @@ void hbmem_cache_invalid(hbmem_addr_t addr, uint32_t size);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -301,7 +326,7 @@ void hbmem_cache_clean(hbmem_addr_t addr, uint32_t size);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -323,7 +348,7 @@ uint64_t hbmem_phyaddr(hbmem_addr_t addr);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -347,7 +372,7 @@ uint64_t hbmem_virtaddr(hbmem_addr_t addr);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -370,7 +395,7 @@ int32_t hbmem_info(hbmem_addr_t addr, hbmem_addr_t *start, uint32_t *size);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: 0.1.1
  *
  * @callgraph

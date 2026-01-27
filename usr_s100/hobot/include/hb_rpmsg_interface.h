@@ -58,7 +58,7 @@ struct rpmsg_handle;
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -80,7 +80,7 @@ struct rpmsg_handle **handle);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -102,7 +102,7 @@ int32_t hb_rpmsg_disconnect_server(struct rpmsg_handle *handle);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -125,7 +125,7 @@ int32_t hb_rpmsg_send(const struct rpmsg_handle *handle, const char *buf, int32_
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -148,7 +148,7 @@ int32_t hb_rpmsg_recv(const struct rpmsg_handle *handle, char *buf, int32_t len)
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -171,7 +171,7 @@ int32_t hb_rpmsg_send_timeout(const struct rpmsg_handle *handle, const char *buf
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -191,7 +191,7 @@ int32_t hb_rpmsg_recv_timeout(const struct rpmsg_handle *handle, char *buf, int3
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/Super SoC
+ * @compatibility HW: Ultra/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -213,7 +213,7 @@ const char *hb_rpmsg_error_message(int32_t error_code);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph

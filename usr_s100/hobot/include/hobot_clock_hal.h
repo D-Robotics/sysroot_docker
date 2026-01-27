@@ -15,20 +15,27 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include <sys/types.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <stdarg.h>
-#include <sys/ioctl.h>
 #include <errno.h>
 #include <unistd.h>
+#ifdef __linux__
+#include <sys/types.h>
+#include <sys/ioctl.h>
 #include <sys/time.h>
 #include <linux/types.h>
 #include <linux/pps.h>
 #include <linux/rtc.h>
+#endif
+#ifdef __QNX__
+#include <ioctl.h>
+#include <time.h>
+#include <sys/neutrino.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -41,8 +48,12 @@ extern "C" {
 
 #define CLOCKFD 3
 #define FD_TO_CLOCKID(fd)   ((clockid_t) (((~fd) << 3) | CLOCKFD))
-#define CLOCKID_TO_FD(clk)	(~((clk) >> 3))
+//coverity[misra_c_2012_rule_5_8_violation:SUPPRESS], ## violation reason SYSSW_V_10.1_01
+#define CLOCKID_TO_FD(clock)	(~((clock) >> 3))
 
+#ifdef __QNX__
+#undef  NS_PER_SEC
+#endif
 #define NS_PER_SEC 1000000000L
 #define US_PER_SEC 1000000L
 
@@ -107,6 +118,12 @@ enum timesynClockID {
     CLOCK_SYS_ID,
     CLOCK_PHC0_ID,
     CLOCK_PHC1_ID,
+#ifdef CONFIG_ARCH_HOBOT_SOC_SIGIP
+    CLOCK_PHC2_ID,
+    CLOCK_PHC3_ID,
+    CLOCK_PHC4_ID,
+    CLOCK_PHC5_ID,
+#endif
     CLOCK_PCIE0_ID,
     CLOCK_PCIE1_ID,
     CLOCK_EXRTC_32000_ID,
@@ -122,7 +139,9 @@ enum timesyncSnapshotSource {
     SNAPSHOT_SOURCE_RTC,
     SNAPSHOT_SOURCE_GPS_PPS,
     SNAPSHOT_SOURCE_LIDAR,
+#ifndef CONFIG_ARCH_HOBOT_SOC_SIGIB
     SNAPSHOT_SOURCE_AP,
+#endif
     SNAPSHOT_SOURCE_MCU_ETH,
     SNAPSHOT_SOURCE_RESERVED,
 };
@@ -173,7 +192,7 @@ typedef struct _timesyncPPS {
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 0.1.0
  */
 extern int32_t timesyncOpenClock(enum timesynClockID clock_id, timesyncClock *hb_clock);
@@ -188,7 +207,7 @@ extern int32_t timesyncOpenClock(enum timesynClockID clock_id, timesyncClock *hb
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 0.1.0
  */
 extern int32_t timesyncCloseClock(const timesyncClock *hb_clock);
@@ -204,7 +223,7 @@ extern int32_t timesyncCloseClock(const timesyncClock *hb_clock);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 0.1.0
  */
 extern int32_t timesyncGetCurrentTime(const timesyncClock *hb_clock, struct timespec *ts);
@@ -220,7 +239,7 @@ extern int32_t timesyncGetCurrentTime(const timesyncClock *hb_clock, struct time
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 0.1.0
  */
 extern int32_t timesyncSetCurrentTime(const timesyncClock *hb_clock, const struct timespec *ts);
@@ -236,7 +255,7 @@ extern int32_t timesyncSetCurrentTime(const timesyncClock *hb_clock, const struc
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 0.1.0
  */
 extern int32_t timesyncAdjClockTime(const timesyncClock *hb_clock, int64_t step);
@@ -252,7 +271,7 @@ extern int32_t timesyncAdjClockTime(const timesyncClock *hb_clock, int64_t step)
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 0.1.0
  */
 extern int32_t timesyncSetClockFreq(const timesyncClock *hb_clock, double freq);
@@ -268,7 +287,7 @@ extern int32_t timesyncSetClockFreq(const timesyncClock *hb_clock, double freq);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 0.1.0
  */
 extern int32_t timesyncGetClockFreq(const timesyncClock *hb_clock, double *freq);
@@ -283,7 +302,7 @@ extern int32_t timesyncGetClockFreq(const timesyncClock *hb_clock, double *freq)
  * @retval =0: frequency value
  * @retval <0: failure
  *
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 0.1.0
  */
 extern int32_t timesyncGetMaxClockFreq(const timesyncClock *hb_clock);
@@ -299,7 +318,7 @@ extern int32_t timesyncGetMaxClockFreq(const timesyncClock *hb_clock);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 0.1.0
  */
 extern int32_t timesyncSetClockSnapshotSource(const timesyncClock *hb_clock, enum timesyncSnapshotSource pps_source);
@@ -315,7 +334,7 @@ extern int32_t timesyncSetClockSnapshotSource(const timesyncClock *hb_clock, enu
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 0.1.0
  */
 extern int32_t timesyncGetClockSnapshotTime(const timesyncClock *hb_clock, struct timespec *snapshot);
@@ -331,7 +350,7 @@ extern int32_t timesyncGetClockSnapshotTime(const timesyncClock *hb_clock, struc
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 0.1.0
  */
 extern int32_t timesyncClockGeneratePPS(const timesyncClock *hb_clock, int32_t enable);
@@ -347,7 +366,7 @@ extern int32_t timesyncClockGeneratePPS(const timesyncClock *hb_clock, int32_t e
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 0.1.0
  */
 extern int32_t timesyncOpenPPS(const char *path, timesyncPPS *hb_pps);
@@ -363,7 +382,7 @@ extern int32_t timesyncOpenPPS(const char *path, timesyncPPS *hb_pps);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 0.1.0
  */
 extern int32_t timesyncFetchPPS(const timesyncPPS *hb_pps, pps_info_t *infobuf);
@@ -378,7 +397,7 @@ extern int32_t timesyncFetchPPS(const timesyncPPS *hb_pps, pps_info_t *infobuf);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 0.1.0
  */
 extern int32_t timesyncClosePPS(const timesyncPPS *hb_pps);
@@ -394,7 +413,7 @@ extern int32_t timesyncClosePPS(const timesyncPPS *hb_pps);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 0.1.0
  */
 extern int32_t timesyncGetClockCapability(const timesyncClock *hb_clock, timesynCapability *clock_cap);

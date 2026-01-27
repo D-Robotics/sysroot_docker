@@ -91,7 +91,7 @@ extern "C" {
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -116,11 +116,11 @@ extern hb_s32 hb_mm_strerror(hb_s32 err_num, hb_string err_buf,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
- * @callergraph
+ * @callergraph`
  * @design
  */
 static inline hb_string hb_mm_make_error_string(hb_s32 err_num,

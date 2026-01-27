@@ -48,22 +48,15 @@
  * implementations.
  */
 
-#if defined(EGL_NO_PLATFORM_SPECIFIC_TYPES) || (defined(EGL_API_FB) && !defined(EGL_API_WL) && !defined(WL_EGL_PLATFORM))
+#if defined(EGL_NO_PLATFORM_SPECIFIC_TYPES)
 
 typedef void *EGLNativeDisplayType;
 typedef void *EGLNativePixmapType;
 typedef void *EGLNativeWindowType;
 
-#elif defined(__QNXNTO__)
-
-#include <screen/screen.h>
-typedef int             EGLNativeDisplayType;
-typedef screen_window_t EGLNativeWindowType;
-typedef screen_pixmap_t EGLNativePixmapType;
-
 #elif defined(_WIN32) || defined(__VC32__) && !defined(__CYGWIN__) && !defined(__SCITECH_SNAP__) /* Win32 and WinCE */
 #ifndef WIN32_LEAN_AND_MEAN
-/* #define WIN32_LEAN_AND_MEAN 1 */
+#define WIN32_LEAN_AND_MEAN 1
 #endif
 #include <windows.h>
 
@@ -83,13 +76,13 @@ typedef int   EGLNativeDisplayType;
 typedef void *EGLNativePixmapType;
 typedef void *EGLNativeWindowType;
 
-#elif defined(WL_EGL_PLATFORM) || defined(EGL_API_WL)
+#elif defined(WL_EGL_PLATFORM)
 
 typedef struct wl_display     *EGLNativeDisplayType;
 typedef struct wl_egl_pixmap  *EGLNativePixmapType;
 typedef struct wl_egl_window  *EGLNativeWindowType;
 
-#elif defined(__GBM__) || defined(EGL_API_GBM)
+#elif defined(__GBM__)
 
 typedef struct gbm_device  *EGLNativeDisplayType;
 typedef struct gbm_bo      *EGLNativePixmapType;
@@ -97,11 +90,6 @@ typedef void               *EGLNativeWindowType;
 
 #elif defined(__ANDROID__) || defined(ANDROID)
 
-#if ANDROID_SDK_VERSION >= 26
-#    include <system/window.h>
-#  else
-#    include <android/native_window.h>
-#  endif
 struct ANativeWindow;
 struct egl_native_pixmap_t;
 
@@ -115,7 +103,7 @@ typedef intptr_t EGLNativeDisplayType;
 typedef intptr_t EGLNativePixmapType;
 typedef intptr_t EGLNativeWindowType;
 
-#elif defined(USE_X11) || defined(EGL_API_X)
+#elif defined(USE_X11)
 
 /* X11 (tentative)  */
 #include <X11/Xlib.h>
@@ -151,12 +139,6 @@ typedef void              *EGLNativeDisplayType;
 typedef khronos_uintptr_t  EGLNativePixmapType;
 typedef khronos_uintptr_t  EGLNativeWindowType;
 
-#elif defined(__VXWORKS__)
-
-typedef void * EGLNativeDisplayType;
-typedef void * EGLNativePixmapType;
-typedef void * EGLNativeWindowType;
-
 #else
 #error "Platform not recognized"
 #endif
@@ -183,7 +165,5 @@ typedef khronos_int32_t EGLint;
 #else
 #define EGL_CAST(type, value) ((type) (value))
 #endif
-
-#include <EGL/eglvivante.h>
 
 #endif /* __eglplatform_h */

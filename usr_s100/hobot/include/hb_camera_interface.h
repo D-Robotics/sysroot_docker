@@ -38,7 +38,7 @@ extern "C" {
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -60,7 +60,7 @@ extern int32_t hbn_camera_create(camera_config_t *cam_config, camera_handle_t *c
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -85,7 +85,7 @@ extern int32_t hbn_camera_destroy(camera_handle_t cam_fd);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -108,7 +108,7 @@ extern int32_t hbn_camera_attach_to_vin(camera_handle_t cam_fd, vpf_handle_t vin
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -135,7 +135,7 @@ extern int32_t hbn_camera_detach_from_vin(camera_handle_t cam_fd);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -157,7 +157,7 @@ extern int32_t hbn_camera_attach_to_deserial(camera_handle_t cam_fd, deserial_ha
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -179,7 +179,7 @@ extern int32_t hbn_camera_detach_from_deserial(camera_handle_t cam_fd);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -201,7 +201,7 @@ extern int32_t hbn_camera_start(camera_handle_t cam_fd);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -223,7 +223,7 @@ extern int32_t hbn_camera_stop(camera_handle_t cam_fd);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -247,7 +247,7 @@ extern int32_t hbn_camera_reset(camera_handle_t cam_fd);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -274,7 +274,7 @@ extern int32_t hbn_camera_change_fps(camera_handle_t cam_fd, int32_t fps);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -282,6 +282,105 @@ extern int32_t hbn_camera_change_fps(camera_handle_t cam_fd, int32_t fps);
  * @design
  */
 extern int32_t hbn_camera_read_register(camera_handle_t cam_fd, camera_reg_type_t type, uint32_t reg_addr);
+
+/**
+ * @NO{S10E02C01I}
+ * @ASIL{B}
+ * @brief write register value to camera hardware
+ * @detail the hardware info should configed in camera_config when created.
+ *         the type should adapt the camera sensor used.
+ *
+ * @param[in] cam_fd: camera handle which create returned
+ *         range: [!NULL, !NULL], default: NA
+ * @param[in] type: device type of camera sensor
+ *         range: [CAMERA_SENSOR_REG], CAMERA_EEPROM_REG], default: NA
+ * @param[in] reg_addr: address of register to write
+ *         range: [0x0, 0xFFFF], default: NA
+ * @param[in] reg_value: value of register to write
+ *         range: [0x0, 0xFFFF], default: NA
+ *
+ * @return 0:Success, <0:Failure
+ *
+ * @data_read None
+ * @data_updated None
+ * @compatibility HW: Super
+ * @compatibility SW: 1.0.0
+ *
+ * @callgraph
+ * @callergraph
+ * @design
+ */
+extern int32_t hbn_camera_write_register(camera_handle_t cam_fd, camera_reg_type_t type, uint32_t reg_addr, uint32_t reg_value);
+
+/**
+ * @NO{S10E02C01I}
+ * @ASIL{B}
+ * @brief read registers array value from camera hardware
+ * @detail the hardware info should configed in camera_config when created.
+ *         the type should adapt the camera sensor used.
+ *
+ * @param[in] cam_fd: camera handle which create returned
+ *         range: [!NULL, !NULL], default: NA
+ * @param[in] type: device type of camera sensor
+ *         range: [CAMERA_SENSOR_REG], CAMERA_EEPROM_REG], default: NA
+ * @param[in] reg_addr: address array of register to read
+ *         range: [0x0, 0xFFFF], default: NA
+ * @param[out] reg_value: value array of register to read
+ *         range: [0x0, 0xFFFF], default: NA
+ * @param[in] size_addr: size of reg_addr array: 0:as block, >0:as count of reg_addr
+ *         range: [0x0, 64], default: NA
+ * @param[in] size_value: size of reg_value array: 0:not read, >0: count to read
+ *         range: [0x0, 64], default: NA
+ *
+ * @return 0:Success, <0:Failure
+ *
+ * @data_read None
+ * @data_updated None
+ * @compatibility HW: Super
+ * @compatibility SW: 1.0.0
+ *
+ * @callgraph
+ * @callergraph
+ * @design
+ */
+extern int32_t hbn_camera_read_registers(camera_handle_t cam_fd, camera_reg_type_t type, uint32_t *reg_addr,
+		uint32_t *reg_value, uint32_t size_addr, uint32_t size_value);
+
+/**
+ * @NO{S10E02C01I}
+ * @ASIL{B}
+ * @brief write registers array value to camera hardware
+ * @detail the hardware info should configed in camera_config when created.
+ *         the type should adapt the camera sensor used.
+ *
+ * @param[in] cam_fd: camera handle which create returned
+ *         range: [!NULL, !NULL], default: NA
+ * @param[in] type: device type of camera sensor
+ *         range: [CAMERA_SENSOR_REG], CAMERA_EEPROM_REG], default: NA
+ * @param[in] reg_addr: address array of register to write
+ *         range: [0x0, 0xFFFF], default: NA
+ * @param[in] reg_value: value array of register to write
+ *         range: [0x0, 0xFFFF], default: NA
+ * @param[in/out] reg_hist: histroy value array of register to compare and store if optimize
+ *         range: [0x0, 0xFFFF], default: NA
+ * @param[in] size_addr: size of reg_addr array: 0:as block, >0:as count of reg_addr
+ *         range: [0x0, ~], default: NA
+ * @param[in] size_value: size of reg_value array: 0:not write, >0: count to write
+ *         range: [0x0, ~], default: NA
+ *
+ * @return 0:Success, <0:Failure
+ *
+ * @data_read None
+ * @data_updated None
+ * @compatibility HW: Super
+ * @compatibility SW: 1.0.0
+ *
+ * @callgraph
+ * @callergraph
+ * @design
+ */
+extern int32_t hbn_camera_write_registers(camera_handle_t cam_fd, camera_reg_type_t type, uint32_t *reg_addr,
+		uint32_t *reg_value, uint32_t *reg_hist, uint32_t acount, uint32_t vcount);
 
 /**
  * @NO{S10E02C01I}
@@ -300,7 +399,7 @@ extern int32_t hbn_camera_read_register(camera_handle_t cam_fd, camera_reg_type_
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -324,7 +423,7 @@ extern int32_t hbn_camera_parse_emb(camera_handle_t cam_fd, char* embed_raw, str
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -351,7 +450,7 @@ extern int32_t hbn_camera_update_ae_info(camera_handle_t cam_fd, camera_ae_info_
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -397,7 +496,7 @@ extern int32_t hbn_camera_set_event_callback(camera_handle_t cam_fd, void (*even
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -425,7 +524,7 @@ extern int32_t hbn_camera_get_status(camera_handle_t cam_fd, camera_staus_t *sta
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -449,7 +548,7 @@ extern int32_t hbn_camera_get_version(camera_handle_t cam_fd, camera_version_typ
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -472,7 +571,7 @@ extern camera_handle_t hbn_camera_get_handle(vpf_handle_t vin_fd, int32_t camera
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph

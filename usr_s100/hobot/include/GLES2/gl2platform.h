@@ -35,6 +35,4 @@
 #define GL_APIENTRY KHRONOS_APIENTRY
 #endif
 
-#include <GLES2/gl2rename.h>
-
 #endif /* __gl2platform_h_ */

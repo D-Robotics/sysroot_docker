@@ -55,7 +55,7 @@ extern "C" {
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated g_VinInitStatus
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -79,7 +79,7 @@ int32_t hb_cam_init(uint32_t cfg_index, const char *cfg_file);
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated g_VinInitStatus
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -102,7 +102,7 @@ int32_t hb_cam_deinit(uint32_t cfg_index);
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated g_VinInitStatus
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -125,7 +125,7 @@ int32_t hb_cam_start(uint32_t port);
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated g_VinInitStatus
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -146,7 +146,7 @@ int32_t hb_cam_stop(uint32_t port);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -167,7 +167,7 @@ int32_t hb_cam_start_all(void);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -190,7 +190,7 @@ int32_t hb_cam_stop_all(void);
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  * @callgraph
  * @callergraph
@@ -210,7 +210,7 @@ int32_t hb_cam_reset(uint32_t port);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -231,7 +231,7 @@ int32_t hb_cam_power_on(uint32_t port);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -253,7 +253,7 @@ int32_t hb_cam_power_off(uint32_t port);
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -349,7 +349,7 @@ int32_t hb_cam_clean_img(cam_img_info_t *cam_img_info);
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -373,7 +373,7 @@ int32_t hb_cam_get_data(uint32_t port, CAM_DATA_TYPE_E data_type, void *data);
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -396,7 +396,7 @@ int32_t hb_cam_free_data(uint32_t port, CAM_DATA_TYPE_E data_type, void *data);
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -421,7 +421,7 @@ int32_t hb_cam_bypass_enable(uint32_t port, int32_t enable);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -446,7 +446,7 @@ int32_t hb_cam_set_fps_ctrl(uint32_t port, uint32_t skip_frame, uint32_t in_fps,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -469,7 +469,7 @@ int32_t hb_cam_set_lpwm_ctrl(uint32_t port, uint32_t lpwn_chn, lpwm_dynamic_t *l
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/X5/Super SoC
+ * @compatibility HW: Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -492,7 +492,7 @@ int32_t hb_cam_get_stat_info(uint32_t port, struct vio_statinfo *info);
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -513,7 +513,7 @@ int32_t hb_cam_dynamic_switch_fps(uint32_t port, uint32_t fps);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -536,7 +536,7 @@ int32_t hb_cam_dynamic_switch_mode(uint32_t port, uint32_t mode);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -558,7 +558,7 @@ int32_t hb_cam_dynamic_switch(uint32_t port, uint32_t fps, uint32_t resolution);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -579,7 +579,7 @@ int32_t hb_cam_set_mclk(uint32_t entry_num, uint32_t mclk);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -600,7 +600,7 @@ int32_t hb_cam_enable_mclk(uint32_t entry_num);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -621,7 +621,7 @@ int32_t hb_cam_disable_mclk(uint32_t entry_num);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -642,7 +642,7 @@ int32_t hb_cam_extern_isp_reset(uint32_t port);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -663,7 +663,7 @@ int32_t hb_cam_extern_isp_poweroff(uint32_t port);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -686,7 +686,7 @@ int32_t hb_cam_extern_isp_poweron(uint32_t port);
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -708,7 +708,7 @@ int32_t hb_cam_i2c_read(uint32_t port, uint32_t reg_addr);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -732,7 +732,7 @@ int32_t hb_cam_i2c_read_byte(uint32_t port, uint32_t reg_addr);
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -755,7 +755,7 @@ int32_t hb_cam_i2c_write(uint32_t port, uint32_t reg_addr, uint16_t value);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -770,7 +770,7 @@ int32_t hb_cam_i2c_write_byte(uint32_t port, uint32_t reg_addr, uint8_t value);
  * @brief Not support; 不支持
  *
  * @param[in] uint32_t port: Corresponding to the port set in the configuration file; 和配置文件中设置的port 相对应;range:[0, 23],default:0
- * @param[in] uint32_t subdev: device; 写入的设备;range:[0, 3000000],default:0
+ * @param[in] uint32_t subdev: device; 写入的设备;0 sensor;1 eeprom,default:0
  * @param[in] uint32_t reg_addr:i2c address to access; 表示要写入的寄存器地址
  * @param[in] char *buffer:address to access; 表示写入的值
  * @param[in] uint32_t size:Indicates the value written;表示写入的大小
@@ -780,7 +780,7 @@ int32_t hb_cam_i2c_write_byte(uint32_t port, uint32_t reg_addr, uint8_t value);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -795,7 +795,7 @@ int32_t hb_cam_i2c_block_write(uint32_t port, uint32_t subdev, uint32_t reg_addr
  * @brief Not support; 不支持
  *
  * @param[in] uint32_t port: Corresponding to the port set in the configuration file; 和配置文件中设置的port 相对应;range:[0, 23],default:0
- * @param[in] uint32_t subdev: device; 写入的设备;range:[0, 3000000],default:0
+ * @param[in] uint32_t subdev: device; 写入的设备;0 sensor;1 eeprom,default:0
  * @param[in] uint32_t reg_addr:i2c address to access; 表示要写入的寄存器地址
  * @param[in] uint32_t size:Indicates the value written;表示写入的大小
  * @param[out] char *buffer:address to access; 表示读取的值
@@ -804,7 +804,7 @@ int32_t hb_cam_i2c_block_write(uint32_t port, uint32_t subdev, uint32_t reg_addr
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -829,7 +829,7 @@ int32_t hb_cam_i2c_block_read(uint32_t port, uint32_t subdev, uint32_t reg_addr,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -853,7 +853,7 @@ int32_t hb_cam_spi_block_write(uint32_t port, uint32_t subdev, uint32_t reg_addr
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -877,7 +877,7 @@ int32_t hb_cam_spi_block_read(uint32_t port, uint32_t subdev, uint32_t reg_addr,
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -900,7 +900,7 @@ int32_t hb_cam_ipi_reset(uint32_t entry_num, uint32_t ipi_index, uint32_t enable
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/X5/Super SoC
+ * @compatibility HW: Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -922,7 +922,7 @@ int32_t hb_cam_get_sns_info(uint32_t port, cam_parameter_t *sp, uint8_t type);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/X5/Super SoC
+ * @compatibility HW: Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -967,7 +967,7 @@ int32_t hb_cam_parse_embed_data(uint32_t port, char *embed_raw, struct embed_dat
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: J5/X5/Super SoC
+ * @compatibility HW: Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -989,7 +989,7 @@ int32_t hb_cam_set_event_callback(uint32_t port, void (*event_callback)(cam_even
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated g_VpmInitStatus:vpm init status;vpm初始化状态
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1011,7 +1011,7 @@ int32_t hb_vio_init(const char *cfg_file);
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated g_VpmInitStatus:vpm init status;vpm初始化状态
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1033,7 +1033,7 @@ int32_t hb_vio_deinit(void);
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated g_VpmInitStatus:vpm init status;vpm初始化状态
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1055,7 +1055,7 @@ int32_t hb_vio_start_pipeline(uint32_t pipeline_id);
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated g_VpmInitStatus:vpm init status;vpm初始化状态
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1063,6 +1063,57 @@ int32_t hb_vio_start_pipeline(uint32_t pipeline_id);
  * @design
  */
 int32_t hb_vio_stop_pipeline(uint32_t pipeline_id);
+
+/**
+ * @NO{S09E06C01I}
+ * @ASIL{B}
+ * @brief set event callback function;设置事件回调函数
+ *
+ * @param[in] uint32_t pipeline_id:pipeline id ; 软件通道id;range:[0, 23],default:0
+ * @param[in] VIO_MODULE_TYPE_E module_type: 模块类型编号
+ * @param[in] IO_EVENT_TYPE_E event_type：事件类型
+ * @param[in] void (*event_callback)(void* fault_info): callback function handler;回调函数指针
+ * @param[out] None
+ *
+ * @retval zero: Success;成功
+ * @retval less than zero: Fail, return error code;失败,返回错误码;range:[-10000,-1]
+ *
+ * @data_read None
+ * @data_updated None
+ * @compatibility HW: Ultra/X5/Super
+ * @compatibility SW: 1.0.0
+ *
+ * @callgraph
+ * @callergraph
+ * @design
+ */
+int32_t hb_vio_set_event_callback(uint32_t pipeline_id, VIO_MODULE_TYPE_E module_type,
+	VIO_EVENT_TYPE_E event_type, void (*event_callback)(void *event_info));
+
+/**
+ * @NO{S09E06C01I}
+ * @ASIL{B}
+ * @brief Get the parameters of the corresponding pipeline through info_type; 通过info_type获取对应pipeline的参数。
+ *
+ * @param[in] uint32_t pipeline_id:pipeline id ; 软件通道id;range:[0, 23],default:0
+ * @param[in] VIO_MODULE_TYPE_E module_type：模块类型编号
+ * @param[in] VIO_INFO_E info_type 信息类型
+ *
+ * @param[out] void *info:Parameters to be obtained; 需要获取的参数。
+ *
+ * @retval E_OK: Success;成功
+ * @retval E_NOT_OK: Fail,return error code;失败,返回错误码;range:[-10000,-1]
+ *
+ * @data_read g_multi_flag:multi process flag;多进程共享处理标志
+ * @data_updated None
+ * @compatibility HW: X3/J3/Ultra/X5/Super
+ * @compatibility SW: 1.0.0
+ *
+ * @callgraph
+ * @callergraph
+ * @design
+ */
+int32_t hb_vio_get_info(uint32_t pipeline_id, VIO_MODULE_TYPE_E module_type, VIO_INFO_E info_type, void *info);
 
 /**
  * @NO{S09E06C01I}
@@ -1078,7 +1129,7 @@ int32_t hb_vio_stop_pipeline(uint32_t pipeline_id);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1101,7 +1152,7 @@ int32_t hb_vio_set_callbacks(uint32_t pipeline_id, VIO_CALLBACK_TYPE_E type, dat
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1126,7 +1177,7 @@ int32_t hb_vio_set_param(uint32_t pipeline_id, VIO_INFO_TYPE_E info_type, void *
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1143,7 +1194,7 @@ int32_t hb_vio_get_param(uint32_t pipeline_id, VIO_INFO_TYPE_E info_type, void *
  * @param[in] uint32_t pipeline_id:pipeline id ; 软件通道id;range:[0, 23],default:0
  * @param[in] VIO_DATA_TYPE_E data_type:需要获取的数据类型;data_type类型说明:
  * HB_VIO_PYM_DATA_V3
- * 获取 pym 处理结果, Super SoC最常用类型;
+ * 获取 pym 处理结果,SUPER最常用类型;
  * HB_VIO_ISP_YUV_DATA
  * 获取isp输出yuv数据,需要配合配置文件中isp_dma_output_format参数设置;
  * HB_VIO_ISP_RAW_DATA
@@ -1151,7 +1202,7 @@ int32_t hb_vio_get_param(uint32_t pipeline_id, VIO_INFO_TYPE_E info_type, void *
  *
  * @param[in] VIO_DATA_TYPE_E data_type:The type of data to be obtained; data_ Type description:
  * HB_VIO_PYM_DATA_V3
- * Get pym processing results. Super SoC is the most commonly used type;
+ * Get pym processing results. Super is the most commonly used type;
  * HB_VIO_ISP_YUV_DATA
  * To obtain the yuv data output by the isp, you need to cooperate with isp_dma_output_format parameter settings in the configuration file;
  * HB_VIO_ISP_RAW_DATA
@@ -1163,7 +1214,7 @@ int32_t hb_vio_get_param(uint32_t pipeline_id, VIO_INFO_TYPE_E info_type, void *
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1178,8 +1229,8 @@ int32_t hb_vio_get_data(uint32_t pipeline_id, VIO_DATA_TYPE_E data_type, void *d
  * @brief Get the data of the corresponding pipelineid conditionally through the corresponding datatype and the set times parameter; 通过对应data_type以及设置的times参数有条件的获取对应pipeline_id的数据;
  *
  * @param[in] uint32_t pipeline_id:pipeline id ; 软件通道id;range:[0, 23],default:0
- * @param[in] VIO_DATA_TYPE_E data_type:需要获取的数据类型:data_type类型说明:HB_VIO_PYM_DATA_V3:获取 pym 处理结果,Super SoC最常用类型;
- * @param[in] VIO_DATA_TYPE_E data_type:The type of data to be obtained; data_ Type description: HB_VIO_PYM_DATA_V3,Get pym processing results. Super SoC is the most commonly used type;
+ * @param[in] VIO_DATA_TYPE_E data_type:需要获取的数据类型:data_type类型说明:HB_VIO_PYM_DATA_V3:获取 pym 处理结果,SUPER最常用类型;
+ * @param[in] VIO_DATA_TYPE_E data_type:The type of data to be obtained; data_ Type description: HB_VIO_PYM_DATA_V3,Get pym processing results. Super is the most commonly used type;
  * @param[in] int32_t times:设置需要获取帧的相对时间;
  * times参数说明:
  * times = 0:清空当前缓存帧,等待下一帧;
@@ -1198,7 +1249,7 @@ int32_t hb_vio_get_data(uint32_t pipeline_id, VIO_DATA_TYPE_E data_type, void *d
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1221,7 +1272,7 @@ int32_t hb_vio_get_data_conditional(uint32_t pipeline_id, VIO_DATA_TYPE_E data_t
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1243,7 +1294,7 @@ int32_t hb_vio_run_pym(uint32_t pipeline_id, hb_vio_buffer_t *src_img_info);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1266,7 +1317,7 @@ int32_t hb_vio_free_ipubuf(uint32_t pipeline_id, hb_vio_buffer_t *dst_img_info);
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1281,8 +1332,8 @@ int32_t hb_vio_free_ispbuf(uint32_t pipeline_id, hb_vio_buffer_t *dst_img_info);
  * @brief Release the pym data corresponding to pipelineid, and hb_vio_get_data is used to obtain the pym data; 释放对应pipeline_id的pym数据,和hb_vio_get_data获取pym数据对应使用.
  *
  * @param[in] uint32_t pipeline_id:pipeline id ; 软件通道id;range:[0, 23],default:0
- * @param[in] VIO_DATA_TYPE_E data_type:Released data type, type description: HB_VIO_PYM_DATA_V3, Super SoC most commonly used type;
- * @param[in] VIO_DATA_TYPE_E data_type:释放的数据类型, 类型说明: HB_VIO_PYM_DATA_V3, Super SoC常用;
+ * @param[in] VIO_DATA_TYPE_E data_type:Released data type, type description: HB_VIO_PYM_DATA_V3, Super most commonly used type;
+ * @param[in] VIO_DATA_TYPE_E data_type:释放的数据类型, 类型说明: HB_VIO_PYM_DATA_V3, SUPER常用;
  * @param[in] void * dst_img_info:pym memory to be freed; 需要free的pym内存;
  * @param[out] None
  *
@@ -1291,7 +1342,7 @@ int32_t hb_vio_free_ispbuf(uint32_t pipeline_id, hb_vio_buffer_t *dst_img_info);
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1316,7 +1367,7 @@ int32_t hb_vio_free_pymbuf(uint32_t pipeline_id, VIO_DATA_TYPE_E data_type, void
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1340,7 +1391,7 @@ int32_t hb_vio_gen_gdc_cfg(param_t *gdc_parm, window_t *wnds, uint32_t wnd_num, 
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1364,7 +1415,7 @@ int32_t hb_vio_set_gdc_cfg(uint32_t pipeline_id, uint32_t *cfg_buf, uint64_t cfg
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1385,7 +1436,7 @@ int32_t hb_vio_set_gdc_cfg_opt(uint32_t pipeline_id, uint32_t gdc_id, uint32_t *
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1409,7 +1460,7 @@ void hb_vio_free_gdc_cfg(uint32_t *cfg_buf);
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1435,7 +1486,7 @@ int32_t hb_vio_run_gdc(uint32_t pipeline_id, hb_vio_buffer_t *src_img_info, hb_v
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1462,7 +1513,7 @@ int32_t hb_vio_run_gdc_opt(uint32_t pipeline_id, uint32_t gdc_id, hb_vio_buffer_
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1488,7 +1539,7 @@ int32_t hb_vio_run_gdc_adv(uint32_t pipeline_id, uint32_t gdc_id, const gdc_conf
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1512,7 +1563,7 @@ int32_t hb_vio_run_gdc_adv_user(uint32_t pipeline_id, uint32_t gdc_id, const gdc
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1534,7 +1585,7 @@ int32_t hb_vio_free_gdcbuf(uint32_t pipeline_id, hb_vio_buffer_t *dst_img_info);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1556,7 +1607,7 @@ int32_t hb_vio_raw_dump(uint32_t pipeline_id, hb_vio_buffer_t *raw_img, hb_vio_b
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1580,7 +1631,7 @@ int32_t hb_vio_raw_feedback(uint32_t pipeline_id, hb_vio_buffer_t *feedback_src,
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated g_VpmInitStatus:vpm init status;vpm初始化状态
- * @compatibility HW: X3/J3/J5/X5/Super SoC
+ * @compatibility HW: X3/J3/Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1604,7 +1655,7 @@ int32_t hb_vio_run_raw(uint32_t pipeline_id, hb_vio_buffer_t *feedback_src, int3
  *
  * @data_read None
  * @data_updated g_vpm_cfg;g_vin_cfg
- * @compatibility HW: J5/X5/Super SoC
+ * @compatibility HW: Ultra/X5/Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1625,7 +1676,7 @@ int32_t hb_vio_cfg_check(const char *vpm_file, const char *vin_file, uint32_t cf
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1647,7 +1698,7 @@ int32_t hb_vio_pause_pipeline(uint32_t pipeline_id);
  *
  * @data_read g_multi_flag:multi process flag;多进程共享处理标志
  * @data_updated None
- * @compatibility HW: Super SoC
+ * @compatibility HW: Super
  * @compatibility SW: 1.0.0
  *
  * @callgraph

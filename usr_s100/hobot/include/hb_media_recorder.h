@@ -309,7 +309,7 @@ typedef struct _media_recorder_context {
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -338,7 +338,7 @@ extern hb_s32 hb_mm_mr_get_default_context(media_recorder_context_t
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -365,7 +365,7 @@ extern hb_s32 hb_mm_mr_initialize(media_recorder_context_t *context);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -390,7 +390,7 @@ extern hb_s32 hb_mm_mr_set_listener(media_recorder_context_t
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -416,7 +416,7 @@ extern hb_s32 hb_mm_mr_get_mr_video_source(media_recorder_context_t
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -441,7 +441,7 @@ extern hb_s32 hb_mm_mr_set_mr_video_source(media_recorder_context_t
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -467,7 +467,7 @@ extern hb_s32 hb_mm_mr_get_mr_video_source_ex(media_recorder_context_t
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -492,7 +492,7 @@ extern hb_s32 hb_mm_mr_set_mr_video_source_ex(media_recorder_context_t
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -518,7 +518,7 @@ extern hb_s32 hb_mm_mr_get_mr_audio_source(media_recorder_context_t
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -545,7 +545,7 @@ extern hb_s32 hb_mm_mr_set_mr_audio_source(media_recorder_context_t
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -573,7 +573,7 @@ extern hb_s32 hb_mm_mr_set_camera(media_recorder_context_t *context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -600,7 +600,7 @@ extern hb_s32 hb_mm_mr_set_camera_pym(media_recorder_context_t *context,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -626,7 +626,7 @@ extern hb_s32 hb_mm_mr_configure(media_recorder_context_t *context);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -652,7 +652,7 @@ extern hb_s32 hb_mm_mr_prepare(media_recorder_context_t *context);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -676,7 +676,7 @@ extern hb_s32 hb_mm_mr_start(media_recorder_context_t *context);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -700,7 +700,7 @@ extern hb_s32 hb_mm_mr_stop(media_recorder_context_t *context);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
@@ -723,7 +723,7 @@ extern hb_s32 hb_mm_mr_release(media_recorder_context_t *context);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/J5/Super SoC
+ * @compatibility HW: XJ3/Ultra/Super
  * @compatibility SW: v1.2.3
  *
  * @callgraph
