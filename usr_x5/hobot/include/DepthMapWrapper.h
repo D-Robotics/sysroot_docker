@@ -137,6 +137,17 @@ CP_DLL_PUBLIC
 bool DepthMapWrapperGetLensParameters1(WrapperDepthCamLensParameters *lensParams);
 
 /**
+ * @brief   load hybird parameters form config file
+ * 
+ * @param[out]   spotConfigFilePath      spot parameters file path
+ * @param[out]   floodConfigFilePath     flood parameters file path
+ *
+ * @return  execution result: true:success false:failure
+*/
+CP_DLL_PUBLIC 
+bool DepthMapWrapperLoadHybirdParamsConfigFile1(char *spotConfigFilePath, char *floodConfigFilePath);
+
+/**
  * @brief   set usecase
  * 
  * @param[in]   usecaseIndex      usecase index
@@ -192,6 +203,7 @@ void DepthMapWrapperStopRecRrf1();
  * 
  * @param[in]    rawdataBuff      rawdata
  * @param[out]   irImage          ir image data
+ * @param[out]   grayImage        gray image data
  * @param[out]   depthImage       depth image data
  * @param[out]   pointCloudImage  point cloud data
  * @param[out]   pointCloudCount  point cloud data count
@@ -200,8 +212,8 @@ void DepthMapWrapperStopRecRrf1();
  * @return  execution result: true:success false:failure
 */
 CP_DLL_PUBLIC
-bool DepthMapWrapperProcessFrameHybrid1(char *rawdataBuff,  char *irImage, char *depthImage, 
-                                        char *pointCloudImage, unsigned int *pointCloudCount, 
+bool DepthMapWrapperProcessFrameHybrid1(char *rawdataBuff,  char *irImage, char *grayImage, char *depthImage, 
+                                        char *pointCloudImage, uint32_t *pointCloudCount, 
                                         RawdataType *rawdataType);
 
 //tof2 interface function(for 0951 decoding)
@@ -245,6 +257,16 @@ bool DepthMapWrapperGetCalibrationData2(char *i2cDevice, char *caliFilePath);
 */
 CP_DLL_PUBLIC 
 bool DepthMapWrapperGetLensParameters2(WrapperDepthCamLensParameters *lensParams);
+
+/**
+ * @brief   load spot parameters form config file
+ * 
+ * @param[out]   spotConfigFilePath      spot parameters file path
+ *
+ * @return  execution result: true:success false:failure
+*/
+CP_DLL_PUBLIC 
+bool DepthMapWrapperLoadSpotParamsConfigFile2(char *spotConfigFilePath);
 
 /**
  * @brief   set usecase
@@ -300,6 +322,7 @@ void DepthMapWrapperStopRecRrf2();
  * 
  * @param[in]    rawdataBuff      rawdata
  * @param[out]   irImage          ir image data
+ * @param[out]   grayImage        gray image data
  * @param[out]   depthImage       depth image data
  * @param[out]   pointCloudImage  point cloud data
  * @param[out]   pointCloudCount  point cloud data count
@@ -307,9 +330,8 @@ void DepthMapWrapperStopRecRrf2();
  * @return  execution result: true:success false:failure
 */
 CP_DLL_PUBLIC
-bool DepthMapWrapperProcessFrameSpot2(char *rawdataBuff,  char *irImage, char *depthImage, 
+bool DepthMapWrapperProcessFrameSpot2(char *rawdataBuff,  char *irImage, char *grayImage, char *depthImage, 
                                         char *pointCloudImage, uint32_t *pointCloudCount);
-
 
  #ifdef __cplusplus
  }
