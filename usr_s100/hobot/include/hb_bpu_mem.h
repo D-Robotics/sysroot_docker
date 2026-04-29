@@ -40,11 +40,7 @@ extern "C" {
  * @return user can access address
  * @retval =0: failure
  * @retval >0: address
-<<<<<<<< HEAD:usr/hobot/include/hb_bpu_mem.h
  * @compatibility HW: XJ3/Ultra/Super
-========
- * @compatibility HW: XJ3/Ultratra/Super SoC
->>>>>>>> gerrit/feat-rdk-s600:usr/include/hb_bpu_mem.h
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -60,11 +56,7 @@ bpu_addr_t hb_bpu_mem_register(void *phy_addr, uint64_t size);
  *
  * @param[in] addr: register api return valid address
  *
-<<<<<<<< HEAD:usr/hobot/include/hb_bpu_mem.h
  * @compatibility HW: XJ3/Ultra/Super
-========
- * @compatibility HW: XJ3/Ultratra/Super SoC
->>>>>>>> gerrit/feat-rdk-s600:usr/include/hb_bpu_mem.h
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -84,11 +76,7 @@ void hb_bpu_mem_unregister(bpu_addr_t addr);
  * @return user can access address
  * @retval =0: failure
  * @retval >0: address
-<<<<<<<< HEAD:usr/hobot/include/hb_bpu_mem.h
  * @compatibility HW: XJ3/Ultra/Super
-========
- * @compatibility HW: XJ3/Ultratra/Super SoC
->>>>>>>> gerrit/feat-rdk-s600:usr/include/hb_bpu_mem.h
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -109,11 +97,7 @@ bpu_addr_t hb_bpu_mem_alloc(uint64_t size, uint32_t flag);
  * @retval =0: failure
  * @retval >0: address
  *
-<<<<<<<< HEAD:usr/hobot/include/hb_bpu_mem.h
  * @compatibility HW: XJ3/Ultra/Super
-========
- * @compatibility HW: XJ3/Ultratra/Super SoC
->>>>>>>> gerrit/feat-rdk-s600:usr/include/hb_bpu_mem.h
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -135,11 +119,7 @@ bpu_addr_t hb_bpu_cpumem_alloc(uint64_t size, uint32_t flag);
  * @retval =0: failure
  * @retval >0: address
  *
-<<<<<<<< HEAD:usr/hobot/include/hb_bpu_mem.h
  * @compatibility HW: XJ3/Ultra/Super
-========
- * @compatibility HW: XJ3/Ultratra/Super SoC
->>>>>>>> gerrit/feat-rdk-s600:usr/include/hb_bpu_mem.h
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -161,11 +141,7 @@ bpu_addr_t hb_bpu_mem_alloc_with_label(uint64_t size,
  * @retval =0: failure
  * @retval >0: address
  *
-<<<<<<<< HEAD:usr/hobot/include/hb_bpu_mem.h
  * @compatibility HW: XJ3/Ultra/Super
-========
- * @compatibility HW: XJ3/Ultratra/Super SoC
->>>>>>>> gerrit/feat-rdk-s600:usr/include/hb_bpu_mem.h
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -182,11 +158,7 @@ bpu_addr_t hb_bpu_cpumem_alloc_with_label(uint64_t size,
  *
  * @param[in] addr: the valid memory address
  *
-<<<<<<<< HEAD:usr/hobot/include/hb_bpu_mem.h
  * @compatibility HW: XJ3/Ultra/Super
-========
- * @compatibility HW: XJ3/Ultratra/Super SoC
->>>>>>>> gerrit/feat-rdk-s600:usr/include/hb_bpu_mem.h
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -202,11 +174,7 @@ void hb_bpu_mem_free(bpu_addr_t addr);
  *
  * @param[in] addr: the valid memory address
  *
-<<<<<<<< HEAD:usr/hobot/include/hb_bpu_mem.h
  * @compatibility HW: XJ3/Ultra/Super
-========
- * @compatibility HW: XJ3/Ultratra/Super SoC
->>>>>>>> gerrit/feat-rdk-s600:usr/include/hb_bpu_mem.h
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -228,11 +196,7 @@ void hb_bpu_cpumem_free(bpu_addr_t addr);
  * @retval =0: success
  * @retval <0: failure
  *
-<<<<<<<< HEAD:usr/hobot/include/hb_bpu_mem.h
  * @compatibility HW: XJ3/Ultra/Super
-========
- * @compatibility HW: XJ3/Ultratra/Super SoC
->>>>>>>> gerrit/feat-rdk-s600:usr/include/hb_bpu_mem.h
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -252,11 +216,7 @@ int32_t hb_bpu_memcpy(bpu_addr_t dst_addr, bpu_addr_t src_addr,
  * @param[in] size: cache operation memory range size
  * @param[in] flag: cache invalid or clean
  *
-<<<<<<<< HEAD:usr/hobot/include/hb_bpu_mem.h
  * @compatibility HW: XJ3/Ultra/Super
-========
- * @compatibility HW: XJ3/Ultratra/Super SoC
->>>>>>>> gerrit/feat-rdk-s600:usr/include/hb_bpu_mem.h
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -275,11 +235,7 @@ void hb_bpu_mem_cache_flush(bpu_addr_t addr, uint64_t size,
  *
  * @return the cacheable status
  *
-<<<<<<<< HEAD:usr/hobot/include/hb_bpu_mem.h
  * @compatibility HW: XJ3/Ultra/Super
-========
- * @compatibility HW: XJ3/Ultratra/Super SoC
->>>>>>>> gerrit/feat-rdk-s600:usr/include/hb_bpu_mem.h
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -298,11 +254,7 @@ int32_t hb_bpu_mem_is_cacheable(bpu_addr_t addr);
  * @retval =0: invalid bpu mem address
  * @retval !=0: the bpu mem address's physical address
  *
-<<<<<<<< HEAD:usr/hobot/include/hb_bpu_mem.h
  * @compatibility HW: XJ3/Ultra/Super
-========
- * @compatibility HW: XJ3/Ultratra/Super SoC
->>>>>>>> gerrit/feat-rdk-s600:usr/include/hb_bpu_mem.h
  * @compatibility SW: 1.0.0
  *
  * @callgraph

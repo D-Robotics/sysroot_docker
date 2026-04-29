@@ -126,15 +126,7 @@ typedef int32_t (*hb_bpu_task_pre_process_cb_t)(hb_bpu_task_t task, uint32_t cor
  *
  * @retval BPU_OK: success
  * @retval BPU_INVAL: invalid parameter
-<<<<<<< HEAD
-<<<<<<<< HEAD:usr/hobot/include/hb_bpu.h
  * @compatibility HW: XJ3/Ultra/Super
-========
- * @compatibility HW: XJ3/Ultratra/Super SoC
->>>>>>>> gerrit/feat-rdk-s600:usr/include/hb_bpu.h
-=======
- * @compatibility HW: XJ3/Ultra/Super
->>>>>>> gerrit/feat-rdk-s600
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -149,15 +141,7 @@ hb_bpu_err_t hb_bpu_version(uint32_t *major, uint32_t *minor, uint32_t *patch);
  * @brief Get the BPU core device number in system
  *
  * @return detect bpu core device number
-<<<<<<< HEAD
-<<<<<<<< HEAD:usr/hobot/include/hb_bpu.h
  * @compatibility HW: XJ3/Ultra/Super
-========
- * @compatibility HW: XJ3/Ultratra/Super SoC
->>>>>>>> gerrit/feat-rdk-s600:usr/include/hb_bpu.h
-=======
- * @compatibility HW: XJ3/Ultra/Super
->>>>>>> gerrit/feat-rdk-s600
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -237,15 +221,7 @@ hb_bpu_err_t hb_bpu_core_cap(uint32_t core_index, uint32_t *cap);
  *
  * @retval =BPU_OK: success
  * @retval !=BPU_OK: failure, reference hb_bpu_err_t
-<<<<<<< HEAD
-<<<<<<<< HEAD:usr/hobot/include/hb_bpu.h
  * @compatibility HW: XJ3/Ultra/Super
-========
- * @compatibility HW: XJ3/Ultratra/Super SoC
->>>>>>>> gerrit/feat-rdk-s600:usr/include/hb_bpu.h
-=======
- * @compatibility HW: XJ3/Ultra/Super
->>>>>>> gerrit/feat-rdk-s600
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -859,15 +835,7 @@ hb_bpu_err_t hb_bpu_core_wait(hb_bpu_core_t core, hb_bpu_task_t *task, int32_t t
  *
  * @retval =BPU_OK: success
  * @retval !=BPU_OK: failure, reference hb_bpu_err_t
-<<<<<<< HEAD
-<<<<<<<< HEAD:usr/hobot/include/hb_bpu.h
  * @compatibility HW: XJ3/Ultra/Super
-========
- * @compatibility HW: XJ3/Ultratra/Super SoC
->>>>>>>> gerrit/feat-rdk-s600:usr/include/hb_bpu.h
-=======
- * @compatibility HW: XJ3/Ultra/Super
->>>>>>> gerrit/feat-rdk-s600
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -886,15 +854,7 @@ hb_bpu_err_t hb_bpu_set_power(uint32_t core_index, uint32_t status);
  *
  * @retval =BPU_OK: success
  * @retval !=BPU_OK: failure, reference hb_bpu_err_t
-<<<<<<< HEAD
-<<<<<<<< HEAD:usr/hobot/include/hb_bpu.h
  * @compatibility HW: Ultra/Super
-========
- * @compatibility HW: Ultratra/Super SoC
->>>>>>>> gerrit/feat-rdk-s600:usr/include/hb_bpu.h
-=======
- * @compatibility HW: Ultra/Super
->>>>>>> gerrit/feat-rdk-s600
  * @compatibility SW: 2.0.0
  *
  * @callgraph
@@ -916,15 +876,7 @@ hb_bpu_err_t hb_bpu_get_power(uint32_t core_index, uint32_t *status);
  *
  * @retval =BPU_OK: success
  * @retval !=BPU_OK: failure, reference hb_bpu_err_t
-<<<<<<< HEAD
-<<<<<<<< HEAD:usr/hobot/include/hb_bpu.h
  * @compatibility HW: XJ3/Ultra/Super
-========
- * @compatibility HW: XJ3/Ultratra/Super SoC
->>>>>>>> gerrit/feat-rdk-s600:usr/include/hb_bpu.h
-=======
- * @compatibility HW: XJ3/Ultra/Super
->>>>>>> gerrit/feat-rdk-s600
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -944,15 +896,7 @@ hb_bpu_err_t hb_bpu_set_clk(uint32_t core_index, uint64_t val);
  *
  * @retval =BPU_OK: success
  * @retval !=BPU_OK: failure, reference hb_bpu_err_t
-<<<<<<< HEAD
-<<<<<<<< HEAD:usr/hobot/include/hb_bpu.h
  * @compatibility HW: Ultra/Super
-========
- * @compatibility HW: Ultratra/Super SoC
->>>>>>>> gerrit/feat-rdk-s600:usr/include/hb_bpu.h
-=======
- * @compatibility HW: Ultra/Super
->>>>>>> gerrit/feat-rdk-s600
  * @compatibility SW: 2.0.0
  *
  * @callgraph
@@ -992,15 +936,7 @@ hb_bpu_err_t hb_bpu_frq_level_num(uint32_t core_index, int32_t *level_num);
  *
  * @retval =BPU_OK: success
  * @retval !=BPU_OK: failure, reference hb_bpu_err_t
-<<<<<<< HEAD
-<<<<<<<< HEAD:usr/hobot/include/hb_bpu.h
  * @compatibility HW: XJ3/Ultra/Super
-========
- * @compatibility HW: XJ3/Ultratra/Super SoC
->>>>>>>> gerrit/feat-rdk-s600:usr/include/hb_bpu.h
-=======
- * @compatibility HW: XJ3/Ultra/Super
->>>>>>> gerrit/feat-rdk-s600
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -1197,11 +1133,7 @@ hb_bpu_err_t hb_bpu_core_bufcnt_index(hb_bpu_bufcnt_t bufcnt, uint32_t *core_ind
  * @retval =BPU_OK: success
  * @retval !=BPU_OK: failure, reference hb_bpu_err_t
  *
-<<<<<<< HEAD
- * @compatibility HW: SuperP
-=======
- * @compatibility HW: J6P
->>>>>>> gerrit/feat-rdk-s600
+ * @compatibility HW: S600
  * @compatibility SW: 2.2.9
  *
  * @callgraph
@@ -1220,11 +1152,7 @@ hb_bpu_err_t hb_bpu_core_lock(hb_bpu_core_lock_t *lock, uint32_t core_mask, uint
  * @retval =BPU_OK: success
  * @retval !=BPU_OK: failure, reference hb_bpu_err_t
  *
-<<<<<<< HEAD
- * @compatibility HW: SuperP
-=======
- * @compatibility HW: J6P
->>>>>>> gerrit/feat-rdk-s600
+ * @compatibility HW: S600
  * @compatibility SW: 2.2.9
  *
  * @callgraph
@@ -1233,8 +1161,6 @@ hb_bpu_err_t hb_bpu_core_lock(hb_bpu_core_lock_t *lock, uint32_t core_mask, uint
  */
 hb_bpu_err_t hb_bpu_core_unlock(hb_bpu_core_lock_t lock);
 
-<<<<<<< HEAD
-=======
 /**
  * @NO{S04E01C01I}
  * @ASIL{B}
@@ -1245,7 +1171,7 @@ hb_bpu_err_t hb_bpu_core_unlock(hb_bpu_core_lock_t lock);
  * @retval < 0: invalid core index
  * @retval >= 0: bpu core physics index
  *
- * @compatibility HW: J6P
+ * @compatibility HW: S600
  * @compatibility SW: 2.2.13
  *
  * @callgraph
@@ -1281,7 +1207,6 @@ typedef struct {
  */
 hb_bpu_err_t hb_bpu_task_processing_time(hb_bpu_task_t task, hb_bpu_task_process_time_t *soft_time, hb_bpu_task_process_time_t *hw_time);
 
->>>>>>> gerrit/feat-rdk-s600
 #ifdef __cplusplus
 }
 #endif
