@@ -31,11 +31,11 @@
 // DECLARATIONS
 //==============================================================================
 typedef enum{
-  MODE_HYBRID_DUAL_HDR_25 = 0,
+  MODE_HYBRID_MODE26_26 = 0,
 }TofModeHybird;
 
 typedef enum{
-  MODE_SPOT_HDR_12 = 0,
+  MODE_SPOT_HDR_13 = 0,
 }TofModeSpot;
 
 typedef enum  
