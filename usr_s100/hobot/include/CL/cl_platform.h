@@ -135,11 +135,6 @@ extern "C" {
 
 #if (defined (_WIN32) && defined(_MSC_VER))
 
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wlanguage-extension-token"
-#endif
-
 /* intptr_t is used in cl.h and provided by stddef.h in Visual C++, but not in clang */
 /* stdint.h was missing before Visual Studio 2010, include it for later versions and for clang */
 #if defined(__clang__) || _MSC_VER >= 1600
@@ -159,10 +154,6 @@ typedef unsigned __int64        cl_ulong;
 typedef unsigned __int16        cl_half;
 typedef float                   cl_float;
 typedef double                  cl_double;
-
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#endif
 
 /* Macro names and corresponding values defined by OpenCL */
 #define CL_CHAR_BIT         8
@@ -510,24 +501,23 @@ typedef unsigned int cl_GLenum;
 #if !defined(__cplusplus) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
 #define  __CL_HAS_ANON_STRUCT__ 1
 #define  __CL_ANON_STRUCT__
-#elif defined(_WIN32) && defined(_MSC_VER) && !defined(__STDC__)
-#define  __CL_HAS_ANON_STRUCT__ 1
-#define  __CL_ANON_STRUCT__
-#elif defined(__GNUC__) && ! defined(__STRICT_ANSI__)
+#elif defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
 #define  __CL_HAS_ANON_STRUCT__ 1
 #define  __CL_ANON_STRUCT__ __extension__
-#elif defined(__clang__)
-#define  __CL_HAS_ANON_STRUCT__ 1
-#define  __CL_ANON_STRUCT__ __extension__
+#elif defined( _WIN32) && defined(_MSC_VER) && ! defined(__STDC__)
+    #if _MSC_VER >= 1500
+   /* Microsoft Developer Studio 2008 supports anonymous structs, but
+    * complains by default. */
+    #define  __CL_HAS_ANON_STRUCT__ 1
+    #define  __CL_ANON_STRUCT__
+   /* Disable warning C4201: nonstandard extension used : nameless
+    * struct/union */
+    #pragma warning( push )
+    #pragma warning( disable : 4201 )
+    #endif
 #else
 #define  __CL_HAS_ANON_STRUCT__ 0
 #define  __CL_ANON_STRUCT__
-#endif
-
-#if defined(_WIN32) && defined(_MSC_VER) && __CL_HAS_ANON_STRUCT__
-   /* Disable warning C4201: nonstandard extension used : nameless struct/union */
-    #pragma warning( push )
-    #pragma warning( disable : 4201 )
 #endif
 
 /* Define alignment keys */
@@ -1405,8 +1395,12 @@ typedef union
 }
 #endif
 
-#if defined(_WIN32) && defined(_MSC_VER) && __CL_HAS_ANON_STRUCT__
+#if !defined(__cplusplus) && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+#elif defined( __GNUC__) && ! defined( __STRICT_ANSI__ )
+#elif defined( _WIN32) && defined(_MSC_VER) && ! defined(__STDC__)
+    #if _MSC_VER >=1500
     #pragma warning( pop )
+    #endif
 #endif
 
 #endif  /* __CL_PLATFORM_H  */

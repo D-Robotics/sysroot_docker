@@ -8,9 +8,7 @@
 #include <functional>
 #include <memory>
 #include <string>
-#if defined (__linux__)
 #include <linux/can.h>
-#endif
 #include "canhal/can_hal_type_def.h"
 #include "canhal/msg_type.h"
 #ifdef __cplusplus
@@ -33,7 +31,6 @@ class CanHal {
   virtual int32_t SendMsg(const std::string target, CanFramePack &data) = 0;
   virtual ErrorCode RecvMsg(const std::string target, CanFramePack &data) = 0;
   virtual int32_t SendMsg(const std::string target, CanConfigPack &data) = 0;
-  virtual int32_t SendMsg(const std::string target, CanFramePack &data, const Pack_Info* pack_info) = 0;
 };
 
 }  // namespace canhal

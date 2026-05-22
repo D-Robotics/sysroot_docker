@@ -88,7 +88,7 @@ extern int32_t hbn_isp_get_command_range(hbn_vnode_handle_t vnode_fd, uint32_t s
  *
  * @data_read zone_info
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph

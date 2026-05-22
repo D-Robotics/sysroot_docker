@@ -28,7 +28,7 @@ extern "C" {
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -50,7 +50,7 @@ extern int32_t hb_isp_run_algo(uint32_t pipeline_id);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -73,7 +73,7 @@ extern int32_t hb_isp_pause_algo(uint32_t pipeline_id);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -95,7 +95,7 @@ extern int32_t hb_isp_set_module_control(uint32_t pipeline_id, const isp_module_
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -118,7 +118,7 @@ extern int32_t hb_isp_get_module_control(uint32_t pipeline_id, isp_module_ctrl_u
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -141,7 +141,7 @@ extern int32_t hb_isp_get_ae_statistics(uint32_t pipeline_id, isp_statistics_t *
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -164,7 +164,7 @@ extern int32_t hb_isp_release_ae_statistics(uint32_t pipeline_id, isp_statistics
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -187,7 +187,7 @@ extern int32_t hb_isp_get_awb_statistics(uint32_t pipeline_id, isp_statistics_t 
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -210,7 +210,7 @@ extern int32_t hb_isp_release_awb_statistics(uint32_t pipeline_id, isp_statistic
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -233,7 +233,7 @@ extern int32_t hb_isp_command(uint32_t pipeline_id, isp_cmd_api_t *cmd_api);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -255,7 +255,7 @@ extern int32_t hb_isp_set_context(uint32_t pipeline_id, const isp_context_t *ptx
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -278,7 +278,7 @@ extern int32_t hb_isp_get_context(uint32_t pipeline_id, isp_context_t *ptx);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -300,7 +300,7 @@ extern int32_t hb_isp_set_ae_info(uint32_t pipeline_id, const ae_info_t *ae_info
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -323,7 +323,7 @@ extern int32_t hb_isp_get_ae_info(uint32_t pipeline_id, ae_info_t *ae_info);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -345,7 +345,7 @@ extern int32_t hb_isp_set_awb_info(uint32_t pipeline_id, const awb_info_t *awb_i
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -369,7 +369,7 @@ extern int32_t hb_isp_get_awb_info(uint32_t pipeline_id, awb_info_t *awb_info);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -392,7 +392,7 @@ extern int32_t hb_isp_get_version(uint32_t pipeline_id, char *isp_ver, char *alg
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -414,7 +414,7 @@ extern int32_t hb_isp_get_2a_info(uint32_t pipeline_id, isp_info_t *isp_info, in
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -437,7 +437,7 @@ extern int32_t hb_isp_get_ae5bin_statistics(uint32_t pipeline_id, isp_ae5bin_sta
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -460,7 +460,7 @@ extern int32_t hb_isp_get_zone_info(uint32_t pipeline_id, uint8_t type, isp_zone
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -482,7 +482,7 @@ extern int32_t hb_isp_set_hist_thresh_info(uint32_t pipeline_id, isp_hist_thresh
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -508,7 +508,7 @@ extern int32_t hb_isp_get_hist_thresh_info(uint32_t pipeline_id, isp_hist_thresh
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -534,7 +534,7 @@ extern int32_t hb_isp_set_calibration_param(uint32_t pipeline_id, const char *na
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -559,7 +559,7 @@ extern int32_t hb_isp_get_calibration_param(uint32_t pipeline_id, const char *na
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -584,7 +584,7 @@ extern int32_t hb_isp_set_command_param(uint32_t pipeline_id, uint32_t section, 
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -609,7 +609,7 @@ extern int32_t hb_isp_get_command_param(uint32_t pipeline_id, uint32_t section, 
  *
  * @data_read zone_info
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -634,7 +634,7 @@ extern int32_t hb_isp_get_command_range(uint32_t pipeline_id, uint32_t section, 
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -659,7 +659,7 @@ extern int32_t hb_isp_get_hardware_param(uint32_t pipeline_id, const char *name,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -683,7 +683,7 @@ extern int32_t hb_isp_set_hardware_param(uint32_t pipeline_id, const char *name,
  *
  * @data_read zone_info
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph

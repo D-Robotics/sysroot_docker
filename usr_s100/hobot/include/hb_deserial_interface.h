@@ -37,7 +37,7 @@ extern "C" {
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -60,7 +60,7 @@ extern int32_t hbn_deserial_create(deserial_config_t *des_config, deserial_handl
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -87,7 +87,7 @@ extern int32_t hbn_deserial_destroy(deserial_handle_t des_fd);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -112,7 +112,7 @@ extern int32_t hbn_deserial_attach_to_vin(deserial_handle_t des_fd, camera_des_l
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph

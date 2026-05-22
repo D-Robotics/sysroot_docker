@@ -3,9 +3,7 @@
 //
  //coverity[autosar_cpp14_a1_1_1_violation:SUPPRESS]
 #include <stdint.h>
-#if defined __linux__
 #include <linux/can.h>
-#endif
 #ifdef __cplusplus
     extern "C" {
     #endif
@@ -50,7 +48,6 @@ struct pack_info {
   uint16_t length; //[receive size prepare] can_frame: frame number; raw data: data length
   uint16_t unused;
   uint64_t unused_1;
-  uint8_t  crc_enabled;
 };
 /* canframe的个数不确定，不方便定canframe的大小
   struct canframe[];

@@ -17,7 +17,7 @@ extern "C" {
 #include <hb_mem_mgr.h>
 #include "hb_gdc_data_info.h"
 
-#define HBN_VFLOW_PIPELINE_MAX 64u
+#define HBN_VFLOW_PIPELINE_MAX 24u
 #define HBN_VIO_BUFFER_MAX_PLANES 4u
 #define HBN_METADATA_SIZE (4 * 1024) //4KB
 
@@ -30,12 +30,6 @@ extern "C" {
 #endif
 #define HBN_MAX_VNODE_CONFIG 8u
 
-#if defined(SOC_NAME_S100)
-#define EN_3DNR_HW_ID 1
-#elif defined(SOC_NAME_S600)
-#define EN_3DNR_HW_ID 3
-#endif
-
 typedef int64_t hbn_vnode_handle_t;
 typedef int64_t hbn_vflow_handle_t;
 
@@ -46,20 +40,20 @@ typedef enum hb_vnode_type_e {
 	HB_ISP_V0, // XJ3
 	HB_IPU_V0, // XJ3
 	HB_PYM_V0, // XJ3
-	HB_GDC, // XJ3/Ultra/Super
-	HB_VIN_V1, // Ultra
-	HB_ISP_V1, // Ultra
-	HB_PYM_V1, // Ultra
-	HB_STITCH, // Ultra/Super
-	HB_LKOF, // Ultra
-	HB_VIN, // Super
-	HB_ISP, // Super
-	HB_YNR, // Super
-	HB_PYM, // Super
-	HB_IDU, // XJ3/Ultra/Super
-	HB_VPU, // XJ3/Ultra/Super
-	HB_JPU, // XJ3/Ultra/Super
-	HB_CODEC, // XJ3/Ultra/Super
+	HB_GDC, // XJ3/J5/Super SoC
+	HB_VIN_V1, // J5
+	HB_ISP_V1, // J5
+	HB_PYM_V1, // J5
+	HB_STITCH, // J5/Super SoC
+	HB_LKOF, // J5
+	HB_VIN, // Super SoC
+	HB_ISP, // Super SoC
+	HB_YNR, // Super SoC
+	HB_PYM, // Super SoC
+	HB_IDU, // XJ3/J5/Super SoC
+	HB_VPU, // XJ3/J5/Super SoC
+	HB_JPU, // XJ3/J5/Super SoC
+	HB_CODEC, // XJ3/J5/Super SoC
 	HB_VIN_RB, // X5
 	HB_ISP_RB, // X5
 	HB_VSE, // X5
@@ -101,24 +95,9 @@ typedef struct hbn_version_s {
 
 typedef int32_t hobot_status;
 
-#if defined __QNX__
-typedef struct vpf_shm_buf_s {
-	int32_t use_shm;
-	int32_t shm_fd;
-	int32_t size;
-	uint64_t handle;
-	uint8_t *buf;
-} vpf_shm_buf_t;
-#endif
-
-typedef struct vpf_ext_ctrl {
+typedef struct vpf_ext_ctrl_t {
 	uint32_t id;
 	void *arg;
-#if defined __QNX__
-	int32_t need_return;
-	int32_t data_size;
-	vpf_shm_buf_t shm_buf;
-#endif
 } vpf_ext_ctrl_t;
 
 typedef enum vpf_bind_mode_e {
@@ -129,45 +108,6 @@ typedef enum vpf_bind_mode_e {
 	BIND_M2M_OUTPUT,
 } vpf_bind_mode_t;
 
-typedef enum HBN_VMODULE_TYPE {
-	HBN_VIN_MODULE,
-	HBN_ISP_MODULE,
-	HBN_PYM_MODULE,
-	HBN_MODULE_MAX
-} HBN_VMODULE_TYPE_E;
-
-typedef enum HBN_VEVENT_TYPE {
-	HBN_INFO_FRAME_START = 1u << 0u,
-	HBN_INFO_FRAME_DONE = 1u << 1u,
-	HBN_INFO_EVENT_ALL = 0xFFFFFFFF,
-} HBN_VEVENT_TYPE_E;
-
-struct hbn_vevent {
-	uint32_t pipe_id;//通路编号
-	HBN_VMODULE_TYPE_E module_type; //模块类型
-	HBN_VEVENT_TYPE_E event_type; //事件类型
-	uint32_t hw_frame_id; //硬件帧号，记录SOC收到的帧数
-	uint32_t sw_frame_id; //软件帧号，通路中通用帧号，除基于时间戳跳帧场景外，都等于硬件帧号
-	uint64_t hw_timestamps; //第一个pixel到CIM侧记录的RTC时间戳 （us）
-	uint64_t fs_timestamps; //帧处理开始的时间（us）
-	uint64_t fe_timestamps; //帧处理结束的时间（us）
-	uint64_t event_timestamps; //事件触发的时间（us）
-	uint32_t event_cnt; //事件触发的次数
-	uint32_t reserved[8];
-};
-
-#define HB_VIO_BUFF_MAX_NUM 16u
-typedef struct hbn_buf_info_s {
-	int32_t buf_num; /**< buffer number. */
-	uint32_t buf_type;
-	hb_mem_graphic_buf_t buf[HB_VIO_BUFF_MAX_NUM];
-	hb_mem_graphic_buf_group_t group_buf[HB_VIO_BUFF_MAX_NUM];
-} hbn_buf_info_t;
-
-typedef struct vio_buf_info_s {
-	hbn_buf_info_t ibuf;
-	hbn_buf_info_t obuf;
-} vio_buf_info_t;
 
 #ifdef __cplusplus
 }

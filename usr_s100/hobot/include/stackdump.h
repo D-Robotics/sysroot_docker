@@ -9,7 +9,6 @@
 #ifndef __DUMPER_CLIENT_H__
 #define __DUMPER_CLIENT_H__
 #include <string>
-#include <stdint.h>
 
 class stackdump {
 private:

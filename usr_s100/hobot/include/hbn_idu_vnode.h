@@ -20,5 +20,4 @@ int32_t idu_vnode_close(vnode_entity_t *vnode);
 hbn_vnode_handle_t idu_vnode_init(void *idu);
 //coverity[misra_c_2012_rule_8_5_violation:SUPPRESS], ## violation reason SYSSW_V_8.5_01
 hbn_vnode_handle_t idu_vnode_cfg_init(void *root);
-int32_t idu_get_dpi_clk_rate(hbn_vnode_handle_t vnode_fd, uint64_t *dpiclk_rate);
 #endif //IDU_VNODE_H_

@@ -8,7 +8,7 @@
 #define __HBN_VIN_CFG_H__
 
 #define LPWM_CHN_NUM 4u
-#define SENSOR_ERR_PIN_NUM 4u
+#define SENSOR_ERR_PIN_NUM 4
 
 #define LPWM_CHN_INVALID 0xffffu
 
@@ -80,7 +80,6 @@ typedef struct vcon_attr_s {
 	int32_t attr_valid;			// Effective configuration of attributes
 	int32_t bus_main;			// .Main I2C Main Line Index
 	int32_t bus_second;			// .Secondary I2C mainline index
-	int32_t poc_map;			// .Poc map from dts
 	int32_t gpios[VGPIO_NUM];		// .Gpio index
 	int32_t sensor_err[SENSOR_ERR_PIN_NUM];	// sensor err_pin index 4
 	int32_t lpwm_chn[LPWM_CHN_NUM];		// lpwm channel index 4.
@@ -105,11 +104,6 @@ typedef struct cim_func_desc {
 	uint32_t hw_extract_m;
 	uint32_t hw_extract_n;
 	uint32_t lpwm_trig_sel;
-	uint32_t skip_period_us;
-	uint32_t frame_duration_us;
-	uint32_t time_phase_us;
-	uint32_t sparate_frames_mode;
-	uint32_t endian_mode;
 } cim_func_desc_t;
 
 typedef struct cim_input_rdma {
@@ -219,11 +213,6 @@ typedef struct mipi_dev_cfg_s {
 	uint16_t channel_num;
 	// uint16_t channel_sel[MIPIDEV_CHANNEL_NUM];
 	uint16_t channel_sel[4];
-	uint16_t idi_enable;
-	uint16_t rx_select;
-	uint16_t vc_mask;
-	uint16_t frameid_enable;
-	uint16_t frameid_vc[MIPIDEV_CHANNEL_NUM];
 } mipi_dev_cfg_t;
 #define MIPI_DEV_CFG_NUM ((uint32_t)(sizeof(mipi_dev_cfg_t) / (uint32_t)sizeof(uint16_t)))
 
@@ -245,14 +234,6 @@ typedef struct mipi_dev_cfg_s {
 	"channel_sel1", \
 	"channel_sel2", \
 	"channel_sel3", \
-	"idi_enable", \
-	"rx_select", \
-	"vc_mask", \
-	"frameid_enable", \
-	"frameid_vc0", \
-	"frameid_vc1", \
-	"frameid_vc2", \
-	"frameid_vc3", \
 }
 
 typedef struct mipi_attr_s {
@@ -300,10 +281,6 @@ typedef struct mipi_host_param_s {
 	uint32_t irq_cnt;
 	uint32_t irq_debug;
 	uint32_t fatal_ap;
-	uint32_t ipi1_adv_value;
-	uint32_t ipi2_adv_value;
-	uint32_t ipi3_adv_value;
-	uint32_t ipi4_adv_value;
 } mipi_host_param_t;
 #define MIPI_HOST_PARAMS_NUM ((int32_t)sizeof(struct mipi_host_param_s) / (int32_t)sizeof(uint32_t))
 
@@ -340,10 +317,6 @@ typedef struct mipi_host_param_s {
 	"irq_cnt", \
 	"irq_debug", \
 	"fatal_ap", \
-	"ipi1_adv_value", \
-	"ipi2_adv_value", \
-	"ipi3_adv_value", \
-	"ipi4_adv_value", \
 }
 
 typedef struct mipi_dev_param_s {
@@ -435,8 +408,6 @@ typedef enum cim_skip_type_s {
 	CIM_FIRST_FRAMES_SKIP,
 	CIM_HW_SKIP,
 	CIM_SOFT_SYNC_SKIP,
-	CIM_SOFT_TIME_SKIP,
-	CIM_SOFT_TIME_GET,
 	CIM_INVALID_SKIP,
 } cim_skip_type_e;
 
@@ -449,9 +420,6 @@ typedef struct dynamic_fps_s {
 	uint32_t skip_nums;
 	uint32_t hw_extract_m;
 	uint32_t hw_extract_n;
-	uint32_t skip_period_us;
-	uint32_t frame_duration_us;
-	uint32_t time_phase_us;
 } dynamic_fps_t;
 
 typedef struct lpwm_dynamic_fps_s {

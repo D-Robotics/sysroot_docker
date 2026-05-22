@@ -14,58 +14,12 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <stdbool.h>
-#ifdef __QNX__
-#include <sys/neutrino.h>
-#endif
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
 #define MAX_GRAPHIC_BUF_COMP 3		/**< max graphic buffer number.*/
-
-#ifdef __QNX__
-#define DEFAULT_ION_ALIGNMENT       0x10	/**< ion default aligment.*/
-#define ION_ALIGNMENT_0X20          0x20	/**< ion aligment.*/
-#define ION_ALIGNMENT_0X40          0x40	/**< ion aligment.*/
-#define ION_ALIGNMENT_0X80          0x80	/**< ion aligment.*/
-#define ION_ALIGNMENT_0X100         0x100	/**< ion aligment.*/
-
-#define ION_MODULE_TYPE_BIT_SHIFT  28	/**< the shift bits of ion module type.*/
-#define ION_MODULE_TYPE_INTERNAL   0x0	/**< the internal module type.*/
-#define ION_MODULE_TYPE_BPU        0x1	/**< the BPU module type.*/
-#define ION_MODULE_TYPE_VPU        0x2	/**< the VPU module type.*/
-#define ION_MODULE_TYPE_JPU        0x3	/**< the JPU module type.*/
-#define ION_MODULE_TYPE_MASK       0xF	/**< the module type mask.*/
-
-#define ION_MEM_TYPE_BIT_SHIFT     16	/**< the shift bit of the ion memory type.*/
-#define ION_MEM_TYPE_MASK          0xFFF	/**< the ion memory type mask.*/
-
-/**
- * @enum ion_mem_type
- * @brief Define the ion memory type.
- * @NO{S21E04C02U}
- */
-typedef enum ion_mem_type {
-	ION_MEM_TYPE_PYRAMID = 0x7,		/**< pryamid ion memory type.*/
-	ION_MEM_TYPE_ISP = 0xB,			/**< isp ion memory type.*/
-	ION_MEM_TYPE_GDC_OUT,			/**< gdc out ion memory type.*/
-	ION_MEM_TYPE_DISPLAY,			/**< display ion memory type.*/
-	ION_MEM_TYPE_GDC,				/**< gdc ion memory type.*/
-	ION_MEM_TYPE_BPU = 0x11,		/**< bpu ion memory type.*/
-	ION_MEM_TYPE_VIDEO_CODEC = 0x13,/**< video codec ion memory type.*/
-	ION_MEM_TYPE_CIM = 0x19,		/**< cim ion memory type.*/
-	ION_MEM_TYPE_STITCH = 0x1C,		/**< sticth ion memory type.*/
-	ION_MEM_TYPE_OPTICAL_FLOW,		/**< optical flow ion memory type.*/
-	ION_MEM_TYPE_JPEG_CODEC,		/**< jpeg codec ion memory type.*/
-	ION_MEM_TYPE_VDSP,				/**< vdsp ion memory type.*/
-	ION_MEM_TYPE_IPC,				/**< ipc ion memory type.*/
-	ION_MEM_TYPE_PCIE,				/**< pcie ion memory type.*/
-	ION_MEM_TYPE_YNR,				/**< ynr ion memory type.*/
-	ION_MEM_TYPE_OTHER,				/**< other ion memory type.*/
-}ion_mem_type;
-#endif
 
 /**
  * @enum mem_pixel_format_t
@@ -114,22 +68,6 @@ typedef enum mem_pixel_format_t {
 	MEM_PIX_FMT_RAW16,		/**< raw16 format*/
 	MEM_PIX_FMT_RAW20,		/**< raw20 format*/
 	MEM_PIX_FMT_RAW24,		/**< raw24 format*/
-	MEM_PIX_FMT_YUV420P_10_8_8,	/**< planar YUV 4:2:0, 10bit 8bit 8bit */
-	MEM_PIX_FMT_YUV420P_12_8_8,	/**< planar YUV 4:2:0, 12bit 8bit 8bit */
-	MEM_PIX_FMT_NV12_10_8_8,	/**< planar YUV 4:2:0, 10bit 8bit 8bit, 1 plane for Y and
-							 * 1 plane for the UV components, which are
-							 * interleaved (first byte U and the following
-							 * byte V). */
-	MEM_PIX_FMT_NV12_12_8_8,	/**< planar YUV 4:2:0, 12bit 8bit 8bit, 1 plane for Y and
-							 * 1 plane for the UV components, which are
-							 * interleaved (first byte U and the following
-							 * byte V). */
-	MEM_PIX_FMT_NV16_10_8_8, /**< 10bit 8bit 8bit interleaved chroma (first byte U and the following byte V)
-							 * YUV 4:2:2, 16bpp, (1 Cr & Cb sample per 2x1 Y samples)
-							 */
-	MEM_PIX_FMT_NV16_12_8_8, /**< 12bit 8bit 8bit interleaved chroma (first byte U and the following byte V)
-							 * YUV 4:2:2, 16bpp, (1 Cr & Cb sample per 2x1 Y samples)
-							 */
 	MEM_PIX_FMT_TOTAL,		/**< the number of pix format*/
 } mem_pixel_format_t;
 
@@ -171,11 +109,6 @@ typedef enum mem_usage_t {
 	HB_MEM_USAGE_MEM_POOL				 = 0x10000000LL,	/**< It only indicates the buffer is a memory pool. Don't use this flag */
 	HB_MEM_USAGE_MEM_SHARE_POOL			 = 0x20000000LL,	/* It only indicates the buffer is a share pool. Don't use this flag
 															 * to allocate buffer. It's useless.*/
-#ifdef __QNX__
-	HB_MEM_USAGE_STRICT_RW_PERMISSION	 = 0x40000000LL,	/* Only lower permission can input when import buffer with this flags*/
-#else
-	HB_MEM_USAGE_SG						 = 0x40000000LL,	/**< mask for scatter list memory alloc (sram heap only)*/
-#endif
 	HB_MEM_USAGE_TRIVIAL_MASK            = 0xFF000000LL,	/**< mask for the trivial flag.*/
 
 	HB_MEM_USAGE_PRIV_HEAP_DMA           = 0x000000000LL,	/**< buffer will be allocated from CMA heap in linux system */
@@ -187,15 +120,6 @@ typedef enum mem_usage_t {
 	HB_MEM_USAGE_PRIV_HEAP_SRAM_LIMIT    = 0x800000000LL,	/**< buffer will be allocated from sram limit heap.*/
 	HB_MEM_USAGE_PRIV_HEAP_INLINE_ECC    = 0x1000000000LL,	/**< buffer will be allocated from inline ecc heap.*/
 	HB_MEM_USAGE_PRIV_MASK               = 0xFF00000000LL,	/**< mask for the private flag */
-
-#ifdef __QNX__
-	HB_MEM_USAGE_ALLOC_ALIGN_0x10        = 0x000000000000LL,   	/**< 16B alignment */
-	HB_MEM_USAGE_ALLOC_ALIGN_0x20        = 0x010000000000LL,   	/**< 32B alignment */
-	HB_MEM_USAGE_ALLOC_ALIGN_0x40        = 0x020000000000LL,   	/**< 64B alignment */
-	HB_MEM_USAGE_ALLOC_ALIGN_0x80        = 0x040000000000LL,   	/**< 128B alignment */
-	HB_MEM_USAGE_ALLOC_ALIGN_0x100       = 0x080000000000LL,   	/**< 256B alignment */
-	HB_MEM_USAGE_ALIGN_MASK              = 0xFF0000000000LL,	/**< mask for the alignment flag */
-#endif
 } mem_usage_t;
 
 /**
@@ -275,10 +199,6 @@ typedef struct hb_mem_graphic_buf_t {
 
 #define HB_MEM_MAXIMUM_GRAPH_BUF 8		/**< max graphic buffer number in graphic buffer group*/
 
-#define HB_MEM_MAX_LABEL_LEN	16U		/**< max label str len*/
-
-#define MAX_SG_NUM	2U					/**< max alloc sg num*/
-
 /**
  * @struct hb_mem_graphic_buf_group_t
  * Define the descriptor of graphic buffer group
@@ -339,30 +259,6 @@ typedef struct hb_mem_share_pool_t {
 	int32_t reserved;		/**< reserved*/
 } hb_mem_share_pool_t;
 
-#ifdef __QNX__
-/**
- * @NO{S21E04C02I}
- * @ASIL{B}
- * @brief Get the memory module version.
- *
- * @param[out] major: major version number
- * @param[out] minor: minor version number
- * @param[out] patch_version: patch version number
- *
- * @retval "0": succeed
- * @retval "HB_MEM_ERR_INVALID_PARAMS": invalid parameter
- *
- * @data_read None
- * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
- * @compatibility SW: 0.1.1
- *
- * @callgraph
- * @callergraph
- * @design
- */
-int32_t hb_mem_get_version(uint32_t *major, uint32_t *minor, uint32_t *patch_version);
-#else
 /**
  * @NO{S21E04C02I}
  * @ASIL{B}
@@ -377,7 +273,7 @@ int32_t hb_mem_get_version(uint32_t *major, uint32_t *minor, uint32_t *patch_ver
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -385,7 +281,6 @@ int32_t hb_mem_get_version(uint32_t *major, uint32_t *minor, uint32_t *patch_ver
  * @design
  */
 int32_t hb_mem_get_version(uint32_t *major, uint32_t *minor, uint32_t *patch);
-#endif
 
 /**
  * @NO{S21E04C02I}
@@ -398,7 +293,7 @@ int32_t hb_mem_get_version(uint32_t *major, uint32_t *minor, uint32_t *patch);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -417,7 +312,7 @@ int32_t hb_mem_module_open(void);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -445,7 +340,7 @@ int32_t hb_mem_module_close(void);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -471,7 +366,7 @@ int32_t hb_mem_alloc_com_buf(uint64_t size, int64_t flags,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -506,7 +401,7 @@ int32_t hb_mem_get_com_buf(int32_t fd, hb_mem_common_buf_t *buf);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -532,7 +427,7 @@ int32_t hb_mem_alloc_graph_buf(int32_t w, int32_t h, int32_t format, int64_t fla
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -556,7 +451,7 @@ int32_t hb_mem_get_graph_buf(int32_t fd, hb_mem_graphic_buf_t *buf);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -584,7 +479,7 @@ int32_t hb_mem_free_buf(int32_t fd);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -612,7 +507,7 @@ int32_t hb_mem_invalidate_buf(int32_t fd, uint64_t offset, uint64_t size);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -638,7 +533,7 @@ int32_t hb_mem_flush_buf(int32_t fd, uint64_t offset, uint64_t size);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -663,7 +558,7 @@ int32_t hb_mem_is_valid_buf(uint64_t virt_addr, uint64_t size, int32_t *valid);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -690,7 +585,7 @@ int32_t hb_mem_get_phys_addr(uint64_t virt_addr, uint64_t * phys_addr);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -716,7 +611,7 @@ int32_t hb_mem_get_buf_info(uint64_t virt_addr, uint64_t *start, uint64_t *size,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -742,7 +637,7 @@ int32_t hb_mem_invalidate_buf_with_vaddr(uint64_t virt_addr, uint64_t size);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -767,7 +662,7 @@ int32_t hb_mem_flush_buf_with_vaddr(uint64_t virt_addr, uint64_t size);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -792,7 +687,7 @@ int32_t hb_mem_get_com_buf_with_vaddr(uint64_t virt_addr,  hb_mem_common_buf_t *
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -816,7 +711,7 @@ int32_t hb_mem_get_graph_buf_with_vaddr(uint64_t virt_addr,  hb_mem_graphic_buf_
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -841,7 +736,7 @@ int32_t hb_mem_free_buf_with_vaddr(uint64_t virt_addr);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -866,7 +761,7 @@ int32_t hb_mem_import_com_buf(hb_mem_common_buf_t * buf, hb_mem_common_buf_t * o
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -891,7 +786,7 @@ int32_t hb_mem_import_graph_buf(hb_mem_graphic_buf_t * buf, hb_mem_graphic_buf_t
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -915,7 +810,7 @@ int32_t hb_mem_get_share_info(int32_t fd, int32_t * share_client_cnt);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -943,7 +838,7 @@ int32_t hb_mem_get_share_info_with_vaddr(uint64_t virt_addr, int32_t * share_cli
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -972,7 +867,7 @@ int32_t hb_mem_wait_share_status(int32_t fd, int32_t share_client_cnt, int64_t t
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -995,7 +890,7 @@ int32_t hb_mem_wait_share_status_with_vaddr(uint64_t virt_addr, int32_t share_cl
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1019,7 +914,7 @@ int32_t hb_mem_create_buf_queue(hb_mem_buf_queue_t *queue);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1049,7 +944,7 @@ int32_t hb_mem_destroy_buf_queue(hb_mem_buf_queue_t *queue);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1078,7 +973,7 @@ int32_t hb_mem_dequeue_buf(hb_mem_buf_queue_t * queue, int32_t *slot,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1108,7 +1003,7 @@ int32_t hb_mem_queue_buf(hb_mem_buf_queue_t * queue, int32_t slot, const void * 
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1136,7 +1031,7 @@ int32_t hb_mem_request_buf(hb_mem_buf_queue_t * queue, int32_t *slot,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1163,7 +1058,7 @@ int32_t hb_mem_release_buf(hb_mem_buf_queue_t * queue, int32_t slot);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1191,7 +1086,7 @@ int32_t hb_mem_cancel_buf(hb_mem_buf_queue_t * queue, int32_t slot);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1217,7 +1112,7 @@ int32_t hb_mem_pool_create(uint64_t size, int64_t flags, hb_mem_pool_t * pool);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1246,7 +1141,7 @@ int32_t hb_mem_pool_destroy(int32_t fd);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1272,7 +1167,7 @@ int32_t hb_mem_pool_alloc_buf(int32_t fd, uint64_t size, hb_mem_common_buf_t * b
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1298,7 +1193,7 @@ int32_t hb_mem_pool_free_buf(uint64_t virt_addr);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1326,7 +1221,7 @@ int32_t hb_mem_pool_get_info(int32_t fd, hb_mem_pool_t * pool);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1352,7 +1247,7 @@ int32_t hb_mem_share_pool_create(uint32_t num, uint64_t size, int64_t flags, hb_
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1379,7 +1274,7 @@ int32_t hb_mem_share_pool_destroy(int32_t fd);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1404,7 +1299,7 @@ int32_t hb_mem_share_pool_alloc_buf(int32_t fd, hb_mem_common_buf_t * buf);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1430,7 +1325,7 @@ int32_t hb_mem_share_pool_free_buf(uint64_t virt_addr);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1454,7 +1349,7 @@ int32_t hb_mem_share_pool_get_info(int32_t fd, hb_mem_share_pool_t * pool);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1493,7 +1388,7 @@ int32_t hb_mem_get_buf_type_with_vaddr(uint64_t virt_addr, hb_mem_buffer_type_t 
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1520,7 +1415,7 @@ int32_t hb_mem_get_buf_type_and_buf_with_vaddr(uint64_t virt_addr, hb_mem_buffer
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1546,7 +1441,7 @@ int32_t hb_mem_get_buffer_process_info(uint64_t virt_addr, int32_t *pid, int32_t
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: XJ3/Ultra/Super
+ * @compatibility HW: XJ3/J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1570,7 +1465,7 @@ int32_t hb_mem_get_buffer_process_info_with_share_id(int32_t share_id, int32_t *
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1594,7 +1489,7 @@ int32_t hb_mem_get_consume_info(int32_t fd, int32_t * share_consume_cnt);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1619,7 +1514,7 @@ int32_t hb_mem_get_consume_info_with_vaddr(uint64_t virt_addr, int32_t * share_c
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1644,7 +1539,7 @@ int32_t hb_mem_wait_consume_status(int32_t fd, int32_t share_consume_cnt, int64_
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1666,7 +1561,7 @@ int32_t hb_mem_wait_consume_status_with_vaddr(uint64_t virt_addr, int32_t share_
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1688,7 +1583,7 @@ int32_t hb_mem_inc_com_buf_consume_cnt(hb_mem_common_buf_t * buf);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1711,7 +1606,7 @@ int32_t hb_mem_inc_graph_buf_consume_cnt(hb_mem_graphic_buf_t * buf);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1734,7 +1629,7 @@ int32_t hb_mem_dec_consume_cnt(int32_t fd);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1763,7 +1658,7 @@ int32_t hb_mem_dec_consume_cnt_with_vaddr(uint64_t virt_addr);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1792,7 +1687,7 @@ int32_t hb_mem_import_com_buf_with_paddr(uint64_t phys_addr,
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1824,7 +1719,7 @@ int32_t hb_mem_dma_copy(uint64_t dst_vaddr, uint64_t src_vaddr, uint64_t size);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1850,7 +1745,7 @@ int32_t hb_mem_alloc_graph_buf_group(int32_t *w, int32_t *h, int32_t *format, in
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1874,7 +1769,7 @@ int32_t hb_mem_import_graph_buf_group(hb_mem_graphic_buf_group_t *in_group, hb_m
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1898,7 +1793,7 @@ int32_t hb_mem_get_graph_buf_group(int32_t fd, hb_mem_graphic_buf_group_t *buf_g
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1920,7 +1815,7 @@ int32_t hb_mem_get_graph_buf_group_with_vaddr(uint64_t virt_addr, hb_mem_graphic
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1947,7 +1842,7 @@ int32_t hb_mem_inc_graph_buf_group_consume_cnt(hb_mem_graphic_buf_group_t * buf_
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1972,7 +1867,7 @@ int32_t hb_mem_get_buf_and_type_with_vaddr(uint64_t virt_addr, hb_mem_buffer_typ
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -1996,7 +1891,7 @@ int32_t hb_mem_inc_user_consume_cnt(int32_t hb_fd);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -2020,7 +1915,7 @@ int32_t hb_mem_dec_user_consume_cnt(int32_t hb_fd);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -2044,7 +1939,7 @@ int32_t hb_mem_inc_user_consume_cnt_with_vaddr(uint64_t virt_addr);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.1
  *
  * @callgraph
@@ -2052,46 +1947,6 @@ int32_t hb_mem_inc_user_consume_cnt_with_vaddr(uint64_t virt_addr);
  * @design
 */
 int32_t hb_mem_dec_user_consume_cnt_with_vaddr(uint64_t virt_addr);
-
-#ifdef __QNX__
-int32_t hb_mem_get_ion_fd(void);
-int32_t hb_mem_set_buf_rw_permission(int32_t fd, int64_t owner_flags, int64_t group_flags, int64_t other_flags);
-int32_t hb_mem_set_buf_gid(int32_t fd, gid_t hb_gid);
-
-int32_t hb_mem_check_in_heap_carveout(uint64_t phy_addr, uint64_t len, int32_t *ion_ret);
-int32_t hb_mem_import_dma_buf_with_shareid(int32_t share_id, hb_mem_common_buf_t * buf);
-#endif
-
-int32_t hb_mem_get_heap_size(uint64_t flag, uint64_t *size);
-int32_t hb_mem_scatter_alloc_com_buf_with_label(uint64_t* sizes, int64_t* flags,
-		uint32_t num, const char* label, bool shared, hb_mem_common_buf_t * buf);
-
-/**
- * @NO{S21E04C02U}
- * @ASIL{B}
- * @brief Get all the process consume cnt and pid of the buffer
- *
- * @param[in] share_id: buffer share id
- * @param[out] hb_pid: process pid which hold the buffer consume cnt
- * @param[out] cnt: process pid which hold the buffer
- * @param[in] num: target num of the process which hold the buffer
- * @param[out] ret_num: total num of the process which hold the buffer
- *
- * @retval "0": succeed
- * @retval "HB_MEM_ERR_MODULE_NOT_FOUND": The memory module is not open
- * @retval "HB_MEM_ERR_INVALID_PARAMS": invalid parameter
- *
- * @data_read None
- * @data_updated None
- * @compatibility HW: J3/Ultra/Super
- * @compatibility SW: 0.1.1
- *
- * @callgraph
- * @callergraph
- * @design
-*/
-int32_t hb_mem_get_buffer_process_cons_info_with_share_id(int32_t share_id,
-		int32_t *hb_pid, int32_t *cnt, int32_t num, int32_t *ret_num);
 
 #ifdef __cplusplus
 }

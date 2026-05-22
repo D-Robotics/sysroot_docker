@@ -62,7 +62,7 @@ public:
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -82,7 +82,7 @@ public:
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -103,7 +103,7 @@ public:
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -122,7 +122,7 @@ public:
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -141,7 +141,7 @@ public:
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -163,7 +163,7 @@ public:
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -184,7 +184,7 @@ public:
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -205,7 +205,7 @@ public:
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -225,7 +225,7 @@ public:
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -245,7 +245,7 @@ public:
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph

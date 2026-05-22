@@ -19,41 +19,16 @@ extern "C" {
 
 hobot_status hbn_vnode_open(hb_vnode_type vnode_type, uint32_t hw_id, int32_t ctx_id, hbn_vnode_handle_t *vnode_fd);
 hobot_status hbn_vnode_close(hbn_vnode_handle_t vnode_fd);
-
-hobot_status hbn_vnode_set_attr_s(hbn_vnode_handle_t vnode_fd, void *attr, size_t size);
-hobot_status hbn_vnode_get_attr_s(hbn_vnode_handle_t vnode_fd, void *attr, size_t size);
-hobot_status hbn_vnode_set_attr_ex_s(hbn_vnode_handle_t vnode_fd, void *attr, size_t size);
-hobot_status hbn_vnode_get_attr_ex_s(hbn_vnode_handle_t vnode_fd, void *attr, size_t size);
-hobot_status hbn_vnode_set_ochn_attr_s(hbn_vnode_handle_t vnode_fd, uint32_t ochn_id, void *attr, size_t size);
-hobot_status hbn_vnode_set_ochn_attr_ex_s(hbn_vnode_handle_t vnode_fd, uint32_t ochn_id, void *attr, size_t size);
-hobot_status hbn_vnode_get_ochn_attr_s(hbn_vnode_handle_t vnode_fd, uint32_t ochn_id, void *attr, size_t size);
-hobot_status hbn_vnode_set_ichn_attr_s(hbn_vnode_handle_t vnode_fd, uint32_t ichn_id, void *attr, size_t size);
-hobot_status hbn_vnode_set_ichn_attr_ex_s(hbn_vnode_handle_t vnode_fd, uint32_t ochn_id, void *attr, size_t size);
-hobot_status hbn_vnode_get_ichn_attr_s(hbn_vnode_handle_t vnode_fd, uint32_t ichn_id, void *attr, size_t size);
-
-//coverity[misra_c_2012_rule_5_8_violation:SUPPRESS], ## violation reason SYSSW_V_5.8_01
-#define hbn_vnode_set_attr(vnode_fd, pattr) hbn_vnode_set_attr_s((vnode_fd), (pattr), sizeof(*(pattr)))
-//coverity[misra_c_2012_rule_5_8_violation:SUPPRESS], ## violation reason SYSSW_V_5.8_01
-#define hbn_vnode_get_attr(vnode_fd, pattr) hbn_vnode_get_attr_s((vnode_fd), (pattr), sizeof(*(pattr)))
-//coverity[misra_c_2012_rule_5_8_violation:SUPPRESS], ## violation reason SYSSW_V_5.8_01
-#define hbn_vnode_set_attr_ex(vnode_fd, pattr) hbn_vnode_set_attr_ex_s((vnode_fd), (pattr), sizeof(*(pattr)))
-//coverity[misra_c_2012_rule_5_8_violation:SUPPRESS], ## violation reason SYSSW_V_5.8_01
-#define hbn_vnode_get_attr_ex(vnode_fd, pattr) hbn_vnode_get_attr_ex_s((vnode_fd), (pattr), sizeof(*(pattr)))
-//coverity[misra_c_2012_rule_5_8_violation:SUPPRESS], ## violation reason SYSSW_V_5.8_01
-#define hbn_vnode_set_ochn_attr(vnode_fd, ochn_id, pattr) hbn_vnode_set_ochn_attr_s((vnode_fd), (ochn_id), (pattr), sizeof(*(pattr)))
-//coverity[misra_c_2012_rule_5_8_violation:SUPPRESS], ## violation reason SYSSW_V_5.8_01
-#define hbn_vnode_set_ochn_attr_ex(vnode_fd, ochn_id, pattr) hbn_vnode_set_ochn_attr_ex_s((vnode_fd), (ochn_id), (pattr), sizeof(*(pattr)))
-//coverity[misra_c_2012_rule_5_8_violation:SUPPRESS], ## violation reason SYSSW_V_5.8_01
-#define hbn_vnode_get_ochn_attr(vnode_fd, ochn_id, pattr) hbn_vnode_get_ochn_attr_s((vnode_fd), (ochn_id), (pattr), sizeof(*(pattr)))
-//coverity[misra_c_2012_rule_5_8_violation:SUPPRESS], ## violation reason SYSSW_V_5.8_01
-#define hbn_vnode_set_ichn_attr(vnode_fd, ichn_id, pattr) hbn_vnode_set_ichn_attr_s((vnode_fd), (ichn_id), (pattr), sizeof(*(pattr)))
-//coverity[misra_c_2012_rule_5_8_violation:SUPPRESS], ## violation reason SYSSW_V_5.8_01
-#define hbn_vnode_set_ichn_attr_ex(vnode_fd, ichn_id, pattr) hbn_vnode_set_ichn_attr_ex_s((vnode_fd), (ichn_id), (pattr), sizeof(*(pattr)))
-//coverity[misra_c_2012_rule_5_8_violation:SUPPRESS], ## violation reason SYSSW_V_5.8_01
-#define hbn_vnode_get_ichn_attr(vnode_fd, ichn_id, pattr) hbn_vnode_get_ichn_attr_s((vnode_fd), (ichn_id), (pattr), sizeof(*(pattr)))
-
-
-
+hobot_status hbn_vnode_set_attr(hbn_vnode_handle_t vnode_fd, void *attr);
+hobot_status hbn_vnode_get_attr(hbn_vnode_handle_t vnode_fd, void *attr);
+hobot_status hbn_vnode_set_attr_ex(hbn_vnode_handle_t vnode_fd, void *attr);
+hobot_status hbn_vnode_get_attr_ex(hbn_vnode_handle_t vnode_fd, void *attr);
+hobot_status hbn_vnode_set_ochn_attr(hbn_vnode_handle_t vnode_fd, uint32_t ochn_id, void *attr);
+hobot_status hbn_vnode_set_ochn_attr_ex(hbn_vnode_handle_t vnode_fd, uint32_t ochn_id, void *attr);
+hobot_status hbn_vnode_get_ochn_attr(hbn_vnode_handle_t vnode_fd, uint32_t ochn_id, void *attr);
+hobot_status hbn_vnode_set_ichn_attr(hbn_vnode_handle_t vnode_fd, uint32_t ichn_id, void *attr);
+hobot_status hbn_vnode_set_ichn_attr_ex(hbn_vnode_handle_t vnode_fd, uint32_t ochn_id, void *attr);
+hobot_status hbn_vnode_get_ichn_attr(hbn_vnode_handle_t vnode_fd, uint32_t ichn_id, void *attr);
 hobot_status hbn_vnode_enable_ichn(hbn_vnode_handle_t vnode_fd, uint32_t ichn_id);
 hobot_status hbn_vnode_disable_ichn(hbn_vnode_handle_t vnode_fd, uint32_t ichn_id);
 hobot_status hbn_vnode_enable_ochn(hbn_vnode_handle_t vnode_fd, uint32_t ochn_id);
@@ -96,10 +71,9 @@ hobot_status hbn_vflow_pause(hbn_vflow_handle_t vflow_fd);
 hobot_status hbn_vflow_resume(hbn_vflow_handle_t vflow_fd);
 hobot_status hbn_vflow_get_version(hbn_version_t *version);
 hbn_vnode_handle_t hbn_vflow_get_vnode_handle(hbn_vflow_handle_t vflow_fd, hb_vnode_type vnode_type, uint32_t vnode_config_index);
-//coverity[misra_c_2012_rule_8_6_violation:SUPPRESS], ## violation reason SYSSW_V_8.6_01
+
 int32_t hbn_gen_gdc_cfg(const param_t *gdc_param, const window_t *windows, uint32_t wnd_num, void **cfg_buf,
 			uint64_t *cfg_size);
-//coverity[misra_c_2012_rule_8_6_violation:SUPPRESS], ## violation reason SYSSW_V_8.6_01
 int32_t hbn_free_gdc_cfg(uint32_t *cfg_buf);
 
 hobot_status hbn_get_codec_channel_idx(hbn_vnode_handle_t vnode_fd, int32_t encoder, int32_t *channel_idx);

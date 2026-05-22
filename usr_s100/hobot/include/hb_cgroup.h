@@ -64,7 +64,7 @@ struct cgroup_file_handle {
  * @ASIL{QM}
  * @brief set cpu limit
  *
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: v1.0.0
  *
  * @param [in] cpu_rate: cpu occupancy rate, 1 ~ 100
@@ -80,10 +80,10 @@ int cpu_limit(uint32_t cpu_rate);
  * @ASIL{QM}
  * @brief set cpu core
  *
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: v1.0.0
  *
- * @param [in] cores: limit run on which cores, 0 ~ 5 for S100, 0 ~ 13 for S600
+ * @param [in] cores: limit run on which cores, 0 ~ 5 for s100, 0 ~ 13 for s600
  *
  * @retval "= 0": success;
  * @retval "< 0": failure;

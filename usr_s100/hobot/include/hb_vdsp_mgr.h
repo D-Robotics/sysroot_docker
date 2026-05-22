@@ -49,26 +49,6 @@ extern "C" {
 #define HB_VDSP_ERR_RBTREE_CREATE_NODE				(-27)
 #define HB_VDSP_ERR_RBTREE_INSERT_NODE				(-28)
 #define HB_VDSP_ERR_RBTREE_SEARCH_NODE				(-29)
-#define HB_VDSP_ERR_MSG_NOT_ENABLE				(-30)
-#define HB_VDSP_ERR_MSG_TIMEOUT					(-31)
-#define HB_VDSP_ERR_MSG_INVALID					(-32)
-#define HB_VDSP_ERR_MSG_ABORT					(-33)
-#define HB_VDSP_ERR_MSG_IPCF_SEND_FAIL				(-34)
-#define HB_VDSP_ERR_MSG_IPCF_RECV_FAIL				(-35)
-#define HB_VDSP_ERR_MSG_IPCF_RECV_OVERFLOW			(-36)
-
-enum hb_vdsp_msg_status {
-	HB_VDSP_MSG_DISABLED = 0,
-	HB_VDSP_MSG_IDLE = 1,
-	HB_VDSP_MSG_BUSY = 2,
-};
-
-struct hb_vdsp_user_msg {
-	uint32_t pid;
-	uint32_t msg_type;
-	uint64_t timestamp;
-	uint8_t msg_data[0];
-};
 
 /**
  * @NO{S05E06C01I}
@@ -84,7 +64,7 @@ struct hb_vdsp_user_msg {
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -98,7 +78,7 @@ int32_t hb_vdsp_get_version(uint32_t *major, uint32_t *minor, uint32_t *patch);
  * @ASIL{B}
  * @brief start vdsp
  *
- * @param[in] dsp_id: dsp id, range:\[0,1\]
+ * @param[in] dsp_id: dsp id, range:[0,1]
  * @param[in] timeout: timeout
  *			  =0:asynchronous start
  *			  <0:synchronous start, unlimited waiting
@@ -113,7 +93,7 @@ int32_t hb_vdsp_get_version(uint32_t *major, uint32_t *minor, uint32_t *patch);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -125,38 +105,9 @@ int32_t hb_vdsp_start(int32_t dsp_id, int32_t timeout, const char* pathname);
 /**
  * @NO{S05E06C01I}
  * @ASIL{B}
- * @brief start vdsp with enable msg mode
- *
- * @param[in] dsp_id: dsp id, range:\[0,1\]
- * @param[in] timeout: timeout
- *			  =0:asynchronous start
- *			  <0:synchronous start, unlimited waiting
- *			  >0:synchronous start, wait time(ms)
- * @param[in] pathname: vdsp image path(length<256) & name(length<256)
- *			NULL: use default path & name
- *
- * @retval HB_VDSP_OK: successful
- * @retval HB_VDSP_PARAM_INVALID: invalid params
- * @retval HB_VDSP_ERR_NOT_INITED: get vdsp mgr error
- * @retval HB_VDSP_START_IOCTL_ERR: ioctl error
- *
- * @data_read None
- * @data_updated None
- * @compatibility HW: Ultra/Super
- * @compatibility SW: 1.0.0
- *
- * @callgraph
- * @callergraph
- * @design
- */
-int32_t hb_vdsp_start_with_msg_mode(int32_t dsp_id, int32_t timeout, const char* pathname);
-
-/**
- * @NO{S05E06C01I}
- * @ASIL{B}
  * @brief stop vdsp
  *
- * @param[in] dsp_id: dsp id, range:\[0,1\]
+ * @param[in] dsp_id: dsp id, range:[0,1]
  *
  * @retval HB_VDSP_OK: successful
  * @retval HB_VDSP_PARAM_INVALID: invalid params
@@ -165,7 +116,7 @@ int32_t hb_vdsp_start_with_msg_mode(int32_t dsp_id, int32_t timeout, const char*
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -179,7 +130,7 @@ int32_t hb_vdsp_stop(int32_t dsp_id);
  * @ASIL{B}
  * @brief get vdsp status
  *
- * @param[in] dsp_id: dsp id, range:\[0,1\]
+ * @param[in] dsp_id: dsp id, range:[0,1]
  * @param[out] status: dsp status
  *			    OFFLINE = 0,
  *				RUNNING = 2,
@@ -191,7 +142,7 @@ int32_t hb_vdsp_stop(int32_t dsp_id);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -205,7 +156,7 @@ int32_t hb_vdsp_get_status(int32_t dsp_id, int32_t *status);
  * @ASIL{B}
  * @brief reset vdsp
  *
- * @param[in] dsp_id: dsp id, range:\[0,1\]
+ * @param[in] dsp_id: dsp id, range:[0,1]
  *
  * @retval HB_VDSP_OK: successful
  * @retval HB_VDSP_PARAM_INVALID: invalid params
@@ -214,7 +165,7 @@ int32_t hb_vdsp_get_status(int32_t dsp_id, int32_t *status);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -228,7 +179,7 @@ int32_t hb_vdsp_reset(int32_t dsp_id);
  * @ASIL{B}
  * @brief set vdsp fw path
  *
- * @param[in] dsp_id: dsp id, range:\[0,1\]
+ * @param[in] dsp_id: dsp id, range:[0,1]
  * @param[in] strpath: vdsp image path(length<256) without name
  *			NULL: use default path
  *
@@ -239,7 +190,7 @@ int32_t hb_vdsp_reset(int32_t dsp_id);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -253,7 +204,7 @@ int32_t hb_vdsp_set_path(int32_t dsp_id, const char* strpath);
  * @ASIL{B}
  * @brief set vdsp name
  *
- * @param[in] dsp_id: dsp id, range:\[0,1\]
+ * @param[in] dsp_id: dsp id, range:[0,1]
  * @param[in] name: vdsp image name(length<256)
  *
  * @retval HB_VDSP_OK: successful
@@ -263,7 +214,7 @@ int32_t hb_vdsp_set_path(int32_t dsp_id, const char* strpath);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -277,7 +228,7 @@ int32_t hb_vdsp_set_name(int32_t dsp_id, const char* name);
  * @ASIL{B}
  * @brief vdsp get fd
  *
- * @param[in] dsp_id: dsp id, range:\[0,1\]
+ * @param[in] dsp_id: dsp id, range:[0,1]
  * @param[out] retfd: file descriptor
  *
  * @retval HB_VDSP_OK: successful
@@ -286,7 +237,7 @@ int32_t hb_vdsp_set_name(int32_t dsp_id, const char* name);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -308,7 +259,7 @@ int32_t hb_vdsp_get_fd(int32_t dsp_id, int32_t *retfd);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -322,7 +273,7 @@ int32_t hb_vdsp_close_fd(int32_t vdspfd);
  * @ASIL{B}
  * @brief vdsp init
  *
- * @param[in] dsp_id: dsp id, range:\[0,1\]
+ * @param[in] dsp_id: dsp id, range:[0,1]
  *
  * @retval HB_VDSP_OK: successful
  * @retval HB_VDSP_PARAM_INVALID: invalid params
@@ -333,7 +284,7 @@ int32_t hb_vdsp_close_fd(int32_t vdspfd);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.0.1
  *
  * @callgraph
@@ -347,14 +298,14 @@ int32_t hb_vdsp_init(int32_t dsp_id);
  * @ASIL{B}
  * @brief vdsp deinit
  *
- * @param[in] dsp_id: dsp id, range:\[0,1\]
+ * @param[in] dsp_id: dsp id, range:[0,1]
  *
  * @retval HB_VDSP_OK: successful
  * @retval HB_VDSP_ERR_DEINIT: vdsp deinit error
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.0.1
  *
  * @callgraph
@@ -368,7 +319,7 @@ int32_t hb_vdsp_deinit(int32_t dsp_id);
  * @ASIL{B}
  * @brief alloc hbmem and map
  *
- * @param[in] dsp_id: dsp id, range:\[0,1\]
+ * @param[in] dsp_id: dsp id, range:[0,1]
  * @param[in] size: alloc size
  * @param[in] flags: buffer flags @mem_usage_t
  * @param[out] va: virtual address of allocated mem
@@ -384,7 +335,7 @@ int32_t hb_vdsp_deinit(int32_t dsp_id);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.0.1
  *
  * @callgraph
@@ -398,7 +349,7 @@ int32_t hb_vdsp_mem_alloc(int32_t dsp_id, uint64_t size, int64_t flags, uint64_t
  * @ASIL{B}
  * @brief free hbmem and unmap
  *
- * @param[in] dsp_id: dsp id, range:\[0,1\]
+ * @param[in] dsp_id: dsp id, range:[0,1]
  * @param[in] va: virtual address of allocated mem
  *
  * @retval HB_VDSP_OK: successful
@@ -411,7 +362,7 @@ int32_t hb_vdsp_mem_alloc(int32_t dsp_id, uint64_t size, int64_t flags, uint64_t
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.0.1
  *
  * @callgraph
@@ -425,7 +376,7 @@ int32_t hb_vdsp_mem_free(int32_t dsp_id, uint64_t va);
  * @ASIL{B}
  * @brief smmu map
  *
- * @param[in] dsp_id: dsp id, range:\[0,1\]
+ * @param[in] dsp_id: dsp id, range:[0,1]
  * @param[in] va: virtual address of allocated mem
  * @param[in] size: map size
  * @param[out] vdspiova: mapped device address by the smmu
@@ -440,7 +391,7 @@ int32_t hb_vdsp_mem_free(int32_t dsp_id, uint64_t va);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.0.1
  *
  * @callgraph
@@ -454,7 +405,7 @@ int32_t hb_vdsp_mmu_map(int32_t dsp_id, uint64_t va, uint64_t size, uint64_t *vd
  * @ASIL{B}
  * @brief smmu unmap
  *
- * @param[in] dsp_id: dsp id, range:\[0,1\]
+ * @param[in] dsp_id: dsp id, range:[0,1]
  * @param[in] va: virtual address of allocated mem
  *
  * @retval HB_VDSP_OK: successful
@@ -466,7 +417,7 @@ int32_t hb_vdsp_mmu_map(int32_t dsp_id, uint64_t va, uint64_t size, uint64_t *vd
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.0.1
  *
  * @callgraph
@@ -474,151 +425,6 @@ int32_t hb_vdsp_mmu_map(int32_t dsp_id, uint64_t va, uint64_t size, uint64_t *vd
  * @design
  */
 int32_t hb_vdsp_mmu_unmap(int32_t dsp_id, uint64_t va);
-
-/**
- * @NO{S05E06C01I}
- * @ASIL{B}
- * @brief query string by errcode
- *
- * @param[in] errcode: error code
- *
- * @retval error string
- *
- * @data_read None
- * @data_updated None
- * @compatibility HW: Super
- * @compatibility SW: 0.0.1
- *
- * @callgraph
- * @callergraph
- * @design
- */
-const char* hb_vdsp_strerror(int32_t errcode);
-
-/**
- * @NO{S05E06C01I}
- * @ASIL{B}
- * @brief create msg connection
- *
- * @param[in] dsp_id: dsp id, range:\[0,1\]
- *
- * @retval HB_VDSP_OK: successful
- * @retval HB_VDSP_ERR_NOT_INITED: vdsp not init
- * @retval HB_VDSP_ERR_MSG_INVALID: ioctl failed
- *
- * @data_read None
- * @data_updated None
- * @compatibility HW: Super
- * @compatibility SW: 0.0.1
- *
- * @callgraph
- * @callergraph
- * @design
- */
-int32_t hb_vdsp_msg_connection_create(int32_t dsp_id);
-
-/**
- * @NO{S05E06C01I}
- * @ASIL{B}
- * @brief destroy msg connection
- *
- * @param[in] dsp_id: dsp id, range:\[0,1\]
- *
- * @retval HB_VDSP_OK: successful
- * @retval HB_VDSP_ERR_NOT_INITED: vdsp not init
- * @retval HB_VDSP_ERR_MSG_INVALID: ioctl failed
- *
- * @data_read None
- * @data_updated None
- * @compatibility HW: Super
- * @compatibility SW: 0.0.1
- *
- * @callgraph
- * @callergraph
- * @design
- */
-int32_t hb_vdsp_msg_connection_destroy(int32_t dsp_id);
-
-/**
- * @NO{S05E06C01I}
- * @ASIL{B}
- * @brief check whether have user msg is running
- *
- * @param[in] dsp_id: dsp id, range:\[0,1\]
- * @param[out] msg_status HB_VDSP_MSG_DISABLED: msg mode is disable status
- *                        HB_VDSP_MSG_IDLE: idle status
- *                        HB_VDSP_MSG_BUSY: busy status
- *
- * @retval HB_VDSP_OK: get msg status successful
- * @retval HB_VDSP_PARAM_INVALID: invalid param
- * @retval HB_VDSP_ERR_NOT_INITED: vdsp not init
- * @retval HB_VDSP_ERR_MSG_INVALID: ioctl failed
- *
- * @data_read None
- * @data_updated None
- * @compatibility HW: Super
- * @compatibility SW: 0.0.1
- *
- * @callgraph
- * @callergraph
- * @design
- */
-int32_t hb_vdsp_get_msg_status(int32_t dsp_id, int32_t *msg_status);
-
-/**
- * @NO{S05E06C01I}
- * @ASIL{B}
- * @brief send msg to vdsp core
- *
- * @param[in] dsp_id: dsp id, range:\[0,1\]
- * @param[in] user_msg: need to send msg @hb_vdsp_user_msg
- * @param[in] msg_size: msg size to send
- *
- * @retval HB_VDSP_OK: send successful
- * @retval HB_VDSP_ERR_NOT_INITED: vdsp not init
- * @retval HB_VDSP_ERR_INSUFFICIENT_MEM: memory alloc fail
- * @retval HB_VDSP_ERR_MSG_NOT_ENABLE: msg mode not enable
- * @retval HB_VDSP_ERR_MSG_IPCF_SEND_FAIL: ipcf send fail
- *
- * @data_read None
- * @data_updated None
- * @compatibility HW: Super
- * @compatibility SW: 0.0.1
- *
- * @callgraph
- * @callergraph
- * @design
- */
-int32_t hb_vdsp_msg_send(int32_t dsp_id, const struct hb_vdsp_user_msg *user_msg, size_t msg_size);
-
-/**
- * @NO{S05E06C01I}
- * @ASIL{B}
- * @brief recv msg reply from vdsp core
- *
- * @param[in] dsp_id: dsp id, range:\[0,1\]
- * @param[out] user_msg: store msg reply @hb_vdsp_user_msg
- * @param[in] timeout: <0 infinite timeout, 0 return immediately, >0 maximum wait ms
- *
- * @retval >= sizeof(user_msg): successful, received msg size
- * @retval HB_VDSP_ERR_NOT_INITED: vdsp not init
- * @retval HB_VDSP_ERR_INSUFFICIENT_MEM: memory alloc fail
- * @retval HB_VDSP_ERR_MSG_NOT_ENABLE: msg mode not enable
- * @retval HB_VDSP_ERR_MSG_TIMEOUT: wait recv msg timeout
- * @retval HB_VDSP_ERR_MSG_ABORT: recv be abort
- * @retval HB_VDSP_ERR_MSG_INVALID: invalid param
- * @retval HB_VDSP_ERR_MSG_IPCF_RECV_FAIL: ipcf recv fail
- *
- * @data_read None
- * @data_updated None
- * @compatibility HW: Super
- * @compatibility SW: 0.0.1
- *
- * @callgraph
- * @callergraph
- * @design
- */
-int32_t hb_vdsp_msg_recv(int32_t dsp_id, struct hb_vdsp_user_msg *user_msg, size_t msg_size, int32_t timeout);
 
 #ifdef __cplusplus
 }

@@ -8,7 +8,7 @@ extern "C"
 
 #include <stdint.h>
 
-#define TOOL_VERSION                                      (2) // 0-XJ3 1-Ultra 2-Super
+#define TOOL_VERSION                                      (2) // 0-XJ3 1-J5 2-Super SoC
 #define COMMAND_SET                                       0x00000000
 #define COMMAND_GET                                       0x00000001
 
@@ -36,8 +36,6 @@ enum YUV_TYEP {
 	YUV444 = 3,
 	YUVI420 = 4,
 	RGB888 = 5,
-	YUV_NV12_Y_10BIT = 6,
-	YUV_NV12_Y_12BIT = 7,
 };
 
 enum VIDEO_TYPE {
@@ -191,7 +189,7 @@ int32_t hb_tool_event_disable(tool_event_t * ev, uint32_t event);
 void hb_tool_event_setcb(tool_event_t * ev, hb_reg_ctrl_func regcb, hb_api_ctrl_func apicb,
     hb_calib_ctrl_func calibcb, hb_common_ctrl_func commcb, void *cbarg);
 
-// xj3 & Ultra & Super stats info
+// xj3 & j5 & Super SoC stats info
 typedef struct hb_tool_statics_awb_zone_attr_s {
 	uint16_t rg;
 	uint16_t bg;
@@ -218,8 +216,8 @@ typedef struct _awb_stats_info_s {
 	hb_tool_mesh_rgbg_weight_t weight;
 	hb_tool_zone_attr_t zone;
 	uint16_t wb_info[4];
-	uint32_t avg_rg;
-	uint32_t avg_bg;
+	uint32_t rgain;
+	uint32_t bgain;
 } awb_stats_info;
 
 typedef struct _ae_1024bin_stats_info_s {

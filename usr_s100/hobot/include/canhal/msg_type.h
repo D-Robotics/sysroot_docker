@@ -8,9 +8,7 @@
 #include <vector>
 
 #define CAN_FRAME_LENGTH_MAX 64
-#define MAX_DELAY_MS 28U
-#define MAX_DELAY_US (MAX_DELAY_MS * 1000U)
-
+#define MAX_DELAY 28U
 namespace hobot {
 namespace canhal {
 
@@ -163,7 +161,6 @@ struct Pack_Info {
   uint16_t length; //[receive size prepare] can_frame: frame number; raw data: data length
   uint16_t unused;
   uint64_t unused_1;
-  uint8_t  crc_enabled;
 };
 
 #pragma pack(1)

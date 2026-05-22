@@ -132,7 +132,7 @@ struct element {
  * @retval >=0: success
  * @retval <0: fail
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_init(uint32_t cd_id, uint32_t bus_id);
@@ -148,7 +148,7 @@ int32_t hb_pcie_init(uint32_t cd_id, uint32_t bus_id);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_deinit(int32_t handle_id);
@@ -167,7 +167,7 @@ int32_t hb_pcie_deinit(int32_t handle_id);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_get_bus_info(int32_t handle_id, uint32_t *domain, uint32_t *bus);
@@ -184,7 +184,7 @@ int32_t hb_pcie_get_bus_info(int32_t handle_id, uint32_t *domain, uint32_t *bus)
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_get_version(uint32_t *major, uint32_t *minor, uint32_t *patch);
@@ -201,7 +201,7 @@ int32_t hb_pcie_get_version(uint32_t *major, uint32_t *minor, uint32_t *patch);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_strerror(int32_t err_num, char *err_buf, int32_t errbuf_size);
@@ -215,7 +215,7 @@ int32_t hb_pcie_strerror(int32_t err_num, char *err_buf, int32_t errbuf_size);
  *
  * @retval error string
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 const char *hb_pcie_errstr(int32_t err_num);
@@ -233,7 +233,7 @@ const char *hb_pcie_errstr(int32_t err_num);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_request_dma(int32_t handle_id, int32_t channel_id);
@@ -249,7 +249,7 @@ int32_t hb_pcie_request_dma(int32_t handle_id, int32_t channel_id);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_release_dma(int32_t handle_id);
@@ -270,7 +270,7 @@ int32_t hb_pcie_release_dma(int32_t handle_id);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_dma_write(int32_t handle_id, const struct element *eles,
@@ -292,7 +292,7 @@ int32_t hb_pcie_dma_write(int32_t handle_id, const struct element *eles,
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_dma_write_strict(int32_t handle_id, const struct element *eles,
@@ -314,7 +314,7 @@ int32_t hb_pcie_dma_write_strict(int32_t handle_id, const struct element *eles,
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_dma_read(int32_t handle_id, const struct element *eles,
@@ -333,7 +333,7 @@ int32_t hb_pcie_dma_read(int32_t handle_id, const struct element *eles,
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_install_receiver(int32_t handle_id,
@@ -350,7 +350,7 @@ int32_t hb_pcie_install_receiver(int32_t handle_id,
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_uninstall_receiver(int32_t handle_id);
@@ -368,7 +368,7 @@ int32_t hb_pcie_uninstall_receiver(int32_t handle_id);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_remote_recevier_installed(int32_t handle_id, int32_t channel_id);
@@ -385,7 +385,7 @@ int32_t hb_pcie_remote_recevier_installed(int32_t handle_id, int32_t channel_id)
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_dbg_dma_write_set_id(int32_t handle_id, uint64_t id);
@@ -403,7 +403,7 @@ int32_t hb_pcie_dbg_dma_write_set_id(int32_t handle_id, uint64_t id);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_dbg_dma_write_get_times(int32_t handle_id, uint64_t *id, struct timespec **times);
@@ -422,7 +422,7 @@ int32_t hb_pcie_dbg_dma_write_get_times(int32_t handle_id, uint64_t *id, struct 
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_bar_request(int32_t handle_id, const char *name, uint64_t size, uint32_t flag);
@@ -438,7 +438,7 @@ int32_t hb_pcie_bar_request(int32_t handle_id, const char *name, uint64_t size, 
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_bar_release(int32_t handle_id);
@@ -457,7 +457,7 @@ int32_t hb_pcie_bar_release(int32_t handle_id);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_get_bar_addr(int32_t handle_id, uint64_t *iova, uint64_t *pa, void **va);
@@ -476,7 +476,7 @@ int32_t hb_pcie_get_bar_addr(int32_t handle_id, uint64_t *iova, uint64_t *pa, vo
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_p2p_get_bar_addr(int32_t handle_id, uint64_t *iova, uint64_t *pa, void **va);
@@ -495,7 +495,7 @@ int32_t hb_pcie_p2p_get_bar_addr(int32_t handle_id, uint64_t *iova, uint64_t *pa
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_bar_read(int32_t handle_id, uint64_t offset, void *buf, uint64_t size);
@@ -514,7 +514,7 @@ int32_t hb_pcie_bar_read(int32_t handle_id, uint64_t offset, void *buf, uint64_t
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_bar_write(int32_t handle_id, uint64_t offset, const void *buf, uint64_t size);
@@ -534,7 +534,7 @@ int32_t hb_pcie_bar_write(int32_t handle_id, uint64_t offset, const void *buf, u
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_map_pci(int32_t handle_id, uint64_t pci_phys, uint64_t *local_pa, void **local_va, uint64_t size);
@@ -553,7 +553,7 @@ int32_t hb_pcie_map_pci(int32_t handle_id, uint64_t pci_phys, uint64_t *local_pa
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_unmap_pci(int32_t handle_id, uint64_t local_pa, void *local_va, uint64_t size);
@@ -569,7 +569,7 @@ int32_t hb_pcie_unmap_pci(int32_t handle_id, uint64_t local_pa, void *local_va, 
  * @retval >=0: total size of interrupts
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_get_max_interrupt_num(int32_t handle_id);
@@ -587,7 +587,7 @@ int32_t hb_pcie_get_max_interrupt_num(int32_t handle_id);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_trigger_interrupt(int32_t handle_id, int32_t id);
@@ -607,7 +607,7 @@ int32_t hb_pcie_trigger_interrupt(int32_t handle_id, int32_t id);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_install_interrupt_handler(int32_t handle_id, int32_t id,
@@ -624,7 +624,7 @@ int32_t hb_pcie_install_interrupt_handler(int32_t handle_id, int32_t id,
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_uninstall_interrupt_handler(int32_t handle_id);
@@ -642,7 +642,7 @@ int32_t hb_pcie_uninstall_interrupt_handler(int32_t handle_id);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  *
  * @callgraph
@@ -662,7 +662,7 @@ int32_t hb_pcie_p2p_connect(int32_t handle_id, uint32_t domain_id, uint32_t bus_
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_p2p_disconnect(int32_t handle_id);
@@ -681,7 +681,7 @@ int32_t hb_pcie_p2p_disconnect(int32_t handle_id);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_p2p_bar_request(int32_t handle_id, const char *name, uint64_t size, uint32_t flag);
@@ -697,7 +697,7 @@ int32_t hb_pcie_p2p_bar_request(int32_t handle_id, const char *name, uint64_t si
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_p2p_bar_release(int32_t handle_id);
@@ -717,7 +717,7 @@ int32_t hb_pcie_p2p_bar_release(int32_t handle_id);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_p2p_bar_read(int32_t handle_id, uint64_t offset, void *buf, uint64_t size);
@@ -736,7 +736,7 @@ int32_t hb_pcie_p2p_bar_read(int32_t handle_id, uint64_t offset, void *buf, uint
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_p2p_bar_write(int32_t handle_id, uint64_t offset, const void *buf, uint64_t size);
@@ -755,7 +755,7 @@ int32_t hb_pcie_p2p_bar_write(int32_t handle_id, uint64_t offset, const void *bu
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_p2p_dma_bar_read(int32_t handle_id, uint64_t local_iova, uint64_t offset, uint64_t size);
@@ -774,7 +774,7 @@ int32_t hb_pcie_p2p_dma_bar_read(int32_t handle_id, uint64_t local_iova, uint64_
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_p2p_dma_bar_write(int32_t handle_id, uint64_t local_iova, uint64_t offset, uint64_t size);
@@ -790,7 +790,7 @@ int32_t hb_pcie_p2p_dma_bar_write(int32_t handle_id, uint64_t local_iova, uint64
  * @retval >=0: total size of interrupts
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_p2p_get_max_interrupt_num(int32_t handle_id);
@@ -808,7 +808,7 @@ int32_t hb_pcie_p2p_get_max_interrupt_num(int32_t handle_id);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_p2p_trigger_interrupt(int32_t handle_id, int32_t id);
@@ -828,7 +828,7 @@ int32_t hb_pcie_p2p_trigger_interrupt(int32_t handle_id, int32_t id);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_p2p_install_interrupt_handler(int32_t handle_id, int32_t id,
@@ -845,7 +845,7 @@ int32_t hb_pcie_p2p_install_interrupt_handler(int32_t handle_id, int32_t id,
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_p2p_uninstall_interrupt_handler(int32_t handle_id);
@@ -866,7 +866,7 @@ int32_t hb_pcie_p2p_uninstall_interrupt_handler(int32_t handle_id);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_mem_alloc(int32_t handle_id, uint64_t size, uint64_t flag,
@@ -886,7 +886,7 @@ int32_t hb_pcie_mem_alloc(int32_t handle_id, uint64_t size, uint64_t flag,
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_mem_free(int32_t handle_id, uint64_t size, uint64_t iova, void *va);
@@ -943,7 +943,7 @@ int32_t hb_pcie_mem_cache_clean(int32_t handle_id, uint64_t iova, uint64_t size)
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_iommu_map(int32_t handle_id, uint64_t pa, uint64_t *iova, uint64_t size);
@@ -960,7 +960,7 @@ int32_t hb_pcie_iommu_map(int32_t handle_id, uint64_t pa, uint64_t *iova, uint64
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_iommu_unmap(int32_t handle_id, uint64_t iova);
@@ -976,7 +976,7 @@ int32_t hb_pcie_iommu_unmap(int32_t handle_id, uint64_t iova);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_time_ptm_enable(int32_t ctrl_id);
@@ -992,7 +992,7 @@ int32_t hb_pcie_time_ptm_enable(int32_t ctrl_id);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_time_ptm_disable(int32_t ctrl_id);
@@ -1008,7 +1008,7 @@ int32_t hb_pcie_time_ptm_disable(int32_t ctrl_id);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_time_pps_enable(int32_t ctrl_id);
@@ -1024,7 +1024,7 @@ int32_t hb_pcie_time_pps_enable(int32_t ctrl_id);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_time_pps_disable(int32_t ctrl_id);
@@ -1041,7 +1041,7 @@ int32_t hb_pcie_time_pps_disable(int32_t ctrl_id);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_time_get_local(int32_t ctrl_id, struct timespec *local_time);
@@ -1058,7 +1058,7 @@ int32_t hb_pcie_time_get_local(int32_t ctrl_id, struct timespec *local_time);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_time_set_local(int32_t ctrl_id, struct timespec *local_time);
@@ -1076,7 +1076,7 @@ int32_t hb_pcie_time_set_local(int32_t ctrl_id, struct timespec *local_time);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_time_sync(int32_t ctrl_id, struct timespec *source_time, struct timespec *pcie_time);
@@ -1093,7 +1093,7 @@ int32_t hb_pcie_time_sync(int32_t ctrl_id, struct timespec *source_time, struct 
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_time_get_snapshot(int32_t ctrl_id, struct timespec *snapshot_time);
@@ -1110,7 +1110,7 @@ int32_t hb_pcie_time_get_snapshot(int32_t ctrl_id, struct timespec *snapshot_tim
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_time_set_pps_source(int32_t ctrl_id, int32_t source);
@@ -1126,7 +1126,7 @@ int32_t hb_pcie_time_set_pps_source(int32_t ctrl_id, int32_t source);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_time_snapshot_off(int32_t ctrl_id);
@@ -1142,7 +1142,7 @@ int32_t hb_pcie_time_snapshot_off(int32_t ctrl_id);
  * @retval =0: success
  * @retval <0: failure
  *
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 0.1.0
  */
 int32_t hb_pcie_time_snapshot_on(int32_t ctrl_id);

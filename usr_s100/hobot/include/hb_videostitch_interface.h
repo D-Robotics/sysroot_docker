@@ -445,7 +445,7 @@ enum sth_working_status { STH_FREE, STH_INITED, STH_CONFED, STH_PROCESSING, STH_
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -463,7 +463,7 @@ int32_t hb_videostitch_init(void);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -483,7 +483,7 @@ int32_t hb_videostitch_deinit(void);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -503,7 +503,7 @@ int32_t hb_videostitch_calc_outbuf_size(uint32_t width, uint32_t height, buffer_
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -528,7 +528,7 @@ int32_t hb_videostitch_cgp_size(uint32_t roi_num, uint32_t *size);
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -550,7 +550,7 @@ int32_t hb_videostitch_set_cfg(sth_mode_ctrl_t mode_ctrl, uint32_t roi_num, cons
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Ultra/Super
+ * @compatibility HW: J5/Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph
@@ -569,7 +569,7 @@ int32_t hb_videostitch_blending_process(uint32_t src_frame_num, const frame_t *s
  *
  * @data_read None
  * @data_updated None
- * @compatibility HW: Super
+ * @compatibility HW: Super SoC
  * @compatibility SW: 1.0.0
  *
  * @callgraph

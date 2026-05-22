@@ -34,7 +34,7 @@ extern "C" {
 #define HW_FORMAT_RAW16 0x2E /**< raw16 format 16bit   @NO{S09E06C01U}  */
 #define HW_FORMAT_RAW20 0x2F /**< raw20 format 20bit  @NO{S09E06C01U}   */
 
-#define HB_VIO_PIPELINE_MAX 64u /**< vio pipeline max count  @NO{S09E06C01U}  */
+#define HB_VIO_PIPELINE_MAX 24u /**< vio pipeline max count  @NO{S09E06C01U}  */
 #define HB_VIO_PIPELINE_MAX_ID (HB_VIO_PIPELINE_MAX - 1u) /**< vio pipeline max id  @NO{S09E06C01U}  */
 #define HB_VIO_PYM_MAX_BASE_LAYER 6u /**< pym max layer count   @NO{S09E06C01U} */
 #define HB_VIO_PYM_DS_LAYER 6u /**< pym down scaler layer count   @NO{S09E06C01U} */
@@ -69,49 +69,9 @@ enum Format {
 	HB_YUV422_RAW16, /* yuv422 & raw16 */
 	HB_IR8,
 	HB_DECOMP_RAW, //decomp 24bit
-	HB_YUV420SP_10_8_8,
-	HB_YUV420SP_12_8_8,
-	HB_YUV422_10_8_8,
-	HB_YUV422_12_8_8,
 	HB_FORMAT_MAX
 };
 
-typedef enum VIO_MODULE_TYPE {
-	HB_VIN_MODULE,
-	HB_MODULE_MAX
-} VIO_MODULE_TYPE_E;
-
-typedef enum VIO_EVENT_TYPE {
-	HB_INFO_FRAME_START = 1u << 0u,
-	HB_INFO_FRAME_DONE = 1u << 1u,
-	HB_INFO_EVENT_ALL = 0xFFFFFFFF,
-} VIO_EVENT_TYPE_E;
-
-struct vio_event {
-	uint32_t pipe_id;//通路编号
-	VIO_MODULE_TYPE_E module_type; //模块类型
-	VIO_EVENT_TYPE_E event_type; //事件类型
-	uint32_t hw_frame_id; //硬件帧号，记录SOC收到的帧数；
-	uint32_t sw_frame_id; //软件帧号，通路中通用帧号，除基于时间戳跳帧场景外，都等于硬件帧号
-	uint64_t hw_timestamps; //第一个pixel到CIM侧记录的RTC时间戳 （us）
-	uint64_t fs_timestamps; //帧处理开始的时间（us）
-	uint64_t fe_timestamps; //帧处理结束的时间（us）
-	uint64_t event_timestamps; //事件触发的时间（us）
-	uint32_t event_cnt; //事件触发的次数
-	uint32_t reserved[8];
-};
-
-typedef enum VIO_INFO_S {
-	FPS_INFO,
-	WORK_STATUS,
-	MAX_INFO_ID,
-} VIO_INFO_E;
-
-typedef enum VIO_WORK_STATUS_S {
-	HB_VIO_WORK_NONE,
-	HB_VIO_WORK_INIT,
-	HB_VIO_WORK_START,
-} VIO_WORK_STATUS_E;
 /**
  * @enum rotation_e
  * rotation value @NO{S09E06C01U}
@@ -136,12 +96,6 @@ typedef enum VIO_INFO_TYPE_S {
 	HB_VIO_ISP_IMG_INFO,
 	HB_VIO_PYM_V2_IMG_INFO,
 	HB_VIO_PYM_V3_IMG_INFO,
-	HB_VIO_GDC_BUF_INFO,
-	HB_VIO_PYM_BUF_INFO,
-	HB_VIO_ISP_BUF_INFO,
-	HB_VIO_CIM_BUF_INFO,
-	HB_VIO_EMBED_BUF_INFO,
-	HB_VIO_CIM_ROI_BUF_INFO,
 	HB_VIO_INFO_MAX
 } VIO_INFO_TYPE_E;
 
@@ -281,12 +235,12 @@ typedef struct pym_buffer_s {
 	uint64_t paddr_whole[HB_VIO_BUFFER_MAX_PLANES];
 	uint32_t layer_size[30][HB_VIO_BUFFER_MAX_PLANES];
 } pym_buffer_t; //Keep xj3 data struct
-//use in j3 Ultra
+//use in j3 j5
 typedef struct pym_buffer_common_s {
 	image_info_t pym_img_info;
 	address_info_t pym[HB_VIO_PYM_MAX_BASE_LAYER]; //only for base layer
 } pym_buffer_common_t;
-//use in Ultra
+//use in j5
 typedef struct pym_buffer_v2_s {
 	image_info_t pym_img_info;
 	address_info_t src_out;
@@ -296,7 +250,7 @@ typedef struct pym_buffer_v2_s {
 	address_info_t bl[5];
 } pym_buffer_v2_t;
 
-//use in Super
+//use in Super SoC
 
 /**
  * @struct pym_buffer_v3_s
