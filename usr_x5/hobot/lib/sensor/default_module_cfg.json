@@ -15,6 +15,18 @@
         "useCfg": 1,
         "mode": 0, "//":"0: manual mode only"
     },
+    "afmInfo":
+    {
+        "enable": 1,
+        "useCfg": 1,
+        "mode": 0, "//":"0: manual mode only"
+    },
+    "afmv3Info":
+    {
+        "enable": 1,
+        "useCfg": 1,
+        "mode": 0, "//":"no use, config 0 or 1"
+    },
     "dpccInfo":
     {
         "enable": 0,
@@ -42,6 +54,12 @@
     "ccmInfo":
     {
         "enable": 1,
+        "useCfg": 1,
+        "mode": 0, "//":"0: manual mode only"
+    },
+    "hist256Info":
+    {
+        "enable": 0,
         "useCfg": 1,
         "mode": 0, "//":"0: manual mode only"
     },

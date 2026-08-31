@@ -17,7 +17,8 @@ typedef enum n2d_command {
 	/* 0 */ scale,
 	/* 1 */ overlay,
 	/* 2 */ stitch,
-	/* 3 */ csc
+	/* 3 */ csc,
+	/* 4 */ rotate
 } n2d_command_t;
 
 typedef struct n2d_config {
@@ -27,6 +28,7 @@ typedef struct n2d_config {
 	uint32_t input_width[N2D_IN_MAX];  //n2d input width resolution
 	uint32_t input_height[N2D_IN_MAX]; //n2d input height resolution
 	uint32_t input_stride[N2D_IN_MAX]; //n2d input stride (pixel)
+	uint32_t input_format;             //n2d input format
 	uint32_t output_width;             //n2d output width resolution
 	uint32_t output_height;            //n2d output height resolution
 	uint32_t output_stride;            //n2d output stride (pixel)
@@ -40,6 +42,11 @@ typedef struct n2d_config {
 	uint32_t overlay_x;
 	uint32_t overlay_y;
 	n2d_command_t command;
+	uint32_t rotation;
+	uint32_t crop_x;
+	uint32_t crop_y;
+	uint32_t crop_width;
+	uint32_t crop_height;
 } n2d_config_t;
 
 int32_t n2d_node_parser_config(const void *root, n2d_config_t *cfg);

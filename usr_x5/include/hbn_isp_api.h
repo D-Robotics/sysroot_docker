@@ -26,6 +26,9 @@ extern "C" {
 #include "./isp_feature/isp_pattern.h"
 #include "./isp_feature/isp_calib.h"
 #include "./isp_feature/isp_af.h"
+#include "./isp_feature/isp_hist.h"
+#include "./isp_feature/isp_rgbir.h"
+#include "isp_common.h"
 
 /* common define */
 
@@ -41,13 +44,6 @@ typedef struct isp_zone_weight_s {
 	uint32_t w;
 	float weight;
 } hbn_isp_zone_weight_t;
-
-typedef struct hbn_windows_s {
-	uint32_t h_offset;	/**< Horizontal start offset */
-	uint32_t v_offset;	/**< Vertical start offset */
-	uint32_t width;		/**< Width */
-	uint32_t height;	/**< Height */
-} hbn_windows_t;
 
 typedef struct hbn_isp_roi_s {
 	hbn_windows_t window;	/**< ROI window */
@@ -440,6 +436,18 @@ typedef struct hbn_isp_sensor_param_s {
 	uint32_t exp_time_min;
 } hbn_isp_sensor_param_t;
 
+/* OTP control: per-module (LSC/AWB/AF) support query + apply on/off switch */
+typedef struct hbn_isp_otp_module_s {
+    uint8_t lsc;    /**< LSC OTP support/enable flag */
+    uint8_t awb;    /**< AWB OTP support/enable flag */
+    uint8_t af;     /**< AF  OTP support/enable flag */
+} hbn_isp_otp_module_t;
+
+typedef struct hbn_isp_otp_ctrl_s {
+    hbn_isp_otp_module_t support;   /**< RO: whether each module supports/burned OTP (from IsiOTP_t) */
+    hbn_isp_otp_module_t enable;    /**< RW: runtime on/off switch for applying each module's OTP calib */
+} hbn_isp_otp_ctrl_t;
+
 extern int32_t hbn_isp_set_module_control(hbn_vnode_handle_t vnode_fd, hbn_isp_module_ctrl_t *p_ctrl);
 extern int32_t hbn_isp_get_module_control(hbn_vnode_handle_t vnode_fd, hbn_isp_module_ctrl_t *p_ctrl);
 extern int32_t hbn_isp_set_exposure_attr(hbn_vnode_handle_t vnode_fd, hbn_isp_exposure_attr_t *p_attr);
@@ -468,6 +476,8 @@ extern int32_t hbn_isp_set_3dnr_attr(hbn_vnode_handle_t vnode_fd, hbn_isp_3dnr_a
 extern int32_t hbn_isp_get_3dnr_attr(hbn_vnode_handle_t vnode_fd, hbn_isp_3dnr_attr_t *p_attr);
 extern int32_t hbn_isp_get_lsc_attr(hbn_vnode_handle_t vnode_fd, hbn_isp_lsc_attr_t *p_attr);
 extern int32_t hbn_isp_set_lsc_attr(hbn_vnode_handle_t vnode_fd, hbn_isp_lsc_attr_t *p_attr);
+extern int32_t hbn_isp_set_otp_control(hbn_vnode_handle_t vnode_fd, hbn_isp_otp_ctrl_t *p_ctrl);
+extern int32_t hbn_isp_get_otp_control(hbn_vnode_handle_t vnode_fd, hbn_isp_otp_ctrl_t *p_ctrl);
 extern int32_t hbn_isp_set_awb_preference_attr(hbn_vnode_handle_t vnode_fd, hbn_isp_awb_preference_attr_t *p_attr);
 extern int32_t hbn_isp_get_awb_preference_attr(hbn_vnode_handle_t vnode_fd, hbn_isp_awb_preference_attr_t *p_attr);
 extern int32_t hbn_isp_get_wdr_attr(hbn_vnode_handle_t vnode_fd, hbn_isp_wdr_attr_t *p_attr);
@@ -494,6 +504,20 @@ extern int32_t hbn_isp_set_afm_attr(hbn_vnode_handle_t vnode_fd, hbn_isp_afm_att
 extern int32_t hbn_isp_cal_gain_by_temp(hbn_vnode_handle_t vnode_fd, uint32_t color_temp,
 				int32_t shift, hbn_isp_awb_gain_t *p_attr);
 extern int32_t hbn_isp_get_sensor_attr(hbn_vnode_handle_t vnode_fd, hbn_isp_sensor_param_t *p_sensor_param);
+extern int32_t hbn_isp_set_hist_attr(hbn_vnode_handle_t vnode_fd, hbn_isp_hist_t *p_attr);
+extern int32_t hbn_isp_get_hist_attr(hbn_vnode_handle_t vnode_fd, hbn_isp_hist_t *p_attr);
+extern int32_t hbn_isp_get_hist_sta(hbn_vnode_handle_t vnode_fd, hbn_isp_hist_sta_t *p_attr);
+extern int32_t hbn_isp_get_af_attr(hbn_vnode_handle_t vnode_fd, hbn_isp_af_attr_t *p_attr);
+extern int32_t hbn_isp_set_af_attr(hbn_vnode_handle_t vnode_fd, hbn_isp_af_attr_t *p_attr);
+extern int32_t hbn_isp_set_rgbir_attr(hbn_vnode_handle_t vnode_fd, hbn_isp_rgbir_attr_t *p_attr);
+extern int32_t hbn_isp_get_rgbir_attr(hbn_vnode_handle_t vnode_fd, hbn_isp_rgbir_attr_t *p_attr);
+extern int32_t hbn_isp_get_afmv1_attr(hbn_vnode_handle_t vnode_fd, hbn_isp_afmv1_attr_t *p_attr);
+extern int32_t hbn_isp_set_afmv1_attr(hbn_vnode_handle_t vnode_fd, hbn_isp_afmv1_attr_t *p_attr);
+extern int32_t hbn_isp_get_afmv1_statistics(hbn_vnode_handle_t vnode_fd, hbn_isp_afmv1_statistics_t *p_attr);
+extern int32_t hbn_isp_sync_enable(hbn_vnode_handle_t src_vnode, hbn_vnode_handle_t dst_vnode);
+
+
+
 #ifdef __cplusplus
 }
 #endif

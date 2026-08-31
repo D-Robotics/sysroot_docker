@@ -4071,6 +4071,10 @@
       "pdStableCountMax": 2,
       "weightWindow": [1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0]
     },
+    "AFM": {
+      "threshold": 4,
+      "afmWindows": [[10,10,10,10],[10,10,10,10],[10,10,10,10]]
+    },
     "AFM_3": {
       "bls": 0,
       "coring": {
@@ -4086,7 +4090,7 @@
       },
       "gamma": 2.2,
       "histThreshold": 0,
-      "hwRoi": [0,0,0,0],
+      "hwRoi": [0,0,1280,720],
       "iir": {
         "dataShift": 0,
         "highPassWeight": 0.0,
