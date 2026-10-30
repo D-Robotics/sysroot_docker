@@ -12,7 +12,6 @@ fi
 case $COMMAND in
     clean)
         echo "Cleaning up..."
-        python -m scikit_build_core clean
         rm -rf build/ dist/ *.egg-info/ __pycache__/ _skbuild/
         echo "Cleanup complete."
         ;;
