@@ -38,7 +38,22 @@ class CanHal {
 
 }  // namespace canhal
 }  // namespace hobot
-
+/**
+ * canSetConfigPaths_() - override the directories searched for config files.
+ *
+ * Must be called **before** canInit_().  If not called, or if a slot is NULL /
+ * empty, the HAL defaults to the "./config" directory for both files.
+ *
+ * The HAL loads two JSON files at init time:
+ *   - <nodes_config_dir>/nodes.json
+ *   - <channels_config_dir>/channels.json
+ *
+ * @nodes_config_dir:    Directory containing nodes.json.
+ *                       Pass NULL or "" to keep the default ("config").
+ * @channels_config_dir: Directory containing channels.json.
+ *                       Pass NULL or "" to keep the default ("config").
+ */
+void canSetConfigPaths_(const char *nodes_config_dir, const char *channels_config_dir);
 int canInit_();
 void canDeInit_();
 int canRecvMsgRaw_(const char *target, uint8_t *rx_buf, hobot::canhal::Pack_Info *pack);
