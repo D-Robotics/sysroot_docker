@@ -55,7 +55,14 @@ struct pack_info {
 /* canframe的个数不确定，不方便定canframe的大小
   struct canframe[];
 */
-
+/**
+ * Set config directories before canInit(). Each argument names a directory; the HAL loads
+ *   <dir>/nodes.json and <dir>/channels.json (e.g. canSetConfigPaths("test", "test") uses
+ *   "./test/nodes.json" and "./test/channels.json").
+ * Pass NULL or empty string for that slot to use the default "config" directory
+ * ("./config/nodes.json" and "./config/channels.json").
+ */
+void canSetConfigPaths(const char *nodes_config_dir, const char *channels_config_dir);
 int canInit();
 void canDeInit();
 int canRecvMsgRaw(const char *target, uint8_t *rx_buf, struct pack_info *pack);//接收原始数据
